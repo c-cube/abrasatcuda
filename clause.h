@@ -51,4 +51,13 @@ int next_clause( short int * clause_array/* array of clauses*/,
                  unsigned current_clause_index/* the current clause index in the (short *) * array */,
                  clause * clause_struct/* pointer to the used clause struct */
                );
+
+/*
+* iteration over atoms of a clause
+* usage is : while ( -1 != next_atom(...) )
+*/
+int
+next_atom ( clause * clause_struct, /* the clause we're iterating over */
+            short * current_atom /* pointer to the current atom, should belong to the current clause */
+            );
 #endif

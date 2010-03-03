@@ -4,7 +4,7 @@
 * enables iteration over clauses of the formula
 * WARNING : this function DOES increment the index.
 *
-* preferred usage is : while ( NULL != ( current_clause = next_clause(...) ) )
+* preferred usage is : while ( -1 != next_clause(...)  )
 */
 int
 next_clause ( short int * clause_array, short int ** clause_pointer_array, int * satisfied_clauses_array , unsigned int number_of_clauses, unsigned int current_clause_index, clause * clause_struct ) {
@@ -17,4 +17,16 @@ next_clause ( short int * clause_array, short int ** clause_pointer_array, int *
   return 0;
 }
 
+/*
+* iteration over atoms of a clause
+* usage is : while ( -1 != next_atom(...) )
+*/
+int
+next_atom ( clause * clause_struct, short * current_atom)
+{
+  if ( current_atom == clause_struct->stop  || current_atom < clause_struct->start )
+    return -1;
+  current_clause++;
+  return 0;
+}
 
