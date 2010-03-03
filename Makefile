@@ -1,7 +1,7 @@
 #Variable contenant le nom du compilateur
 CC=gcc
 #Variable contenant les options passées au compilateur
-CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g -m32 -c
+CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g -c # -m32
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
 #L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
@@ -23,9 +23,15 @@ all: $(TARGETS)
 
 #Cette cible effectue la compilation de notre commande.
 #Elle n'est exécutée que si le fichier mon_cp.c est plus recent que le fichier exécutable mon_cp
-abrasatcuda: clause.c 
-	#effectue la compilation et produit le fichier objet
-	$(CC) $(CFLAGS) clause.c -o abrasatcuda
+abrasatcuda: clause.o abrasatcuda.o
+	#effectue la compilation et linke.
+	$(CC) $(LDFLAGS) clause.o abrasatcuda.o -o abrasatcuda
+
+clause.o: clause.c
+	$(CC) $(CFLAGS) clause.c 
+
+abrasatcuda.o: abrasatcuda.c
+	$(CC) $(CFLAGS) abrasatcuda.c
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
 clean:
