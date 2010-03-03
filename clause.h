@@ -50,5 +50,5 @@ int next_clause( short int * clause_array/* array of clauses*/,
                  unsigned number_of_clauses/* number of clauses */,
                  unsigned current_clause_index/* the current clause index in the (short *) * array */,
                  clause * clause_struct/* pointer to the used clause struct */
-               )
+               );
 #endif
