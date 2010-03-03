@@ -44,11 +44,11 @@ typedef struct
 *
 * preferred usage is : while ( -1 != next_clause(...)  )
 */
-int next_clause( short * /* array of clauses*/,
-                      short * * /* array of pointers to begining of clauses */,
-                      int * /* array of satisfied clauses */,
-                      unsigned /* number of clauses */,
-                      unsigned /* the current clause index in the (short *) * array */,
-                      clause * /* pointer to the used clause struct */
-                    )
+int next_clause( short int * clause_array/* array of clauses*/,
+                 short int ** clause_pointer_array /* array of pointers to begining of clauses */,
+                 int * satisfied_clauses_array/* array of satisfied clauses */,
+                 unsigned number_of_clauses/* number of clauses */,
+                 unsigned current_clause_index/* the current clause index in the (short *) * array */,
+                 clause * clause_struct/* pointer to the used clause struct */
+               )
 #endif
