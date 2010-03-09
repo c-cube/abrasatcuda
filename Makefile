@@ -1,7 +1,7 @@
 #Variable contenant le nom du compilateur
 CC=gcc
 #Variable contenant les options passées au compilateur
-CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g -c # -m32
+CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g # -m32
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
 #L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
@@ -15,11 +15,13 @@ CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g -c # -m32
 LDFLAGS=
 
 #Variable contenant la liste des cibles 
-TARGETS=abrasatcuda
+TARGETS=abrasatcuda test
 
 #all est la cible par défaut. 
 #on la fait correspondre à l'ensemble des cibles qu'on souhaite exécuter
 all: $(TARGETS)
+
+
 
 #Cette cible effectue la compilation de notre commande.
 #Elle n'est exécutée que si le fichier mon_cp.c est plus recent que le fichier exécutable mon_cp
@@ -28,10 +30,16 @@ abrasatcuda: clause.o abrasatcuda.o
 	$(CC) $(LDFLAGS) clause.o abrasatcuda.o -o abrasatcuda
 
 clause.o: clause.c
-	$(CC) $(CFLAGS) clause.c 
+	$(CC) $(CFLAGS) -c clause.c 
 
 abrasatcuda.o: abrasatcuda.c
-	$(CC) $(CFLAGS) abrasatcuda.c
+	$(CC) $(CFLAGS) -c abrasatcuda.c
+
+
+test: test.c
+	$(CC) $(CFLAGS) test.c -o test && ./test
+
+
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
 clean:
