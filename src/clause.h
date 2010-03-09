@@ -19,7 +19,7 @@ inline short make_atom( int n )
 {
     return ( 0x8000                          // used ?
              | (n<0 ? 0x4000 : 0x0)          // negated ?
-             | (0xCFFF & *(((short*) &n)+1)) // small part for the name
+             | (0xCFFF & n)                  // small part for the name
            );
 }
 
@@ -107,7 +107,7 @@ inline int atom_iterate ( clause_t * clause_struct, short ** iterator )
         return 0;
     } 
     
-    if ( ++(*iterator) == clause_struct->stop )
+    if ( ++(*iterator) >= clause_struct->stop )
         return -1;
 
     return 0;

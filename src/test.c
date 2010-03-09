@@ -146,12 +146,13 @@ void test_clause()
     a.clause_array[1] = make_atom(-3);
     a.clause_array[2] = make_atom(2);
     a.clause_array[3] = make_atom(-6); 
-    a.stop = a.clause_array+4;
+    a.stop = ((short*) a.clause_array)+4;
 
     short *iterator = NULL;
-    while ( atom_iterate( &a, &iterator ) != 1 ){
-        printf( "atom with identity %u. is it signed : %u\n", 
+    while ( atom_iterate( &a, &iterator ) != -1 ){
+        printf( "atom with identity %u. is it negative : %u\n", 
             VARIABLE_NAME( *iterator ), IS_NEGATED( *iterator ) );
+
         assert( IS_USED( *iterator ) );
     }
     
@@ -165,6 +166,8 @@ void test_clause()
  * run all test successively
  */
 int main(){
+
+    HLINE
 
     test_list(); 
     test_parser();
