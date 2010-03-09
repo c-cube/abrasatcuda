@@ -1,3 +1,6 @@
+#ifndef _LIST_H
+
+
 #include <stdlib.h>
 
 /*
@@ -56,6 +59,10 @@ typedef struct list_node_t
 
 /*
  * sets iterator to the address of the next element of list.
+ * usage : 
+ *
+ * iterator = &start;
+ * do { process_item( *iterator); } while ( iterate( start, iterator ));
  */
 inline unsigned short int iterate( LIST_NODE_T* start, LIST_NODE_T** iterator )
 {
@@ -82,4 +89,5 @@ inline unsigned short int list_member( LIST_NODE_T* node, LIST_NODE_T* obj )
     return 0;
 }
    
-
+#define _LIST_H 1
+#endif

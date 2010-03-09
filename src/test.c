@@ -1,16 +1,32 @@
 /*
- * fichier de tests divers
+ * miscalleanous tests file
  */
 
 #include <assert.h>
 #include <stdio.h>
 
-#include "list.h"
 
+#include <unistd.h>
+#define PAUSE sleep(1);
+
+
+/*
+ * modules to test
+ */
+
+#include "list.h"
+#include "parser.h"
+
+
+
+/*
+ * tests the list.h module
+ */
 
 void test_list(){
 
-    printf( "teste list.h... " );
+    printf( "testing list.h... " );
+    PAUSE
 
     LIST_NODE_T a,b,c;
 
@@ -57,8 +73,35 @@ void test_list(){
     assert( iterator == &c );
     assert( iterate( &a, &iterator ) == 0 );
 
-
     printf( "OK !\n" );
+}
+
+
+
+
+/*
+ * tests parser.c
+ */
+
+
+void test_parser()
+{
+    printf( "testing parser.c... " );
+    PAUSE
+
+    char mode[] = {'r', '\0'};
+    FILE* input = fopen( "./tests/example.cnf", mode );
+
+    assert( input != NULL );
+
+    line_t *lines = read_lines( input );
+    assert( lines != NULL );
+
+
+    printf("OK !\n" );
+
+
+    return;
 }
 
 
@@ -68,8 +111,7 @@ void test_list(){
 int main(){
 
     test_list(); 
-
-
+    test_parser();
 
     return 0;
 
