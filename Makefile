@@ -16,6 +16,8 @@ LDFLAGS=
 
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
+OBJECTS=${BUILD}/abrasatcuda.o
+HEADERS=${SRC}/list.h ${SRC}/clause.h
 
 # dossiers divers
 SRC=src
@@ -31,8 +33,8 @@ test: test_all
 	./test_all
 
 # This targets compiles the main binary
-abrasatcuda: ${BUILD}/clause.o ${BUILD}/abrasatcuda.o
-	$(CC) $(LDFLAGS) ${BUILD}/clause.o ${BUILD}/abrasatcuda.o -o abrasatcuda
+abrasatcuda:  $(OBJECTS)
+	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
 
 # binary for testing
 test_all: ${SRC}/test.c ${BUILD}/parser.o
@@ -41,13 +43,10 @@ test_all: ${SRC}/test.c ${BUILD}/parser.o
 
 # object files
 
-${BUILD}/clause.o: ${SRC}/clause.c
-	$(CC) $(CFLAGS) -c ${SRC}/clause.c -o ${BUILD}/clause.o
-
-${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c
+${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ${SRC}/abrasatcuda.c -o ${BUILD}/abrasatcuda.o
 
-${BUILD}/parser.o: ${SRC}/parser.c
+${BUILD}/parser.o: ${SRC}/parser.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
 
