@@ -33,14 +33,14 @@ test: test_all
 
 #Cette cible effectue la compilation de notre commande.
 #Elle n'est exécutée que si le fichier mon_cp.c est plus recent que le fichier exécutable mon_cp
-abrasatcuda: clause.o abrasatcuda.o
+abrasatcuda: ${BUILD}/clause.o ${BUILD}/abrasatcuda.o
 	#effectue la compilation et linke.
 	$(CC) $(LDFLAGS) ${BUILD}/clause.o ${BUILD}/abrasatcuda.o -o abrasatcuda
 
-clause.o: ${SRC}/clause.c
+${BUILD}/clause.o: ${SRC}/clause.c
 	$(CC) $(CFLAGS) -c ${SRC}/clause.c -o ${BUILD}/clause.o
 
-abrasatcuda.o: ${SRC}/abrasatcuda.c
+${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c
 	$(CC) $(CFLAGS) -c ${SRC}/abrasatcuda.c -o ${BUILD}/abrasatcuda.o
 
 
