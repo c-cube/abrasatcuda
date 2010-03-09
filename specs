@@ -1,8 +1,9 @@
 Structures de donnees utilisees: (ce que possede un thread)
     int n : nombre de clauses
-    tableau de pointeurs vers les clauses
-    tableau de clauses
-    tableau de booleen indiquant les clauses satisfaites
+    tableau de pointeurs vers les clauses (taille n+1, le dernier pointeur 
+        indique la fin de la dernière clause)
+    tableau de clauses (taille n)
+    tableau de booleen indiquant les clauses satisfaites (taille n)
     1 variable = 1 mot de 16 bits
         bit 1: affectation
         bit 2: signe
@@ -11,42 +12,11 @@ Structures de donnees utilisees: (ce que possede un thread)
 
 
 Renseignements a prendre :
-    taille de la memoire partagee ====> 2^14 Bytes ie 2^12 entiers ie 2^10 shorts par coeur ie 1024 atomes par formule. 
-    => on ne peut pas stocker les donnees des formules en shared, une par thread
+    taille de la memoire partagee ====> 2^14 Bytes ie 2^12 entiers ie 2^10 shorts 
+        par coeur ie 1024 atomes par formule. 
+        => on ne peut pas stocker les donnees des formules en shared, une par thread
     on peut partager le tableau de pointeur, la formule
-    eslon input : peut-etre avoir le tableau de bool en shared
-    taille de la memoire GPU ===>  un peu moins de 2^30
-
-
-Objectifs:
-    2^14 noms de variables est raisonnable
-
-
-TODO:
-    ecrire les structures, et macros dans un header
-    implementer une version uni-threadee (pour avoir une base pour ecrire les kernel threads):
-        parser le fichier
-        initialiser la formule
-        calculer une affectation
-        recuperer la satisfiabilite
-    
-Structures de donnees utilisees: (ce que possede un thread)
-    int n : nombre de clauses
-    tableau de pointeurs vers les clauses
-    tableau de clauses
-    tableau de booleen indiquant les clauses satisfaites
-    1 variable = 1 mot de 16 bits
-        bit 1: affectation
-        bit 2: signe
-        bits 3-16: nom de variable
-    => macros et masques pour tester les variables
-
-
-Renseignements a prendre :
-    taille de la memoire partagee ====> 2^14 Bytes ie 2^12 entiers ie 2^10 shorts par coeur ie 1024 atomes par formule. 
-    => on ne peut pas stocker les donnees des formules en shared, une par thread
-    on peut partager le tableau de pointeur, la formule
-    eslon input : peut-etre avoir le tableau de bool en shared
+    selon input : peut-etre avoir le tableau de bool en shared
     taille de la memoire GPU ===>  un peu moins de 2^30
 
 
