@@ -1,7 +1,7 @@
 #Variable contenant le nom du compilateur
 CC=gcc
 #Variable contenant les options passées au compilateur
-CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g # -m32
+CFLAGS=-Wall -Werror -pedantic -Os -g  -std=gnu99 #-m32
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
 #L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
