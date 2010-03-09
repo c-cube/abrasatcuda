@@ -22,11 +22,14 @@ next_clause ( short int * clause_array, short int ** clause_pointer_array, int *
 * usage is : while ( -1 != next_atom(...) )
 */
 int
-next_atom ( clause * clause_struct, short * current_atom)
+next_atom ( clause * clause_struct, short * current_atom )
 {
-  if ( current_atom == clause_struct->stop  || current_atom < clause_struct->start )
+  if ( current_atom == clause_struct->stop  || 
+       current_atom < clause_struct->start ){
     return -1;
-  current_clause++;
+  }
+
+  current_atom++;
   return 0;
 }
 
