@@ -15,7 +15,7 @@ CFLAGS=-Wall -Werror -std=c99 -pedantic -Os -g # -m32
 LDFLAGS=
 
 #Variable contenant la liste des cibles 
-TARGETS=abrasatcuda test
+TARGETS=abrasatcuda test_all
 
 #all est la cible par défaut. 
 #on la fait correspondre à l'ensemble des cibles qu'on souhaite exécuter
@@ -36,10 +36,11 @@ abrasatcuda.o: abrasatcuda.c
 	$(CC) $(CFLAGS) -c abrasatcuda.c
 
 
-test: test.c
-	$(CC) $(CFLAGS) test.c -o test && ./test
+test_all: test.c
+	$(CC) $(CFLAGS) test.c -o test_all
 
-
+test: test_all
+	./test_all
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
 clean:

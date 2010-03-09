@@ -55,7 +55,7 @@ typedef struct list_node_t
 
 
 /*
- * iterates over the list
+ * sets iterator to the address of the next element of list.
  */
 inline unsigned short int iterate( LIST_NODE_T* start, LIST_NODE_T** iterator )
 {

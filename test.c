@@ -52,6 +52,12 @@ void test_list(){
     assert( b.previous == &b );
     assert( b.alone == 1 );
 
+    LIST_NODE_T *iterator = &a;
+    iterate( &a, &iterator );
+    assert( iterator == &c );
+    assert( iterate( &a, &iterator ) == 0 );
+
+
     printf( "OK !\n" );
 }
 
