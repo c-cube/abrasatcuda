@@ -2,6 +2,9 @@
 #ifndef _PARSER_H
 #define _PARSER_H 1
 
+// getline !
+#define _GNU_SOURCE
+#include <stdio.h>
 
 #include "clause.h"
 #include "list.h"
@@ -32,5 +35,5 @@ int parse( const char* file_path, short int ** formula );
 
 
 
-
 #endif
+

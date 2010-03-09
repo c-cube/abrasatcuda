@@ -1,8 +1,5 @@
 #include "parser.h"
 
-// getline !
-#define _GNU_SOURCE
-#include <stdio.h>
 
 
 int parse( const char* file_path, short int ** formula )
@@ -19,11 +16,14 @@ int parse( const char* file_path, short int ** formula )
     return parse_lines( lines, formula );
 }    
    
-
+/*
+ * this function reads the file and puts lines
+ * in a list
+ */
 list_t *read_lines( FILE* input )
 {
     // list of lines
-    list_t *lines;
+    list_t _lines; list_t *lines = &_lines;
     list_init( lines );
 
     // read lines
@@ -33,7 +33,9 @@ list_t *read_lines( FILE* input )
     while ( getline( &linePtr, &n, input ) != -1 ) {
         new_line = malloc(sizeof( line_t ));        
         new_line->content = linePtr;
-        list_push( lines, new_line->list_node );
+        list_append( lines, &(new_line->list_node) );
+
+        //printf("%s", linePtr );
 
         linePtr = NULL; // asks getline to allocate a new buffer for next line
     }
@@ -43,7 +45,15 @@ list_t *read_lines( FILE* input )
 }
         
 
+/*
+ * this function is intended to read each line and build the formula
+ */
 int parse_lines( list_t* lines, short int ** formula ){
+
+
+
+
+
     return 0; // TODO : real code
 }
         

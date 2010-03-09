@@ -25,7 +25,8 @@
  * tests the list.h module
  */
 
-void test_list(){
+void test_list()
+{
 
     printf( "testing list.h... " );
     PAUSE
@@ -42,6 +43,13 @@ void test_list(){
 
     assert( a.next == &a );
     assert( a.previous == &a );
+    assert( l.node == &a );
+    assert( ! l.is_empty );
+    LIST_NODE_T *iterator1 = NULL;
+    assert( iterate( &l, &iterator1 ) != -1 );
+    assert( iterator1 == &a );
+    assert( iterate( &l, &iterator1 ) == -1 );
+
     assert( list_member( &l, &a ) );
     assert( ! list_member( &l, &b ) );
     
@@ -65,7 +73,6 @@ void test_list(){
     assert( list_length( &l ) == 3 );
     assert( l.node == &c );
 
-
     assert( list_pop( &l ) == &c );
 
     assert( a.next == &b );
@@ -75,12 +82,12 @@ void test_list(){
     assert( list_length( &l ) == 2 );
     assert( l.node == &a );
 
-    LIST_NODE_T **iterator;
-    iterate( &l, iterator );
-    assert( *iterator == &a );
-    iterate( &l, iterator );
-    assert( *iterator == &b );
-    assert( iterate( &l, iterator ) == 0 );
+    LIST_NODE_T *iterator = NULL;;
+    iterate( &l, &iterator );
+    assert( iterator == &a );
+    iterate( &l, &iterator );
+    assert( iterator == &b );
+    assert( iterate( &l, &iterator ) == -1 );
 
     printf( "OK !\n" );
 }
@@ -95,24 +102,23 @@ void test_list(){
 
 void test_parser()
 {
+
     printf( "testing parser.c... " );
     PAUSE
 
-    char mode[] = {'r', '\0'};
-    FILE* input = fopen( "./tests/example.cnf", mode );
+    FILE* input = fopen( "./tests/example.cnf", "r" );
 
     assert( input != NULL );
 
-
-    line_t *lines = read_lines( input );
+    list_t *lines = read_lines( input );
     assert( lines != NULL );
-    printf( "nbr de lignes : %d\n", list_length( &lines->list_node ));
-    assert( list_length( &lines->list_node ) == 9 );
+    printf( "nbr de lignes : %d\n", list_length( lines ));
+    assert( list_length( lines ) == 8 );
 
-    LIST_NODE_T *iterator = &lines->list_node;
-    do {
+    LIST_NODE_T *iterator = NULL;
+    while ( iterate( lines, &iterator ) != -1 ) {
         printf( "line : "); printf( "%s", container_of(iterator,line_t,list_node)->content );
-    } while ( iterate( &lines->list_node, &iterator ) != 0 );
+    } 
         
 
     printf("OK !\n" );

@@ -23,10 +23,19 @@ typedef struct coincoin {
 } list_t;
 
 /*
+ * initializes the list handle
+ */
+#define list_init( list )  do {             \
+    (list)->node = NULL;                    \
+    (list)->is_empty = 1;                   \
+    } while(0)
+
+
+/*
  * initializes node as the first (and only)
  * member of a list.
  */
-#define list_item_init( node )   do {      \
+#define list_item_init( node )   do {       \
     (node)->previous = node;                \
     (node)->next = node;                    \
     } while (0)
@@ -63,24 +72,25 @@ typedef struct coincoin {
  * sets iterator to the address of the next element of list.
  * usage : 
  *
- * LIST_NODE_T** iterator;
+ * LIST_NODE_T* iterator = NULL;
  * list_t start;
- * while ( iterate( start, iterator )) { process_item( *iterator); } 
+ * while ( iterate( start, &iterator )) { process_item( iterator ); } 
  */
-inline unsigned short int iterate( list_t *list, LIST_NODE_T** iterator )
+inline short int iterate( list_t *list, LIST_NODE_T** iterator )
 {
     if ( iterator == NULL )
-        return 0;
+        return -1;
+
     // initialization
     if ( *iterator == NULL ){
         *iterator = list->node;
-        return 1;
+        return 0;
     }
     // step
     if ( (*iterator)->next == list->node )
-        return 0;
+        return -1;
     *iterator = (*iterator)->next; 
-    return 1;
+    return 0;
 }
 
 
@@ -93,11 +103,11 @@ inline unsigned short int list_member( list_t *list, LIST_NODE_T* obj )
     if ( list == NULL || list->is_empty )
         return 0;
 
-    LIST_NODE_T** iterator;
-    while ( iterate( list, iterator ) != 0 ) {
-        if ( *iterator == obj )
+    LIST_NODE_T* iterator = NULL;
+    while ( iterate( list, &iterator ) != -1 ) {
+        if ( iterator == obj )
             return 1;
-    } ;
+    } 
 
     return 0;
 }
@@ -111,15 +121,15 @@ inline int list_length( list_t* list )
     if ( list == NULL || list->is_empty )
         return 0;
 
-    LIST_NODE_T** iterator;
+    LIST_NODE_T* iterator = NULL;
     int answer = 0;
-    while (iterate( list, iterator ) != 0 ) {
+    while (iterate( list, &iterator ) != -1 ) {
         answer++;
     } 
     return answer;
 }
 
-inline void push( list_t* list, LIST_NODE_T* obj )
+inline void list_push( list_t* list, LIST_NODE_T* obj )
 {
     if ( list == NULL )
         return;
@@ -135,7 +145,7 @@ inline void push( list_t* list, LIST_NODE_T* obj )
     }
 }
 
-inline void append( list_t *list, LIST_NODE_T* obj )
+inline void list_append( list_t *list, LIST_NODE_T* obj )
 {
     if ( list == NULL )
         return;
@@ -151,7 +161,7 @@ inline void append( list_t *list, LIST_NODE_T* obj )
 
 
 
-inline LIST_NODE_T *pop( list_t* list )
+inline LIST_NODE_T *list_pop( list_t* list )
 {
     if ( list == NULL )
         return NULL;
@@ -164,6 +174,7 @@ inline LIST_NODE_T *pop( list_t* list )
     } else {
         list->node = list->node->next;
         list_remove( answer );
+    }
     return answer;
 }
 
