@@ -17,6 +17,8 @@
 #include "list.h"
 #include "parser.h"
 
+// feel the power !
+#include "utils.h"
 
 
 /*
@@ -28,50 +30,57 @@ void test_list(){
     printf( "testing list.h... " );
     PAUSE
 
+    list_t l;
     LIST_NODE_T a,b,c;
 
-    list_init( &a );
+    list_init( &l );
+
+    assert( l.is_empty );
+    assert( l.node == NULL );
+
+    list_push( &l, &a );
 
     assert( a.next == &a );
     assert( a.previous == &a );
-    assert( a.alone == 0 );
-    assert( list_member( &a, &a ) );
-    assert( ! list_member( &a, &b ) );
+    assert( list_member( &l, &a ) );
+    assert( ! list_member( &l, &b ) );
     
 
-    list_add( &a, &b );
+    list_append( &l, &b );
 
     assert( a.next == &b );
     assert( a.previous == &b );
     assert( b.previous == &a );
     assert( b.next == &a );
-    assert( b.alone == 0 );
-    assert( list_member( &a, &a ) );
-    assert( list_member( &a, &b ) );
+    assert( list_member( &l, &a ) );
+    assert( list_member( &l, &b ) );
 
 
-    list_add( &b, &c );
+    list_push( &l, &c );
 
     assert( b.next == &c );
     assert( c.next == &a );
     assert( b.previous == &a );
     assert( c.previous == &b );
+    assert( list_length( &l ) == 3 );
+    assert( l.node == &c );
 
 
-    list_remove( &b );
+    assert( list_pop( &l ) == &c );
 
-    assert( a.next == &c );
-    assert( c.previous == &a );
-    assert( c.next == &a );
-    assert( a.previous == &c );
-    assert( b.next == &b );
-    assert( b.previous == &b );
-    assert( b.alone == 1 );
+    assert( a.next == &b );
+    assert( b.previous == &a );
+    assert( b.next == &a );
+    assert( a.previous == &b );
+    assert( list_length( &l ) == 2 );
+    assert( l.node == &a );
 
-    LIST_NODE_T *iterator = &a;
-    iterate( &a, &iterator );
-    assert( iterator == &c );
-    assert( iterate( &a, &iterator ) == 0 );
+    LIST_NODE_T **iterator;
+    iterate( &l, iterator );
+    assert( *iterator == &a );
+    iterate( &l, iterator );
+    assert( *iterator == &b );
+    assert( iterate( &l, iterator ) == 0 );
 
     printf( "OK !\n" );
 }
@@ -94,9 +103,17 @@ void test_parser()
 
     assert( input != NULL );
 
+
     line_t *lines = read_lines( input );
     assert( lines != NULL );
+    printf( "nbr de lignes : %d\n", list_length( &lines->list_node ));
+    assert( list_length( &lines->list_node ) == 9 );
 
+    LIST_NODE_T *iterator = &lines->list_node;
+    do {
+        printf( "line : "); printf( "%s", container_of(iterator,line_t,list_node)->content );
+    } while ( iterate( &lines->list_node, &iterator ) != 0 );
+        
 
     printf("OK !\n" );
 

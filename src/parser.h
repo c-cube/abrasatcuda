@@ -1,8 +1,7 @@
+
 #ifndef _PARSER_H
+#define _PARSER_H 1
 
-
-#include <stdlib.h>
-#include <stdio.h>
 
 #include "clause.h"
 #include "list.h"
@@ -19,9 +18,9 @@ typedef struct {
  * utilities functions
  */
 
-line_t *read_lines( FILE* input );
+list_t *read_lines( FILE* input );
 
-int parse_lines( line_t* lines, short int ** formula );
+int parse_lines( list_t* lines, short int ** formula );
 
 
 /*
@@ -34,5 +33,4 @@ int parse( const char* file_path, short int ** formula );
 
 
 
-#define _PARSER_H 1
 #endif
