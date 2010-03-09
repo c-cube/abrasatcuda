@@ -8,6 +8,7 @@
 
 #include <unistd.h>
 #define PAUSE sleep(1);
+#define HLINE printf("----------------------------\n");
 
 
 /*
@@ -16,6 +17,7 @@
 
 #include "list.h"
 #include "parser.h"
+#include "clause.h"
 
 // feel the power !
 #include "utils.h"
@@ -28,7 +30,7 @@
 void test_list()
 {
 
-    printf( "testing list.h... " );
+    printf( "testing list.h... \n" );
     PAUSE
 
     list_t l;
@@ -46,10 +48,11 @@ void test_list()
     assert( l.node == &a );
     assert( ! l.is_empty );
     LIST_NODE_T *iterator1 = NULL;
-    assert( iterate( &l, &iterator1 ) != -1 );
+    assert( list_iterate( &l, &iterator1 ) != -1 );
     assert( iterator1 == &a );
-    assert( iterate( &l, &iterator1 ) == -1 );
+    assert( list_iterate( &l, &iterator1 ) == -1 );
 
+    assert( list_member( &l, &a ) );
     assert( list_member( &l, &a ) );
     assert( ! list_member( &l, &b ) );
     
@@ -61,6 +64,7 @@ void test_list()
     assert( b.previous == &a );
     assert( b.next == &a );
     assert( list_member( &l, &a ) );
+    assert( list_member( &l, &b ) );
     assert( list_member( &l, &b ) );
 
 
@@ -80,16 +84,18 @@ void test_list()
     assert( b.next == &a );
     assert( a.previous == &b );
     assert( list_length( &l ) == 2 );
+    assert( list_length( &l ) == 2 );
     assert( l.node == &a );
 
     LIST_NODE_T *iterator = NULL;;
-    iterate( &l, &iterator );
+    list_iterate( &l, &iterator );
     assert( iterator == &a );
-    iterate( &l, &iterator );
+    list_iterate( &l, &iterator );
     assert( iterator == &b );
-    assert( iterate( &l, &iterator ) == -1 );
+    assert( list_iterate( &l, &iterator ) == -1 );
 
     printf( "OK !\n" );
+    HLINE
 }
 
 
@@ -103,7 +109,7 @@ void test_list()
 void test_parser()
 {
 
-    printf( "testing parser.c... " );
+    printf( "testing parser.c... \n" );
     PAUSE
 
     FILE* input = fopen( "./tests/example.cnf", "r" );
@@ -112,20 +118,47 @@ void test_parser()
 
     list_t *lines = read_lines( input );
     assert( lines != NULL );
+    assert( ! lines->is_empty );
+    printf( "nbr de lignes : %d\n", list_length( lines ));
     printf( "nbr de lignes : %d\n", list_length( lines ));
     assert( list_length( lines ) == 8 );
 
     LIST_NODE_T *iterator = NULL;
-    while ( iterate( lines, &iterator ) != -1 ) {
+    while ( list_iterate( lines, &iterator ) != -1 ) {
         printf( "line : "); printf( "%s", container_of(iterator,line_t,list_node)->content );
     } 
         
 
     printf("OK !\n" );
-
-
-    return;
+    HLINE
 }
+
+
+/*
+ * tests clause functions
+ */
+void test_clause()
+{
+    printf( "testing clause.h... \n" );
+    clause_t a;
+    a.clause_array = malloc(4*sizeof(short));
+    a.clause_array[0] = make_atom(4);
+    a.clause_array[1] = make_atom(-3);
+    a.clause_array[2] = make_atom(2);
+    a.clause_array[3] = make_atom(-6); 
+    a.stop = a.clause_array+4;
+
+    short *iterator = NULL;
+    while ( atom_iterate( &a, &iterator ) != 1 ){
+        printf( "atom with identity %u. is it signed : %u\n", 
+            VARIABLE_NAME( *iterator ), IS_NEGATED( *iterator ) );
+        assert( IS_USED( *iterator ) );
+    }
+    
+    printf("OK !\n" );
+    HLINE
+}
+
 
 
 /*
@@ -135,6 +168,7 @@ int main(){
 
     test_list(); 
     test_parser();
+    test_clause();
 
     return 0;
 

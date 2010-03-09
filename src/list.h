@@ -74,9 +74,9 @@ typedef struct coincoin {
  *
  * LIST_NODE_T* iterator = NULL;
  * list_t start;
- * while ( iterate( start, &iterator )) { process_item( iterator ); } 
+ * while ( list_iterate( start, &iterator )) { process_item( iterator ); } 
  */
-inline short int iterate( list_t *list, LIST_NODE_T** iterator )
+inline short int list_iterate( list_t *list, LIST_NODE_T** iterator )
 {
     if ( iterator == NULL )
         return -1;
@@ -104,7 +104,7 @@ inline unsigned short int list_member( list_t *list, LIST_NODE_T* obj )
         return 0;
 
     LIST_NODE_T* iterator = NULL;
-    while ( iterate( list, &iterator ) != -1 ) {
+    while ( list_iterate( list, &iterator ) != -1 ) {
         if ( iterator == obj )
             return 1;
     } 
@@ -123,7 +123,7 @@ inline int list_length( list_t* list )
 
     LIST_NODE_T* iterator = NULL;
     int answer = 0;
-    while (iterate( list, &iterator ) != -1 ) {
+    while ( list_iterate( list, &iterator ) != -1 ) {
         answer++;
     } 
     return answer;
