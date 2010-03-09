@@ -17,35 +17,42 @@ LDFLAGS=
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
 
+# dossiers divers
+SRC=src
+BUILD=build
+
+
+
 #all est la cible par défaut. 
 #on la fait correspondre à l'ensemble des cibles qu'on souhaite exécuter
 all: $(TARGETS)
 
-
+# lance les tests
+test: test_all
+	./test_all
 
 #Cette cible effectue la compilation de notre commande.
 #Elle n'est exécutée que si le fichier mon_cp.c est plus recent que le fichier exécutable mon_cp
 abrasatcuda: clause.o abrasatcuda.o
 	#effectue la compilation et linke.
-	$(CC) $(LDFLAGS) clause.o abrasatcuda.o -o abrasatcuda
+	$(CC) $(LDFLAGS) ${BUILD}/clause.o ${BUILD}/abrasatcuda.o -o abrasatcuda
 
-clause.o: clause.c
-	$(CC) $(CFLAGS) -c clause.c 
+clause.o: ${SRC}/clause.c
+	$(CC) $(CFLAGS) -c ${SRC}/clause.c -o ${BUILD}/clause.o
 
-abrasatcuda.o: abrasatcuda.c
-	$(CC) $(CFLAGS) -c abrasatcuda.c
+abrasatcuda.o: ${SRC}/abrasatcuda.c
+	$(CC) $(CFLAGS) -c ${SRC}/abrasatcuda.c -o ${BUILD}/abrasatcuda.o
 
 
-test_all: test.c
-	$(CC) $(CFLAGS) test.c -o test_all
+test_all: ${SRC}/test.c
+	$(CC) $(CFLAGS) ${SRC}/test.c -o test_all
 
-test: test_all
-	./test_all
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
 clean:
-	rm -f *~ a.out core
-	rm -f *.o
+	rm -f ${BUILD}/*~ ${BUILD}/a.out ${BUILD}/core
+	rm -f ${BUILD}/*.o
+	rm -f test_all abrasatcuda
 
 #Cette cible effectue un nettoyage complet de tout fichier généré. Elle efface notamment les exécutables.
 distclean: clean
