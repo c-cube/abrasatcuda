@@ -1,7 +1,7 @@
 #Variable contenant le nom du compilateur
 CC=gcc
 #Variable contenant les options passées au compilateur
-CFLAGS=-Wall -Werror -pedantic -Os -g  -std=gnu99 #-m32
+CFLAGS=-Wall -pedantic -Os -g  -std=gnu99 #-m32 -Werror
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
 #L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
@@ -23,19 +23,23 @@ BUILD=build
 
 
 
-#all est la cible par défaut. 
-#on la fait correspondre à l'ensemble des cibles qu'on souhaite exécuter
+# default target
 all: $(TARGETS)
 
-# lance les tests
+# launches tests
 test: test_all
 	./test_all
 
-#Cette cible effectue la compilation de notre commande.
-#Elle n'est exécutée que si le fichier mon_cp.c est plus recent que le fichier exécutable mon_cp
+# This targets compiles the main binary
 abrasatcuda: ${BUILD}/clause.o ${BUILD}/abrasatcuda.o
-	#effectue la compilation et linke.
 	$(CC) $(LDFLAGS) ${BUILD}/clause.o ${BUILD}/abrasatcuda.o -o abrasatcuda
+
+# binary for testing
+test_all: ${SRC}/test.c ${BUILD}/parser.o
+	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o -o test_all
+
+
+# object files
 
 ${BUILD}/clause.o: ${SRC}/clause.c
 	$(CC) $(CFLAGS) -c ${SRC}/clause.c -o ${BUILD}/clause.o
@@ -43,9 +47,12 @@ ${BUILD}/clause.o: ${SRC}/clause.c
 ${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c
 	$(CC) $(CFLAGS) -c ${SRC}/abrasatcuda.c -o ${BUILD}/abrasatcuda.o
 
+${BUILD}/parser.o: ${SRC}/parser.c
+	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
-test_all: ${SRC}/test.c
-	$(CC) $(CFLAGS) ${SRC}/test.c -o test_all
+
+
+
 
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
