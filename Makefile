@@ -32,6 +32,8 @@ all: $(TARGETS)
 test: test_all
 	./test_all
 
+count:
+	grep -v '^[ ]*$$' src/* | wc -l	
 # This targets compiles the main binary
 abrasatcuda:  $(OBJECTS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
