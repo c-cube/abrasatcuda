@@ -1,21 +1,22 @@
 #ifndef MY_CLAUSE_H
 #define MY_CLAUSE_H
 
-typedef struct 
-{
-  short int * clause_array;
-  short int * stop; /* is the start of the next clause, so should not get dereferenced 
-  in an iteration over a clause */
-} clause_t;
+#include <stdlib.h> // malloc
+#include <string.h> // memcpy
+
+/*
+ * logical atoms are represented as short
+ */
 
 
-#define CLAUSE_LENGTH(c) ((int)((c).stop - (c).clause_array))
+typedef short atom_t;
+
 
 /*
  * creates an atom from the relative number 
  * (as read in file)
  */
-inline short make_atom( int n )
+inline atom_t make_atom( int n )
 {
     return ( 0x8000                               // used ?
              | (n<0 ? 0x4000 : 0x0)               // negated ?
@@ -56,42 +57,23 @@ inline short make_atom( int n )
 */
 #define UNUSE(a) ( (a) &= 0x7FFF )
 
-
+//-----------------------------------------------------------------------------
 /*
-* given an index, finds the next clause in clause_array. *n is modified.
-*
-* preferred usage is : while ( -1 != clause_iterate(...)  )
-*/
-inline short int clause_iterate( 
-    short int *formula,
-    int *clauses_index_array,
-    int length,
-    int *n, 
-    clause_t **iterator)
-{
-    if ( iterator == NULL )
-        return -1;
+ * Clauses are array of atoms
+ */
 
-    // if iterator is not initialized, ignore n
-    if ( *iterator == NULL ){
-        printf("coin\n");
-        *n = 0;
-        printf("coin\n");
-        *iterator = (clause_t*) &formula[0];
-        printf("coin\n");
-        (*iterator)->stop =  length > 1 ? 
-            &formula[clauses_index_array[1]] : NULL;
-        printf("coin\n");
-    } else if ( *n >= length ){
-        return -1; // end of iteration
-    } else {
-        printf("pan\n");
-        *iterator = (clause_t*) &formula[clauses_index_array[++(*n)]];
-        (*iterator)->stop = (*n < length) ? 
-            &formula[clauses_index_array[(*n)+1]] : NULL;
-    }
-    return 0;
-}
+typedef struct __clause_t
+{
+  atom_t *stop; /* is the start of the next clause, so should not get dereferenced 
+  in an iteration over a clause (maybe last item)*/
+  atom_t *clause_array; // starts right here !
+} clause_t;
+
+
+#define CLAUSE_LENGTH(c) ((int)((c).stop - (c).clause_array))
+
+#define CLAUSE_ITEM(c,n) ((c).clause_array[(n)])
+
 
 
 
@@ -100,22 +82,22 @@ inline short int clause_iterate(
 * iteration over atoms of a clause
 * usage is : 
 *
-* short *iterator = NULL;
+* atom_t *iterator = NULL;
 * while ( -1 != next_atom(clause_ptr, &iterator){ process_atom(*iterator);} )
 */
-inline int atom_iterate ( clause_t * clause_struct, short ** iterator )
+inline int atom_iterate ( clause_t * clause_struct, atom_t ** iterator )
 {
     if ( iterator == NULL )
         return -1;
 
 
     // initialization
-    if ( * iterator == NULL ){
+    if ( *iterator == NULL ){
         *iterator = clause_struct->clause_array;
         return 0;
     } 
     
-    if ( ++(*iterator) >= clause_struct->stop )
+    if ( ++(*iterator) == clause_struct->stop )
         return -1;
 
     return 0;
@@ -126,7 +108,7 @@ inline int atom_iterate ( clause_t * clause_struct, short ** iterator )
 
 inline void clause_print( clause_t *clause )
 {
-    short int *iterator = NULL;
+    atom_t *iterator = NULL;
     int is_first = 1;
     printf("\e[32m(\e[m");
 
@@ -142,6 +124,97 @@ inline void clause_print( clause_t *clause )
     } 
     printf("\e[32m)\e[m");
 }
+
+
+//-----------------------------------------------------------------------------
+/*
+ * formulae are array of clause, but represented as short int array
+ */
+
+typedef atom_t * formula_t;
+
+/*
+ * returns the clause_t* associated with index n in the formulae
+ */
+inline clause_t *formula_item( atom_t *formula, atom_t *clauses, int n)
+{
+    return (clause_t*) (formula + (clauses[n]));
+}
+
+/*
+* given an index, finds the next clause in clause_array. *n is modified.
+*
+* preferred usage is : while ( -1 != clause_iterate(...)  )
+*/
+
+inline int clause_iterate( 
+    atom_t *formula,
+    atom_t *clauses_index_array,
+    int length,
+    int *n, 
+    clause_t **iterator)
+{
+    if ( iterator == NULL )
+        return -1;
+
+    // if iterator is not initialized, ignore n
+    if ( *iterator == NULL ){
+        *n = 0;
+        *iterator = (clause_t*) &(formula);
+    } else if ( *n >= length ){
+        return -1; // end of iteration
+    } else {
+        *iterator = (clause_t*) (formula+(clauses_index_array[++(*n)]));
+    }
+    return 0;
+}
+
+
+inline atom_t clause_build( atom_t **formula, atom_t **clauses_index, clause_t *clauses, int n )
+{
+    atom_t offset;
+
+    assert( formula != NULL && *formula == NULL );
+    assert( clauses_index != NULL && *clauses_index == NULL );
+
+    int formula_size = 42 * n * sizeof(atom_t);
+    *formula = malloc( formula_size );
+    *clauses_index = malloc(n * sizeof(atom_t));
+
+    for (int i=0; i<n; ++i){
+        while ( offset + CLAUSE_LENGTH( clauses[i] ) >= formula_size ){
+            // allocate more space if needed
+            formula_size = (int) (formula_size * 1.5);
+            *formula = realloc( *formula, formula_size );
+        }
+        
+        // add clause to formula
+        memcpy( *formula + offset, &clauses[i], CLAUSE_LENGTH(clauses[i]) );
+
+        atom_t old_offset = offset; // upgrade offset
+        offset += CLAUSE_LENGTH(clauses[i]);
+
+        (*clauses_index)[i] = old_offset; // upgrade (i-th clause)->stop
+        formula_item(*formula,*clauses_index,i)->stop = *formula + offset;
+    }
+
+    return offset;
+}
+   
+
+
+
+inline void formula_print(
+    atom_t *formula,
+    atom_t *clauses_index,
+    int length )
+{
+    clause_t *iterator = NULL;
+    int n=0;
+    while ( clause_iterate( formula, clauses_index, length, &n, &iterator ) != -1 ){
+        clause_print( iterator );
+    }
+} 
 
 
 #endif

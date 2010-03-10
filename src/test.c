@@ -128,11 +128,11 @@ void test_parser()
 
     LIST_NODE_T *iterator = NULL;
     while ( list_iterate( lines, &iterator ) != -1 ) {
-        printf( "line : "); printf( "%s", container_of(iterator,line_t,list_node)->content );
+        printf( "line : "); printf( "%s", line_of_list_node(iterator)->content );
     } 
 
 
-    short int *formula = NULL;
+    atom_t *formula = NULL;
     int *clauses_index = NULL;
     int num_clause, num_var;
 
@@ -170,14 +170,16 @@ void test_clause()
 {
     printf( "testing clause.h... \n" );
     clause_t a;
-    a.clause_array = malloc(4*sizeof(short));
+    a.clause_array = malloc(4*sizeof(atom_t));
     a.clause_array[0] = make_atom(4); printf("atome : %hu\n", VARIABLE_NAME(make_atom(4)));
     a.clause_array[1] = make_atom(-3); printf("atome : %hu\n", VARIABLE_NAME(make_atom(-3)));
     a.clause_array[2] = make_atom(2); printf("atome : %hu\n", VARIABLE_NAME(make_atom(2)));
     a.clause_array[3] = make_atom(-627); printf("atome : %hu\n", VARIABLE_NAME(make_atom(-627)));
-    a.stop = ((short*) a.clause_array)+4;
+    a.stop = a.clause_array+4;
 
-    short *iterator = NULL;
+    assert( CLAUSE_LENGTH(a) == 4 );
+
+    atom_t *iterator = NULL;
     while ( atom_iterate( &a, &iterator ) != -1 ){
         printf( "atom with identity %u. is it negative : %u\n", 
             VARIABLE_NAME( *iterator ), IS_NEGATED_BINARY( *iterator ) );
@@ -195,10 +197,33 @@ void test_clause()
 
     UNUSE(a.clause_array[2]);
     assert( ! IS_USED( a.clause_array[2] ));
+    assert( ! IS_USED( CLAUSE_ITEM(a,2) ));
 
 
-    printf(" clause a "); clause_print( &a ); printf( "\n" );
+    printf("clause a = "); clause_print( &a ); printf( "\n" );
     
+
+    clause_t b; b.clause_array = malloc(2*sizeof(atom_t));
+    clause_t c; c.clause_array = malloc(2*sizeof(atom_t));
+
+    b.clause_array[0] = make_atom(3); 
+    b.clause_array[1] = make_atom(4);
+    c.clause_array[0] = make_atom(1); 
+    c.clause_array[1] = make_atom(2);
+    b.stop = b.clause_array + 2;
+    c.stop = c.clause_array + 2;
+
+    printf("builds clause\n");
+    clause_t truc[] = {a,b,c};
+    atom_t *d;
+    atom_t *clauses_index;
+    atom_t offset = clause_build( &d, &clauses_index, truc, 3 ); 
+    printf("clause built : %d atom_t items long\n", offset);
+    assert( offset == 8 );
+
+    printf("prints clause\n");
+    formula_print( d, clauses_index, 3 );
+
     printf( "\e[44mOK\e[m !\n" );
     HLINE
 }
