@@ -17,9 +17,10 @@ typedef struct
  */
 inline short make_atom( int n )
 {
-    return ( 0x8000                          // used ?
-             | (n<0 ? 0x4000 : 0x0)          // negated ?
-             | (0xCFFF & n)                  // small part for the name
+    return ( 0x8000                               // used ?
+             | (n<0 ? 0x4000 : 0x0)               // negated ?
+             | (0x3FFF & (n<0 ? (0xFFFF ^ n)+1 : n) ) 
+             // small part for the name, with binary complement if < 0
            );
 }
 
@@ -41,7 +42,7 @@ inline short make_atom( int n )
 /*
 * VARIABLE_NAME(a) gives the identifer of the variable
 */
-#define VARIABLE_NAME(a) ( (a) & 0xCFFF )
+#define VARIABLE_NAME(a) ( (a) & 0x3FFF )
 
 /* 
 *  NEGATE(a) returns not(a), it is to be used as such :
