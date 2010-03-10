@@ -60,7 +60,7 @@ inline short make_atom( int n )
 /*
 * given an index, finds the next clause in clause_array. *n is modified.
 *
-* preferred usage is : while ( -1 != next_clause(...)  )
+* preferred usage is : while ( -1 != clause_iterate(...)  )
 */
 inline short int clause_iterate( 
     short int **clause_pointer_array,

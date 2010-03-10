@@ -8,14 +8,18 @@
 
 #include "clause.h"
 #include "list.h"
+#include "utils.h"
 
 
 // handles a line of input
 typedef struct {
-    char *content;
+    char        *content;
     LIST_NODE_T list_node;
 } line_t;
 
+
+// get the line from its line_t->list_node
+#define line_of_list_node(line) container_of(line,line_t,list_node)
 
 /*
  * utilities functions
@@ -23,7 +27,7 @@ typedef struct {
 
 list_t *read_lines( FILE* input );
 
-int parse_lines( list_t* lines, short int ** formula );
+int parse_lines( list_t* lines, short int ** formula, short int **clauses_array, int *num_var, int *num_clause );
 
 
 /*
@@ -31,7 +35,7 @@ int parse_lines( list_t* lines, short int ** formula );
  * returns 0 on failure, 1 on success
  */
 
-int parse( const char* file_path, short int ** formula ); 
+int parse( const char* file_path, short int ** formula, short int **clauses_array, int *num_var, int *num_clause );
 
 
 

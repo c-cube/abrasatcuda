@@ -1,8 +1,19 @@
+#include <string.h>
+#include <assert.h>
+
+
+
 #include "parser.h"
 
 
 
-int parse( const char* file_path, short int ** formula )
+// drop a line of comments
+#define DROP_COMMENT(iterator) if ( (iterator)->content[0] == 'c' ) continue; 
+
+#define DEBUG printf
+
+
+int parse( const char* file_path, short int ** formula, short int **clauses_array, int *num_var, int *num_clause )
 {
 
     // open file
@@ -13,7 +24,7 @@ int parse( const char* file_path, short int ** formula )
     fclose( input );
 
     // parse each line into the formula
-    return parse_lines( lines, formula );
+    return parse_lines( lines, formula, clauses_array, num_var, num_clause );
 }    
    
 /*
@@ -35,7 +46,7 @@ list_t *read_lines( FILE* input )
         new_line->content = linePtr;
         list_append( lines, &(new_line->list_node) );
 
-        //printf("%s", linePtr );
+        //DEBUG("%s", linePtr );
 
         linePtr = NULL; // asks getline to allocate a new buffer for next line
     }
@@ -48,12 +59,95 @@ list_t *read_lines( FILE* input )
 /*
  * this function is intended to read each line and build the formula
  */
-int parse_lines( list_t* lines, short int ** formula ){
+int parse_lines( list_t* lines, short int ** formula, short int **clauses_array, int *num_var, int *num_clause ){
+
+    int formula_length = 0;
+    int offset_in_formula = 0;
+    int clause_index = 0;
+
+    list_t *clauses = malloc(sizeof(list_t));
+    list_init( clauses );
+    
+    // assertions
+    assert( *formula == NULL );
+    assert( *clauses_array == NULL );
+
+    line_t *iterator = NULL;
+    LIST_NODE_T *list_iterator = NULL;
+    int is_looking_for_pb = 1;
+    int current_token = 0; 
+    char *offset_in_line, *offset_in_line_bis;
+    // for each line (list_pop returns a list node)
+    DEBUG("starts loop of parse_lines\n");
+    while ( (list_iterator = list_pop( lines )) != NULL ){
+        iterator = line_of_list_node(list_iterator);
+        DEBUG( "parser loop with line %s", iterator->content );
+        
+        // before beginning of clause list, initialize everything
+        if (is_looking_for_pb){
+            DROP_COMMENT(iterator)
+            DEBUG("hello problem line\n");
+            assert( iterator->content[0] == 'p' ); // either comment or problem at first
+            assert( strncmp(iterator->content, "p cnf", 5) == 0 ); // match pb with cnf
+
+            // drop the "p cnf" at the beginning
+            sscanf( iterator->content + 5, "%d %d", num_var, num_clause);  
+            is_looking_for_pb = 0;
+
+            DEBUG("problem of size %d %d\n", *num_var, *num_clause);
+            // allocate formula
+            formula_length = *num_clause * *num_var * 5;
+            *formula = malloc( formula_length * sizeof(short int)) ; // what a beautiful heuristic !
+            // allocate clause_array
+            clauses_array = malloc( *num_clause * sizeof(short int *) );
+            clauses_array[0] = 0;
+            clause_index = 0;
 
 
+            continue;
+        }
 
+        DROP_COMMENT(iterator) // if line is a comment, drop it
 
-    return 0; // TODO : real code
+        DEBUG("searching for clauses\n");
+
+        // ok, now we are sure we have a clause line.
+        
+        offset_in_line = iterator->content;
+        offset_in_line_bis = offset_in_line;
+        while ( 1 ){
+            current_token = (int) strtol( offset_in_line, &offset_in_line_bis, 10 );
+
+            DEBUG( "token read : %d\n", current_token);
+            // special cases
+            if ( offset_in_line_bis == offset_in_line )
+                break;
+            if ( current_token == 0 ){
+                // remember where new clause begins
+                clauses_array[ ++clause_index ] = (*formula) + offset_in_formula; 
+                break; 
+            }
+
+            offset_in_line = offset_in_line_bis;
+            short int current_atom = make_atom( current_token );
+            
+            DEBUG("atom read : %d at offset_in_formula %d\n",
+                VARIABLE_NAME(current_atom), offset_in_formula);
+            
+            // insert atom. If formula is full, extend it.
+            if ( offset_in_formula >= formula_length ){
+                formula_length = 2 * formula_length; // double size of formula
+                *formula = realloc( *formula, formula_length * sizeof(short int) );
+            }
+            (*formula)[ offset_in_formula++ ] = current_atom;
+
+        }
+
+        continue;   // next line
+
+    }
+
+    return 0; 
 }
         
 

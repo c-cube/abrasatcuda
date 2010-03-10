@@ -7,7 +7,9 @@
 
 
 #include <unistd.h>
-#define PAUSE sleep(1);
+//#define PAUSE sleep(1);
+#define PAUSE 
+
 #define HLINE printf("----------------------------\n");
 
 
@@ -94,7 +96,7 @@ void test_list()
     assert( iterator == &b );
     assert( list_iterate( &l, &iterator ) == -1 );
 
-    printf( "OK !\n" );
+    printf( "\e[44mOK\e[m !\n" );
     HLINE
 }
 
@@ -117,6 +119,7 @@ void test_parser()
     assert( input != NULL );
 
     list_t *lines = read_lines( input );
+    
     assert( lines != NULL );
     assert( ! lines->is_empty );
     printf( "nbr de lignes : %d\n", list_length( lines ));
@@ -127,9 +130,23 @@ void test_parser()
     while ( list_iterate( lines, &iterator ) != -1 ) {
         printf( "line : "); printf( "%s", container_of(iterator,line_t,list_node)->content );
     } 
+
+
+    short int *formula = NULL;
+    short int *clauses_array = NULL;
+    int num_clause, num_var;
+
+     
+    printf("begins parsing clauses\n");
+    parse_lines( lines, &formula, &clauses_array, &num_var, &num_clause ); 
+
+    printf("clauses parsed, now checking content\n");
+    LIST_NODE_T *iterator = NULL;
+    while( clause_iterate( formula, iterator ) != -1 ){
+
         
 
-    printf("OK !\n" );
+    printf( "\e[44mOK\e[m !\n" );
     HLINE
 }
 
@@ -142,21 +159,30 @@ void test_clause()
     printf( "testing clause.h... \n" );
     clause_t a;
     a.clause_array = malloc(4*sizeof(short));
-    a.clause_array[0] = make_atom(4);
-    a.clause_array[1] = make_atom(-3);
-    a.clause_array[2] = make_atom(2);
-    a.clause_array[3] = make_atom(-6); 
+    a.clause_array[0] = make_atom(4); printf("atome : %hu\n", VARIABLE_NAME(make_atom(4)));
+    a.clause_array[1] = make_atom(-3); printf("atome : %hu\n", VARIABLE_NAME(make_atom(-3)));
+    a.clause_array[2] = make_atom(2); printf("atome : %hu\n", VARIABLE_NAME(make_atom(2)));
+    a.clause_array[3] = make_atom(-627); printf("atome : %hu\n", VARIABLE_NAME(make_atom(-627)));
     a.stop = ((short*) a.clause_array)+4;
 
     short *iterator = NULL;
     while ( atom_iterate( &a, &iterator ) != -1 ){
         printf( "atom with identity %u. is it negative : %u\n", 
-            VARIABLE_NAME( *iterator ), IS_NEGATED( *iterator ) );
+            VARIABLE_NAME( *iterator ), IS_NEGATED_BINARY( *iterator ) );
 
         assert( IS_USED( *iterator ) );
     }
+
+
+    NEGATE(a.clause_array[0]); 
+    assert( IS_NEGATED_BINARY(a.clause_array[0]) );
+    NEGATE(a.clause_array[1]); 
+    assert( ! IS_NEGATED_BINARY(a.clause_array[1]) );
+
+    UNUSE(a.clause_array[2]);
+    assert( ! IS_USED( a.clause_array[2] ));
     
-    printf("OK !\n" );
+    printf( "\e[44mOK\e[m !\n" );
     HLINE
 }
 

@@ -167,6 +167,10 @@ inline LIST_NODE_T *list_pop( list_t* list )
         return NULL;
 
     LIST_NODE_T *answer = list->node;
+
+    if (answer == NULL)
+        return answer;
+
     // case of a single-item list
     if ( list->node->next == list->node ){
         list->node = NULL;
