@@ -133,17 +133,29 @@ void test_parser()
 
 
     short int *formula = NULL;
-    short int *clauses_array = NULL;
+    int *clauses_index = NULL;
     int num_clause, num_var;
 
      
     printf("begins parsing clauses\n");
-    parse_lines( lines, &formula, &clauses_array, &num_var, &num_clause ); 
+    parse_lines( lines, &formula, &clauses_index, &num_var, &num_clause ); 
 
     printf("clauses parsed, now checking content\n");
-    LIST_NODE_T *iterator = NULL;
-    while( clause_iterate( formula, iterator ) != -1 ){
 
+    assert(formula != NULL);
+    assert(clauses_index != NULL);
+
+    int i;
+    for (i=0; i<num_clause;++i)
+        printf("atom : %d\n", VARIABLE_NAME(clauses_index[i]));
+
+    clause_t *clause_iterator = NULL;
+    int n=0;
+    while( clause_iterate( formula, clauses_index, num_clause, &n, &clause_iterator ) != -1 ){
+        clause_print( clause_iterator );
+        printf("\n");
+    }
+        
         
 
     printf( "\e[44mOK\e[m !\n" );
@@ -176,11 +188,16 @@ void test_clause()
 
     NEGATE(a.clause_array[0]); 
     assert( IS_NEGATED_BINARY(a.clause_array[0]) );
+    NEGATE(a.clause_array[0]); 
     NEGATE(a.clause_array[1]); 
     assert( ! IS_NEGATED_BINARY(a.clause_array[1]) );
+    NEGATE(a.clause_array[1]); 
 
     UNUSE(a.clause_array[2]);
     assert( ! IS_USED( a.clause_array[2] ));
+
+
+    printf(" clause a "); clause_print( &a ); printf( "\n" );
     
     printf( "\e[44mOK\e[m !\n" );
     HLINE
@@ -196,8 +213,8 @@ int main(){
     HLINE
 
     test_list(); 
-    test_parser();
     test_clause();
+    test_parser();
 
     return 0;
 

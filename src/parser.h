@@ -27,7 +27,7 @@ typedef struct {
 
 list_t *read_lines( FILE* input );
 
-int parse_lines( list_t* lines, short int ** formula, short int **clauses_array, int *num_var, int *num_clause );
+int parse_lines( list_t* lines, short int ** formula, int **clauses_index, int *num_var, int *num_clause );
 
 
 /*
@@ -35,7 +35,7 @@ int parse_lines( list_t* lines, short int ** formula, short int **clauses_array,
  * returns 0 on failure, 1 on success
  */
 
-int parse( const char* file_path, short int ** formula, short int **clauses_array, int *num_var, int *num_clause );
+int parse( const char* file_path, short int ** formula, int **clauses_index, int *num_var, int *num_clause );
 
 
 

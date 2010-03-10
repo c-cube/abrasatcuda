@@ -3,8 +3,8 @@
 
 typedef struct 
 {
-  short * clause_array;
-  short * stop; /* is the start of the next clause, so should not get dereferenced 
+  short int * clause_array;
+  short int * stop; /* is the start of the next clause, so should not get dereferenced 
   in an iteration over a clause */
 } clause_t;
 
@@ -63,7 +63,8 @@ inline short make_atom( int n )
 * preferred usage is : while ( -1 != clause_iterate(...)  )
 */
 inline short int clause_iterate( 
-    short int **clause_pointer_array,
+    short int *formula,
+    int *clauses_index_array,
     int length,
     int *n, 
     clause_t **iterator)
@@ -73,15 +74,21 @@ inline short int clause_iterate(
 
     // if iterator is not initialized, ignore n
     if ( *iterator == NULL ){
-        *iterator = (clause_t*) clause_pointer_array[0];
+        printf("coin\n");
+        *n = 0;
+        printf("coin\n");
+        *iterator = (clause_t*) &formula[0];
+        printf("coin\n");
         (*iterator)->stop =  length > 1 ? 
-            clause_pointer_array[1] : NULL;
+            &formula[clauses_index_array[1]] : NULL;
+        printf("coin\n");
     } else if ( *n >= length ){
         return -1; // end of iteration
     } else {
-        *iterator = (clause_t*) clause_pointer_array[++(*n)];
-        (*iterator)->stop = length > *n ? 
-            clause_pointer_array[(*n)+1] : NULL;
+        printf("pan\n");
+        *iterator = (clause_t*) &formula[clauses_index_array[++(*n)]];
+        (*iterator)->stop = (*n < length) ? 
+            &formula[clauses_index_array[(*n)+1]] : NULL;
     }
     return 0;
 }
@@ -114,6 +121,27 @@ inline int atom_iterate ( clause_t * clause_struct, short ** iterator )
     return 0;
 }
 
+
+
+
+inline void clause_print( clause_t *clause )
+{
+    short int *iterator = NULL;
+    int is_first = 1;
+    printf("\e[32m(\e[m");
+
+    while ( atom_iterate( clause, &iterator) != -1 ){
+        if (is_first)
+            is_first = 0;
+        else
+            printf("\e[32m v \e[m");
+        if (IS_NEGATED( *iterator ))
+            printf("-");
+        printf("%d", VARIABLE_NAME( *iterator ));
+
+    } 
+    printf("\e[32m)\e[m");
+}
 
 
 #endif
