@@ -18,9 +18,9 @@ LDFLAGS=-shared
 
 #Variable contenant la liste des cibles 
 TARGETS=libabrasatcuda.so 
-OBJECTS=${BUILD}/abrasatcuda.o
+OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h
-
+PY_FILES=.parse.py
 
 # dossiers divers
 SRC=src
@@ -38,12 +38,14 @@ test: test_all
 ipython:
 	ipython .prelude.py
 
+pylint: $( PY_FILES )
+	pylint $(PY_FILES)
+
 count:
 	grep -v '^[ ]*$$' * | wc -l	
 # This targets compiles the main binary
 libabrasatcuda.so:  $(OBJECTS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o libabrasatcuda.so
-
 
 
 # object files
@@ -54,6 +56,8 @@ ${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c $(HEADERS)
 ${BUILD}/parser.o: ${SRC}/parser.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
+${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
+	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
 
 
