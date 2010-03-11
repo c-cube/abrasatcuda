@@ -3,6 +3,7 @@
 
 #include <stdlib.h> // malloc
 #include <string.h> // memcpy
+#include <assert.h>
 
 /*
  * logical atoms are represented as short
@@ -64,17 +65,35 @@ inline atom_t make_atom( int n )
 
 typedef struct __clause_t
 {
-  atom_t *stop; /* is the start of the next clause, so should not get dereferenced 
+    atom_t *stop; /* is the start of the next clause, so should not get dereferenced 
   in an iteration over a clause (maybe last item)*/
-  atom_t *clause_array; // starts right here !
+    atom_t *clause_array; // starts right here !
 } clause_t;
 
+// returns the number of atoms+1, ie the size of the clause_array + 1
+inline atom_t clause_length( clause_t *clause )
+{
+    atom_t answer = (clause->stop - clause->clause_array);
+    return (atom_t) answer;
+}
 
-#define CLAUSE_LENGTH(c) ((int)((c).stop - (c).clause_array))
 
-#define CLAUSE_ITEM(c,n) ((c).clause_array[(n)])
+inline atom_t* clause_item( clause_t *clause, int n )
+{
+    atom_t* answer = clause->clause_array + n;
+    assert( answer < clause->stop );
+    return answer;
+}
 
+inline clause_t* make_clause( clause_t* place, int n )
+{
+    place->clause_array =  (place->clause_array);
+    place->stop = ( (place->clause_array)) + (n+1);
 
+    assert( clause_length( place ) == n+1 );
+
+    return place;
+}
 
 
 
@@ -85,7 +104,7 @@ typedef struct __clause_t
 * atom_t *iterator = NULL;
 * while ( -1 != next_atom(clause_ptr, &iterator){ process_atom(*iterator);} )
 */
-inline int atom_iterate ( clause_t * clause_struct, atom_t ** iterator )
+inline int atom_iterate ( clause_t * clause, atom_t ** iterator )
 {
     if ( iterator == NULL )
         return -1;
@@ -93,11 +112,11 @@ inline int atom_iterate ( clause_t * clause_struct, atom_t ** iterator )
 
     // initialization
     if ( *iterator == NULL ){
-        *iterator = clause_struct->clause_array;
+        *iterator = (clause->clause_array);
         return 0;
     } 
     
-    if ( ++(*iterator) == clause_struct->stop )
+    if ( ++(*iterator) == clause->stop )
         return -1;
 
     return 0;
@@ -169,30 +188,34 @@ inline int clause_iterate(
     return 0;
 }
 
-
-inline atom_t clause_build( atom_t **formula, atom_t **clauses_index, clause_t *clauses, int n )
+/*
+ * builds a formula from an array of clauses.
+ * Each clause must be correct (ie, in a row (as result of make_clause))
+ * the function allocates memory and copies what is needed.
+ */
+inline atom_t formula_build( atom_t **formula, atom_t **clauses_index, clause_t *clauses, int n )
 {
     atom_t offset;
 
     assert( formula != NULL && *formula == NULL );
     assert( clauses_index != NULL && *clauses_index == NULL );
 
-    int formula_size = 42 * n * sizeof(atom_t);
-    *formula = malloc( formula_size );
+    int formula_size = 42 * n  ;
+    *formula = malloc( formula_size * sizeof(atom_t) );
     *clauses_index = malloc(n * sizeof(atom_t));
 
     for (int i=0; i<n; ++i){
-        while ( offset + CLAUSE_LENGTH( clauses[i] ) >= formula_size ){
+        while ( offset + clause_length( &clauses[i] ) >= formula_size ){
             // allocate more space if needed
             formula_size = (int) (formula_size * 1.5);
             *formula = realloc( *formula, formula_size );
         }
         
         // add clause to formula
-        memcpy( *formula + offset, &clauses[i], CLAUSE_LENGTH(clauses[i]) );
+        memcpy( *formula + offset, &clauses[i], clause_length(&clauses[i])+1 );
 
         atom_t old_offset = offset; // upgrade offset
-        offset += CLAUSE_LENGTH(clauses[i]);
+        offset += clause_length(&clauses[i])+1;
 
         (*clauses_index)[i] = old_offset; // upgrade (i-th clause)->stop
         formula_item(*formula,*clauses_index,i)->stop = *formula + offset;

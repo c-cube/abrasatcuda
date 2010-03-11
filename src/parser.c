@@ -14,7 +14,7 @@
 
 #define CLAUSE_N(formula,clauses_index,n) ((clause_t*) formula[(*clauses_index)[n]])
 
-int parse( const char* file_path, short int **formula, int **clauses_index, int *num_var, int *num_clause )
+int parse( const char* file_path, atom_t **formula, atom_t **clauses_index, int *num_var, int *num_clause )
 {
 
     // open file
@@ -60,7 +60,7 @@ list_t *read_lines( FILE* input )
 /*
  * this function is intended to read each line and build the formula
  */
-int parse_lines( list_t* lines, short int ** formula, int **clauses_index, int *num_var, int *num_clause ){
+int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *num_var, int *num_clause ){
 
     int formula_length = 0;
     int offset_in_formula = 0;
