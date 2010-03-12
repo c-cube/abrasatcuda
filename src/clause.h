@@ -62,21 +62,14 @@ int variable_name( atom_t atom );
  * Clauses are array of atoms
  */
 
-typedef atom_t* clause_t;
+// typedef atom_t* clause_t; // forget about it, it just obsfucates types.
 
 
-inline atom_t* clause_item( clause_t *clause, int n )
+inline atom_t* clause_item( atom_t* clause, int n )
 {
     return ((atom_t*)clause) + n;
 }
 
-inline void clause_put_there( clause_t* place, atom_t* atoms, int n )
-{
-    atom_t* start = (atom_t*) place;
-    for (int i=0; i<n; ++i){
-        start[i] = atoms[i];
-    }
-}
 
 
 /*
@@ -85,9 +78,12 @@ inline void clause_put_there( clause_t* place, atom_t* atoms, int n )
 * usage is : 
 *
 * atom_t *iterator = NULL;
-* while ( -1 != next_atom(clause, clauses_index, n, &iterator){ process_atom(*iterator);} )
+* while ( -1 != atom_iterate(clause, clause_end, n, &iterator){ process_atom(*iterator);} )
+*
+* or :
+* while ( -1 != atom_iterate(clauses_index[n], clauses_index[n+1], n, &iterator )){ ... }
 */
-inline int atom_iterate ( clause_t *clause, atom_t *clauses_index, int n, atom_t **iterator )
+inline int atom_iterate ( atom_t *clause, atom_t *clause_end, atom_t **iterator )
 {
     if ( iterator == NULL )
         return -1;
@@ -95,11 +91,11 @@ inline int atom_iterate ( clause_t *clause, atom_t *clauses_index, int n, atom_t
 
     // initialization
     if ( *iterator == NULL ){
-        *iterator = ((atom_t*) clause);
+        *iterator = clause;
         return 0;
     } 
     
-    if ( ++(*iterator) == (((atom_t*) clause) + clauses_index[n+1]) )
+    if ( ++(*iterator) == clause_end )
         return -1;
 
     return 0;
@@ -108,7 +104,7 @@ inline int atom_iterate ( clause_t *clause, atom_t *clauses_index, int n, atom_t
 
 
 
-void clause_print( clause_t *clause, atom_t* clauses_index, int n );
+void clause_print( atom_t *clause, atom_t *clause_end );
 
 
 //-----------------------------------------------------------------------------
@@ -119,11 +115,11 @@ void clause_print( clause_t *clause, atom_t* clauses_index, int n );
 typedef atom_t* formula_t;
 
 /*
- * returns the clause_t* associated with index n in the formula
+ * returns the atom_t* associated with index n in the formula
  */
-inline clause_t *formula_item( atom_t *formula, atom_t *clauses, int n)
+inline atom_t *formula_item( atom_t *formula, atom_t *clauses_index, int n)
 {
-    return (clause_t*) (formula + (clauses[n]));
+    return formula + (clauses_index[n]);
 }
 
 /*
@@ -137,7 +133,7 @@ inline int clause_iterate(
     atom_t *clauses_index_array,
     int length,
     int *n, 
-    clause_t **iterator)
+    atom_t **iterator)
 {
     if ( iterator == NULL )
         return -1;
@@ -145,11 +141,11 @@ inline int clause_iterate(
     // if iterator is not initialized, ignore n
     if ( *iterator == NULL ){
         *n = 0;
-        *iterator = (clause_t*) formula;
+        *iterator = formula;
     } else if ( *n >= length ){
         return -1; // end of iteration
     } else {
-        *iterator = (clause_t*) (formula+(clauses_index_array[++(*n)]));
+        *iterator = formula+(clauses_index_array[++(*n)]);
     }
     return 0;
 }
@@ -162,7 +158,7 @@ inline int clause_iterate(
 atom_t formula_build( 
     atom_t **formula, 
     atom_t **clauses_index, 
-    clause_t *clauses, 
+    atom_t *clauses, 
     int *clauses_length, 
     int n );
    
@@ -174,10 +170,14 @@ inline void formula_print(
     atom_t *clauses_index,
     int n )
 {
-    clause_t *iterator = NULL;
-    int cur=0;
-    while ( clause_iterate( formula, clauses_index, n, &cur, &iterator ) != -1 ){
-        clause_print( iterator, clauses_index, cur );
+    for (int i = 0; i<n; ++ i){
+        clause_print( 
+            formula_item( formula, clauses_index, i ), 
+            formula_item( formula, clauses_index, i+1 ) );
+        if (i<n-1)
+            printf("\e[32m /\\ \e[m");
+        else
+            printf("\n");
     }
 } 
 

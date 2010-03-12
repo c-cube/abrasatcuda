@@ -20,7 +20,7 @@ short make_atom( int n )
 atom_t formula_build( 
     atom_t **formula, 
     atom_t **clauses_index, 
-    clause_t *clauses, 
+    atom_t *clauses, 
     int *clauses_length, 
     int n )
 {
@@ -56,13 +56,13 @@ atom_t formula_build(
 
 
 
-void clause_print( clause_t *clause, atom_t* clauses_index, int n )
+void clause_print( atom_t *clause, atom_t* clause_end )
 {
     atom_t *iterator = NULL;
     int is_first = 1;
     printf("\e[32m(\e[m");
 
-    while ( atom_iterate( clause, clauses_index, n, &iterator) != -1 ){
+    while ( atom_iterate( clause, clause_end, &iterator) != -1 ){
         if (is_first)
             is_first = 0;
         else
@@ -70,7 +70,6 @@ void clause_print( clause_t *clause, atom_t* clauses_index, int n )
         if (IS_NEGATED( *iterator ))
             printf("-");
         printf("%d", VARIABLE_NAME( *iterator ));
-
     } 
     printf("\e[32m)\e[m");
 }

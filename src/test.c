@@ -149,10 +149,11 @@ void test_parser()
     for (i=0; i<num_clause;++i)
         printf("atom : %d\n", VARIABLE_NAME(clauses_index[i]));
 
-    clause_t *clause_iterator = NULL;
     int n=0;
-    while( clause_iterate( formula, clauses_index, num_clause, &n, &clause_iterator ) != -1 ){
-        clause_print( clause_iterator, clauses_index, n );
+    for (int i=0; i<n; ++i){
+        clause_print( 
+            formula_item( formula, clauses_index, i), 
+            formula_item( formula, clauses_index, i+1) );
         printf("\n");
     }
         
@@ -169,7 +170,7 @@ void test_parser()
 void test_clause()
 {
     printf( "testing clause.h... \n" );
-    clause_t *a = malloc(6 * sizeof(atom_t));
+    atom_t *a = malloc(6 * sizeof(atom_t));
     *clause_item(a, 0) = make_atom(4); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 0)));
     *clause_item(a, 1) = make_atom(-3); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 1)));
     *clause_item(a, 2) = make_atom(2); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 2)));
@@ -204,8 +205,8 @@ void test_clause()
     // printf("clause a = "); clause_print( a ); printf( "\n" );
     
 
-    clause_t *b = malloc(3*sizeof(atom_t));
-    clause_t *c = malloc(3*sizeof(atom_t));
+    atom_t *b = malloc(3*sizeof(atom_t));
+    atom_t *c = malloc(3*sizeof(atom_t));
 
     *clause_item(b, 0) = make_atom(3); 
     *clause_item(b, 1) = make_atom(4);
@@ -213,7 +214,6 @@ void test_clause()
     *clause_item(c, 1) = make_atom(2);
 
     printf("builds clause\n");
-    clause_t truc[] = {*a,*b,*c};
 
     // atom_t* formula = malloc( (3+1+2+1+2+1)*sizeof(atom_t));
     // atom_t *clauses_index = NULL;
@@ -224,7 +224,7 @@ void test_clause()
     //assert( offset == 8 );
 
     //for (int i=0; i<3; ++i){
-    //    printf("clause : "); clause_print( (clause_t*) (formula+(clauses_index[i])) ); printf("\n");
+    //    printf("clause : "); clause_print( (atom_t*) (formula+(clauses_index[i])) ); printf("\n");
     //}
 
     //printf("prints clause\n");
