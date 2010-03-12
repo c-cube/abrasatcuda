@@ -152,7 +152,7 @@ void test_parser()
     clause_t *clause_iterator = NULL;
     int n=0;
     while( clause_iterate( formula, clauses_index, num_clause, &n, &clause_iterator ) != -1 ){
-        clause_print( clause_iterator );
+        clause_print( clause_iterator, clauses_index, n );
         printf("\n");
     }
         
@@ -170,17 +170,15 @@ void test_clause()
 {
     printf( "testing clause.h... \n" );
     clause_t *a = malloc(6 * sizeof(atom_t));
-    make_clause( a, 4 );
-    a->clause_array[0] = make_atom(4); printf("atome : %hu\n", VARIABLE_NAME(a->clause_array[0]));
+    *clause_item(a, 0) = make_atom(4); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 0)));
+    *clause_item(a, 1) = make_atom(-3); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 1)));
+    *clause_item(a, 2) = make_atom(2); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 2)));
+    *clause_item(a, 3) = make_atom(-627); printf("atome : %hu\n", VARIABLE_NAME(*clause_item(a, 3)));
 
-    a->clause_array[1] = make_atom(-3); printf("atome : %hu\n", VARIABLE_NAME(a->clause_array[1]));
-    a->clause_array[2] = make_atom(2); printf("atome : %hu\n", VARIABLE_NAME(a->clause_array[2]));
-    a->clause_array[3] = make_atom(-627); printf("atome : %hu\n", VARIABLE_NAME(a->clause_array[3]));
 
-    printf("length of clause : %d\n", clause_length( a ));
+    //assert( clause_length(a) == 5 );
 
-    assert( clause_length(a) == 5 );
-
+    /*
     atom_t *iterator = NULL;
     while ( atom_iterate( a, &iterator ) != -1 ){
         printf( "atom with identity %u. is it negative : %u\n", 
@@ -188,50 +186,49 @@ void test_clause()
 
         assert( IS_USED( *iterator ) );
     }
+    */
 
 
-    NEGATE(a->clause_array[0]); 
-    assert( IS_NEGATED_BINARY(a->clause_array[0]) );
-    NEGATE(a->clause_array[0]); 
-    NEGATE(a->clause_array[1]); 
-    assert( ! IS_NEGATED_BINARY(a->clause_array[1]) );
-    NEGATE(a->clause_array[1]); 
+    NEGATE( *clause_item(a, 0)); 
+    assert( IS_NEGATED_BINARY( *clause_item(a, 0)) );
+    NEGATE( *clause_item(a, 0)); 
+    NEGATE( *clause_item(a, 1)); 
+    assert( ! IS_NEGATED_BINARY( *clause_item(a, 1)) );
+    NEGATE( *clause_item(a, 1)); 
 
-    UNUSE(a->clause_array[2]);
-    assert( ! IS_USED( a->clause_array[2] ));
+    UNUSE( *clause_item(a, 2));
+    assert( ! IS_USED( *clause_item(a, 2) ));
     assert( ! IS_USED( *clause_item( a,2) ));
 
 
-    printf("clause a = "); clause_print( a ); printf( "\n" );
+    // printf("clause a = "); clause_print( a ); printf( "\n" );
     
 
     clause_t *b = malloc(3*sizeof(atom_t));
-    make_clause( b, 2 );
     clause_t *c = malloc(3*sizeof(atom_t));
-    make_clause( c, 2 );
 
-    b->clause_array[0] = make_atom(3); 
-    b->clause_array[1] = make_atom(4);
-    c->clause_array[0] = make_atom(1); 
-    c->clause_array[1] = make_atom(2);
+    *clause_item(b, 0) = make_atom(3); 
+    *clause_item(b, 1) = make_atom(4);
+    *clause_item(c, 0) = make_atom(1); 
+    *clause_item(c, 1) = make_atom(2);
 
     printf("builds clause\n");
     clause_t truc[] = {*a,*b,*c};
 
-    atom_t* formula = malloc( (3+1+2+1+2+1)*sizeof(atom_t));
-    atom_t *clauses_index = NULL;
+    // atom_t* formula = malloc( (3+1+2+1+2+1)*sizeof(atom_t));
+    // atom_t *clauses_index = NULL;
     
     // proceed !
-    atom_t offset = formula_build( &formula, &clauses_index, truc, 3 ); 
-    printf("clause built : %d atom_t items long\n", offset);
-    assert( offset == 8 );
+    //atom_t offset = formula_build( &formula, &clauses_index, truc, 3 ); 
+    //printf("clause built : %d atom_t items long\n", offset);
+    //assert( offset == 8 );
 
-    for (int i=0; i<3; ++i){
-        printf("clause : "); clause_print( (clause_t*) (formula+(clauses_index[i])) ); printf("\n");
-    }
+    //for (int i=0; i<3; ++i){
+    //    printf("clause : "); clause_print( (clause_t*) (formula+(clauses_index[i])) ); printf("\n");
+    //}
 
-    printf("prints clause\n");
-    formula_print( formula, clauses_index, 3 );
+    //printf("prints clause\n");
+    //formula_print( formula, clauses_index, 3 );
 
     printf( "\e[44mOK\e[m !\n" );
     HLINE

@@ -65,6 +65,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
     int formula_length = 0;
     int offset_in_formula = 0;
     int clause_index = 0;
+    int atom_num = 0;
 
     list_t *clauses = malloc(sizeof(list_t));
     list_init( clauses );
@@ -100,16 +101,12 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
             formula_length = *num_clause * *num_var * 5;
             *formula = malloc( formula_length * sizeof(short int)) ; // what a beautiful heuristic !
             // allocate clause_array. It has a bonus slot for the last pointer
-            *clauses_index = malloc( (*num_clause+1) * sizeof(short int *) );
+            *clauses_index = malloc( (*num_clause+1) * sizeof(atom_t*) );
             clause_index = 0;
             offset_in_formula = 0;
             
             // create first clause structure
             (*clauses_index)[0] = offset_in_formula; // clause_t here
-            offset_in_formula = offset_in_formula + (sizeof(clause_t))/sizeof(short int); 
-            CLAUSE_N(formula, clauses_index, 0)->clause_array = 
-                    (*formula) + offset_in_formula; // atoms just further
-
 
             continue;
         }
@@ -139,28 +136,25 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
                 // remember where new clause begins
                 DEBUG("puts index %d in clauses_index[%d]\n", offset_in_formula, clause_index+1);
                 (*clauses_index)[ ++ clause_index ] = offset_in_formula; // clause_t here
-                int old_offset_in_formula = offset_in_formula;
-                offset_in_formula = offset_in_formula + (sizeof(clause_t))/sizeof(short int); 
-                CLAUSE_N(formula, clauses_index, clause_index)->clause_array = 
-                        (*formula) + offset_in_formula; // atoms just further
-                if (clause_index >= 1){
-                    CLAUSE_N(formula, clauses_index, clause_index-1)->stop = (*formula) + old_offset_in_formula;
-                    break;
-                }
+                offset_in_line = 0; // begin next line
+                break;
+            } else {
+                offset_in_line = offset_in_line_bis; 
+                atom_t current_atom = make_atom( current_token );
+                
+                DEBUG("atom read : %d at offset_in_formula %d\n",VARIABLE_NAME(current_atom), offset_in_formula);
+                atom_num++;
+
+                (*formula)[ offset_in_formula++ ] = current_atom;
             }
-
-            offset_in_line = offset_in_line_bis;
-            short int current_atom = make_atom( current_token );
-            
-            //DEBUG("atom read : %d at offset_in_formula %d\n",VARIABLE_NAME(current_atom), offset_in_formula);
-            
-            (*formula)[ offset_in_formula++ ] = current_atom;
-
         }
 
         continue;   // next line
 
     }
+    DEBUG("number of clauses = %d, clause_index = %d\n", *num_clause, clause_index );
+    assert( clause_index == *num_clause );
+    assert( offset_in_formula == atom_num );
 
     return 0; 
 }

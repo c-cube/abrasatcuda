@@ -11,13 +11,14 @@ CFLAGS=-Wall -pedantic -Os -g  -std=gnu99 #-m32 -Werror
 #L'option -m indique que le code généré doit être pour un environement 32 bits
 #L'option -c indique que le compilateur doit se contenter de la génération d'un fichier objet. La création d'un exécutable se fera si nécessaire dans un second temps.
 
+export LD_LIBRARY_PATH := .
 #Variable contenant les options passées au compilateur pour l'édition de liens
 LDFLAGS=
 
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
-OBJECTS=${BUILD}/abrasatcuda.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h
+OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h
 
 
 # dossiers divers
@@ -34,14 +35,14 @@ test: test_all
 	./test_all
 
 count:
-	grep -v '^[ ]*$$' src/* | wc -l	
+	grep -v '^[ ]*$$' ${src}/* | wc -l	
 # This targets compiles the main binary
 abrasatcuda:  $(OBJECTS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
 
 # binary for testing
-test_all: ${SRC}/test.c ${BUILD}/parser.o
-	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o -o test_all
+test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o
+	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o -o test_all
 
 
 # object files
@@ -52,6 +53,8 @@ ${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c $(HEADERS)
 ${BUILD}/parser.o: ${SRC}/parser.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
+${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
+	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
 
 

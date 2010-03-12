@@ -24,16 +24,18 @@ abrasatcuda = ctypes.CDLL( "libabrasatcuda.so" )
 
 # make an atom from an int
 _make_atom = abrasatcuda.make_atom
-_make_atom.restype = c_int
-_make_atom.argtypes = [c_int]
-def make_atom( i ):
-    answer = _make_atom( c_int(i) )
-    return answer
+_make_atom.restype = c_short
+_make_atom.argtypes = [c_short]
 
+def make_atom( i ):
+    "makes an atom from an int"
+    return c_short( (0x4000 if  i<0 else 0)
+            | 0x8000
+            | (0x3FFF & ( (0xFFFF ^ i)+1 if i<0 else i) ) )
 
 # make a formula from clauses
 formula_build = abrasatcuda.formula_build
-formula_build.restype = c_int
+formula_build.restype = c_short
 
 # solve the problem
 solve = abrasatcuda.solve
@@ -45,10 +47,11 @@ is_negated = abrasatcuda.is_negated
 
 def make_clause( atoms ):
     "concatenates atoms into a clause"
-    clause = (c_int * len(atoms))()
+    clause = (c_short * len(atoms))()
     for i, atom in enumerate(atoms):
-        assert( type(atom) == c_int )
-        clause[i] = atom
+        assert( type(atom) == c_short )
+        #clause[i] = atom
+        ptr_array_access(clause, c_short, i).contents = atom
     return clause
 
 
@@ -57,7 +60,8 @@ def print_clause( clause_ptr, length ):
     answer = ansi.inGreen( "(" )
     l = []
     for i in range(length):
-        atom = ptr_array_access( clause_ptr, c_int, i ).contents
+        atom = ptr_array_access( clause_ptr, c_short, i ).contents
+        assert (type(atom) == c_short )
         temp = ""
         if is_negated(atom):
             temp = ansi.inBlue( "~" )
@@ -86,26 +90,26 @@ def parse_lines( lines ):
             var_num, clause_num = int(tokens[2]), int(tokens[3])
             print "problem has %d clauses and %d var" % (clause_num, var_num )
             # creates an array of [clause_num] pointers
-            clauses_length = ((c_int) * clause_num)()
+            clauses_length = ((c_short) * clause_num)()
             continue
         else:
             for t in tokens:
                 atom = int(t)
                 # if end of clause
                 if atom == 0:
-                    clauses_length[len(clauses_list)] = len(cur_clause)
+                    ptr_array_access(clauses_length, c_int, len(clauses_list)).contents = c_int(len(cur_clause))
                     clauses_list.append( make_clause( cur_clause ) )
                     cur_clause = []
                 else:
                     atom = make_atom(atom)
-                    cur_clause.append( c_int(atom) )
+                    cur_clause.append( atom )
     
     print "all lines read"
     assert len(clauses_list) == clause_num, "number of clause must match problem spec"
     
-    clauses_array = ((POINTER(c_int)) * clause_num)()
+    clauses_array = ((POINTER(c_short)) * clause_num)()
     for i, clause in enumerate( clauses_list ):
-        clauses_array[i] = ptr_array_access( clause, c_int, i )
+        ptr_array_access(clauses_array,POINTER(c_short),i).contents = ptr_array_access( clause, c_short, i )
 
     return (clauses_array, clauses_length)
         
@@ -150,8 +154,8 @@ def main():
 
     print "clauses printed !"
 
-    formula = (POINTER(c_int))()
-    clauses_index = (POINTER(c_int))()
+    formula = (POINTER(c_short))()
+    clauses_index = (POINTER(c_short))()
     
     formula_build( byref(formula), byref(clauses_index), clauses, clauses_length, n )
     
