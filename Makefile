@@ -34,6 +34,9 @@ all: $(TARGETS)
 test: test_all
 	./test_all
 
+test_main: abrasatcuda
+	./abrasatcuda tests/example.cnf
+
 count:
 	grep -v '^[ ]*$$' ${src}/* | wc -l	
 # This targets compiles the main binary
