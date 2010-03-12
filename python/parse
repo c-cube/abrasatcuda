@@ -2,4 +2,4 @@
 
 export LD_LIBRARY_PATH=.
 
-exec ./.parse.py $@
+exec python ./.parse.py $@
