@@ -1,3 +1,31 @@
+/*
+* utilities for handling clauses
+*/
+
+/* LICENSE :
+DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
+                   Version 2, December 2004 
+
+Copyright (C) 2004 Sam Hocevar <sam@hocevar.net> 
+
+Everyone is permitted to copy and distribute verbatim or modified 
+copies of this license document, and changing it is allowed as long 
+as the name is changed. 
+
+           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
+  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
+
+    0. You just DO WHAT THE FUCK YOU WANT TO.
+*/
+
+/*
+ * logical atoms are represented as short
+ */
+
+
+
+
+
 #ifndef MY_CLAUSE_H
 #define MY_CLAUSE_H
 
@@ -6,9 +34,7 @@
 #include <assert.h> // assert
 #include <stdio.h> // printf
 
-/*
- * logical atoms are represented as short
- */
+
 
 
 typedef short atom_t;
@@ -150,17 +176,6 @@ inline int clause_iterate(
     return 0;
 }
 
-/*
- * builds a formula from an array of clauses.
- * Each clause must be correct (ie, in a row (as result of make_clause))
- * the function allocates memory and copies what is needed.
- */
-atom_t formula_build( 
-    atom_t **formula, 
-    atom_t **clauses_index, 
-    atom_t *clauses, 
-    int *clauses_length, 
-    int n );
    
 
 

@@ -1,5 +1,5 @@
 /*
- * main part.
+ * utilities for solver.
  */
 
 /* LICENSE :
@@ -22,9 +22,14 @@ as the name is changed.
 
 
 
-#include "clause.h"
+#ifndef _SOLVE_H
+#define _SOLVE_H
 
-int solve( atom_t *formula, atom_t* clauses_index )
 
+
+
+
+
+#endif
 
 
