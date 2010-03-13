@@ -18,7 +18,7 @@ LDFLAGS=
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
 OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h
 
 
 # dossiers divers
