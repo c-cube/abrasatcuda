@@ -47,8 +47,6 @@ list_t *read_lines( FILE* input )
         new_line->content = linePtr;
         list_append( lines, &(new_line->list_node) );
 
-        //DEBUG("%s", linePtr );
-
         linePtr = NULL; // asks getline to allocate a new buffer for next line
     }
 
@@ -128,13 +126,11 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
                 *formula = realloc( *formula, formula_length * sizeof(short int) );
             }
 
-            //DEBUG( "token read : %d\n", current_token);
             // special cases
             if ( offset_in_line_bis == offset_in_line )
                 break;
             if ( current_token == 0 ){
                 // remember where new clause begins
-                DEBUG("puts index %d in clauses_index[%d]\n", offset_in_formula, clause_index+1);
                 (*clauses_index)[ ++ clause_index ] = offset_in_formula; // clause_t here
                 offset_in_line = 0; // begin next line
                 break;
@@ -142,7 +138,6 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
                 offset_in_line = offset_in_line_bis; 
                 atom_t current_atom = make_atom( current_token );
                 
-                DEBUG("atom read : %d at offset_in_formula %d\n",VARIABLE_NAME(current_atom), offset_in_formula);
                 atom_num++;
 
                 (*formula)[ offset_in_formula++ ] = current_atom;

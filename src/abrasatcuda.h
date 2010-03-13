@@ -18,13 +18,12 @@ as the name is changed.
     0. You just DO WHAT THE FUCK YOU WANT TO.
 */
 
-
-
-
+#ifndef _ABRASATCUDA_H
+#define _ABRASATCUDA_H
 
 #include "clause.h"
 
-int solve( atom_t *formula, atom_t* clauses_index )
+int solve( atom_t *formula, atom_t* clauses_index, int n );
 
-
+#endif
 

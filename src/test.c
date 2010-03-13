@@ -10,7 +10,7 @@
 //#define PAUSE sleep(1);
 #define PAUSE 
 
-#define HLINE printf("----------------------------\n");
+#define HLINE printf("-------------------------------------------------------\n");
 
 
 /*
@@ -20,6 +20,7 @@
 #include "list.h"
 #include "parser.h"
 #include "clause.h"
+#include "solve.h"
 
 // feel the power !
 #include "utils.h"
@@ -119,6 +120,8 @@ void test_parser()
     assert( input != NULL );
 
     list_t *lines = read_lines( input );
+
+    fclose( input );
     
     assert( lines != NULL );
     assert( ! lines->is_empty );
@@ -234,6 +237,48 @@ void test_clause()
     HLINE
 }
 
+void test_solve()
+{
+    printf( "testing solve.h... \n" );
+
+
+    char a = 0;
+    printf("a = 0 is immutable : %d, affected : %d, has truth value : %d\n",
+        IS_IMMUTABLE(a), IS_AFFECTED(a), TRUTH_VALUE(a));
+    SET_TRUTH_VALUE(a,1);
+    SET_IMMUTABLE(a);
+    SET_AFFECTED(a);
+
+    assert( IS_IMMUTABLE(a));
+    assert( IS_AFFECTED(a));
+    assert( TRUTH_VALUE(a));
+
+    SET_NON_AFFECTED(a);
+    assert( TRUTH_VALUE(a));
+    assert( ! IS_AFFECTED(a));
+
+    printf("a = 0 is immutable : %d, affected : %d, has truth value : %d\n",
+        IS_IMMUTABLE(a), IS_AFFECTED(a), TRUTH_VALUE(a));
+
+
+    // iterations
+    printf("builds a 5 var-length truth value table\n");
+
+    char tab[5];
+    
+    SET_IMMUTABLE(tab[0]);
+    SET_AFFECTED(tab[1]);
+    SET_AFFECTED(tab[2]);
+    SET_AFFECTED(tab[4]);
+    SET_TRUTH_VALUE(tab[0],1);
+    SET_TRUTH_VALUE(tab[2],1);
+
+    value_print( tab, 5 );
+
+    printf( "\e[44mOK\e[m !\n" );
+    HLINE
+}
+
 
 
 /*
@@ -246,6 +291,7 @@ int main(){
     test_list(); 
     test_clause();
     test_parser();
+    test_solve();
 
     return 0;
 
