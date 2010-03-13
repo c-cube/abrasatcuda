@@ -1,6 +1,6 @@
-#!/usr/bin/env runhaskell
+-- #!/usr/bin/env runhaskell
 
-module Check
+module Main
     (main,
     ) where
 
@@ -25,9 +25,10 @@ main = do
     lines <- lines `liftM` readFile filename 
 
     let varNum = head $ (lines >>= getVarNum)
+    putStrLn $ "resolving problem with "++ show varNum
 
     let clauses = parse lines
-    mapM_ (putStrLn . show) clauses
+    -- mapM_ (putStrLn . show) clauses
     print $ solve clauses varNum
 
   where
