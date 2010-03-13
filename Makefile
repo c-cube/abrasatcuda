@@ -38,7 +38,7 @@ test_main: abrasatcuda
 	./abrasatcuda tests/example.cnf
 
 check: check.hs
-	gcc -O2 --make check.hs -o check
+	ghc -O2 --make check.hs -o check
 
 count:
 	grep -v '^[ ]*$$' ${src}/* | wc -l	
