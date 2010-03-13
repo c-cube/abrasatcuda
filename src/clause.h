@@ -159,7 +159,7 @@ inline int clause_iterate(
     atom_t *formula,
     atom_t *clauses_index_array,
     int length,
-    int *n, 
+    int *cur_index, 
     atom_t **iterator)
 {
     if ( iterator == NULL )
@@ -167,12 +167,14 @@ inline int clause_iterate(
 
     // if iterator is not initialized, ignore n
     if ( *iterator == NULL ){
-        *n = 0;
+        *cur_index = 0;
         *iterator = formula;
-    } else if ( *n >= length ){
-        return FAILURE; // end of iteration
     } else {
-        *iterator = formula+(clauses_index_array[++(*n)]);
+        if ( *cur_index >= length ){
+            return FAILURE; // end of iteration
+        } else {
+            *iterator = formula+(clauses_index_array[++(*cur_index)]);
+        }
     }
     return SUCCESS;
 }
