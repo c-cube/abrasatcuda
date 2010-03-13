@@ -38,25 +38,28 @@ typedef char value_t;
 #define IS_AFFECTED(x) ((x) & 0x40)
 
 #define SET_AFFECTED(x) ((x) |= 0x40)
-#define SET_NON_AFFECTED(x) ((x) ^= 0x40)
+#define SET_NON_AFFECTED(x) ((x) &= 0xBF)
 
 #define SET_IMMUTABLE(x) ((x) |= 0x80)
 
 #define TRUTH_VALUE(x) ((x) & 0x01)
-#define SET_TRUTH_VALUE(x,truth) ((x) ^= (0x01 & truth))
+#define SET_TRUE(x) ((x) |= 0x01)
+#define SET_FALSE(x) ((x) &= 0xFE)
 
 // prints truth values in a nice way
 inline void value_print( value_t* values, int n )
 {
-    for (int i=0; i<n; ++i){
+    for (int i=1; i<=n; ++i){
         int escape_sequence = 0;
         if ( IS_IMMUTABLE(values[i] ))
             escape_sequence = 31; // red
-        else if (IS_AFFECTED(values[i]))
-            escape_sequence = 32; // green
         else
-            escape_sequence = 34; // blue
-          
+        {
+            if (IS_AFFECTED(values[i]))
+                escape_sequence = 32; // green
+            else
+                escape_sequence = 34; // blue
+        } 
         printf("%d=\033[%dm%d\033[m, ", i, escape_sequence, TRUTH_VALUE(values[i]));
     }
     printf("\n");
@@ -76,38 +79,60 @@ inline void value_print( value_t* values, int n )
 
 inline int next_combination( char *vars, int *cur, int n )
 {
-    // check for termination. The last var is [n], not [n]-1
-    if (*cur == n && TRUTH_VALUE(vars[*cur]) == 1)
-        return -1;
 
+    int advanced = 0;
     while (1){
+
+        // check for termination. The last var is [n], not [n]-1
+        if (*cur == n && TRUTH_VALUE(vars[*cur]) == 1)
+            return -1;
+
 
         // do not consider immutable values
         if (IS_IMMUTABLE(vars[*cur])){ 
-            (*cur)++;
+            ++(*cur);
             continue; 
         }
 
         // omg this var is not affected yet !
+        //printf( "cur = %d, var[cur] = %d\n", *cur,vars[*cur]);
         assert( IS_AFFECTED(vars[*cur]) );
 
         if (TRUTH_VALUE(vars[*cur])){
-            SET_TRUTH_VALUE(vars[*cur], 0);
+            SET_FALSE(vars[*cur]);
             ++(*cur);
+            advanced = 1; // remember to go back after
             continue;
         }
 
         // this var is affected to 0, switch it to 1.
         assert(TRUTH_VALUE(vars[*cur]) == 0);
-        SET_TRUTH_VALUE(vars[*cur], 1);
-        return 0;
+        SET_TRUE(vars[*cur]);
+        break;
     }
 
+    if ( advanced )
+        *cur = 1;
+
+    return 0;
 }
 
 
-
-
+/*
+ * this function initializes an array of truth value before
+ * we can iterate on combinations on it.
+ * It mainly SET_AFFECTED all the truth values and set them to 0
+ */
+inline void initialize_truth_values( char* vars, int *cur, int n )
+{
+    *cur = 1;
+    for (int i = 1; i <= n; ++i ){
+        if ( ! IS_IMMUTABLE(vars[i]) ){
+            SET_AFFECTED(vars[i]);
+            SET_FALSE(vars[i]);
+        }
+    }
+}
 
 
 

@@ -245,7 +245,7 @@ void test_solve()
     char a = 0;
     printf("a = 0 is immutable : %d, affected : %d, has truth value : %d\n",
         IS_IMMUTABLE(a), IS_AFFECTED(a), TRUTH_VALUE(a));
-    SET_TRUTH_VALUE(a,1);
+    SET_TRUE(a);
     SET_IMMUTABLE(a);
     SET_AFFECTED(a);
 
@@ -257,6 +257,11 @@ void test_solve()
     assert( TRUTH_VALUE(a));
     assert( ! IS_AFFECTED(a));
 
+    SET_FALSE(a);
+    assert( !TRUTH_VALUE(a));
+    assert( !IS_AFFECTED(a));
+    assert( IS_IMMUTABLE(a));
+
     printf("a = 0 is immutable : %d, affected : %d, has truth value : %d\n",
         IS_IMMUTABLE(a), IS_AFFECTED(a), TRUTH_VALUE(a));
 
@@ -264,24 +269,25 @@ void test_solve()
     // iterations
     printf("builds a 5 var-length truth value table\n");
 
-    char tab[5];
+    char tab[6];
     
-    SET_IMMUTABLE(tab[0]);
-    SET_AFFECTED(tab[0]);
-    SET_AFFECTED(tab[1]);
-    SET_AFFECTED(tab[2]);
-    SET_AFFECTED(tab[3]);
-    SET_AFFECTED(tab[4]);
-    SET_TRUTH_VALUE(tab[0],1);
-    SET_TRUTH_VALUE(tab[2],1);
+    SET_IMMUTABLE(tab[1]);
+    SET_IMMUTABLE(tab[4]);
+    SET_TRUE(tab[1]);
+    SET_TRUE(tab[3]); // ignored
 
-    value_print( tab, 5 );
+    value_print( tab, 6 );
+
+    printf("initializes the tab\n");
+    int cur = 0;
+    initialize_truth_values( tab, &cur, 6);
+
+    value_print( tab, 6 );
 
     printf("showing all iterations\n");
 
-    int cur = 0;
-    while ( next_combination( tab, &cur, 5) != 1){
-        value_print(tab,5);
+    while ( next_combination( tab, &cur, 6) != -1){
+        value_print(tab,6);
     }
 
     printf( "\033[44mOK\033[m !\n" );
