@@ -97,7 +97,7 @@ void test_list()
     assert( iterator == &b );
     assert( list_iterate( &l, &iterator ) == -1 );
 
-    printf( "\e[44mOK\e[m !\n" );
+    printf( "\033[44mOK\033[m !\n" );
     HLINE
 }
 
@@ -162,7 +162,7 @@ void test_parser()
         
     formula_print( formula, clauses_index, num_clause ); 
 
-    printf( "\e[44mOK\e[m !\n" );
+    printf( "\033[44mOK\033[m !\n" );
     HLINE
 }
 
@@ -233,7 +233,7 @@ void test_clause()
     //printf("prints clause\n");
     //formula_print( formula, clauses_index, 3 );
 
-    printf( "\e[44mOK\e[m !\n" );
+    printf( "\033[44mOK\033[m !\n" );
     HLINE
 }
 
@@ -267,15 +267,24 @@ void test_solve()
     char tab[5];
     
     SET_IMMUTABLE(tab[0]);
+    SET_AFFECTED(tab[0]);
     SET_AFFECTED(tab[1]);
     SET_AFFECTED(tab[2]);
+    SET_AFFECTED(tab[3]);
     SET_AFFECTED(tab[4]);
     SET_TRUTH_VALUE(tab[0],1);
     SET_TRUTH_VALUE(tab[2],1);
 
     value_print( tab, 5 );
 
-    printf( "\e[44mOK\e[m !\n" );
+    printf("showing all iterations\n");
+
+    int cur = 0;
+    while ( next_combination( tab, &cur, 5) != 1){
+        value_print(tab,5);
+    }
+
+    printf( "\033[44mOK\033[m !\n" );
     HLINE
 }
 
@@ -284,7 +293,7 @@ void test_solve()
 /*
  * run all test successively
  */
-int main(){
+int main(int argc, char** argv){
 
     HLINE
 
@@ -296,3 +305,6 @@ int main(){
     return 0;
 
 }
+
+
+

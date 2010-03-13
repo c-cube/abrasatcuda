@@ -24,16 +24,16 @@ void clause_print( atom_t *clause, atom_t* clause_end )
 {
     atom_t *iterator = NULL;
     int is_first = 1;
-    printf("\e[32m(\e[m");
+    printf("\033[32m(\033[m");
 
     while ( atom_iterate( clause, clause_end, &iterator) != -1 ){
         if (is_first)
             is_first = 0;
         else
-            printf("\e[32m v \e[m");
+            printf("\033[32m v \033[m");
         if (IS_NEGATED( *iterator ))
             printf("-");
         printf("%d", VARIABLE_NAME( *iterator ));
     } 
-    printf("\e[32m)\e[m");
+    printf("\033[32m)\033[m");
 }

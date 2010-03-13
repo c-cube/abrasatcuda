@@ -190,7 +190,7 @@ inline void formula_print(
             formula_item( formula, clauses_index, i ), 
             formula_item( formula, clauses_index, i+1 ) );
         if (i<n-1)
-            printf("\e[36m /\\ \e[m\n");
+            printf("\033[36m /\\ \033[m\n");
         else
             printf("\n");
     }

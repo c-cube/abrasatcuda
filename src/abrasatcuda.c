@@ -33,7 +33,7 @@ int main( int argc, char ** argv )
 
     int answer = solve( formula, clauses_index, num_clause );
 
-    printf("\e[31;4mAnswer : %s\e[m \n", answer ? "Vrai" : "Faux" );
+    printf("\033[31;4mAnswer : %s\033[m \n", answer ? "Vrai" : "Faux" );
 
 
     // de-allocate memory
