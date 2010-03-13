@@ -1,14 +1,29 @@
 Structures de donnees utilisees: (ce que possede un thread)
-    int n : nombre de clauses
-    tableau de pointeurs vers les clauses (taille n+1, le dernier pointeur 
+__partagées (en ro)__
+    [formula] : tableau contenant tous les atomes, les uns après les autres (clauses concaténées)
+    [n] : nombre de clauses
+    [clauses_index] : tableau d'indices : début de chaque clause dans la formule.
         indique la fin de la dernière clause)
-    tableau de clauses (taille n)
-    tableau de booleen indiquant les clauses satisfaites (taille n)
-    1 variable = 1 mot de 16 bits
-        bit 1: affectation
+__privée__
+    [satisfied] : tableau de booleen indiquant les clauses satisfaites (taille n)
+    [affectations] : tableau indiquant les valeurs de vérité des variables (si déjà affectées)
+    
+    
+    
+    
+
+    1 variable = 1 mot de 16 bits (short int, 2 octets)
+        bit 1: affectation (MSB)
         bit 2: signe
         bits 3-16: nom de variable
     => macros et masques pour tester les variables
+
+
+    1 valuation (valeur de vérité) = 1 mot de 8 bits (char, 1 octet)
+        bit 1: la variable est-elle immutable (MSB)
+        bit 2: la variable est-elle affectée ?
+        bit 8: valeur de vérité
+    => pourquoi ? difficile de faire plus petit simplement (tableau de champ de bits ??)
 
 
 Renseignements a prendre :
@@ -25,11 +40,12 @@ Objectifs:
 
 
 TODO:
-    ecrire les structures, et macros dans un header
     implementer une version uni-threadee (pour avoir une base pour ecrire les kernel threads):
-        parser le fichier
-        initialiser la formule
+        [OK] parser le fichier
+        [OK] initialiser la formule
         calculer une affectation
         recuperer la satisfiabilite
     
-
+DONE:
+    ecrire les structures, et macros dans un header
+    
