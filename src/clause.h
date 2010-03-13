@@ -34,6 +34,7 @@ as the name is changed.
 #include <assert.h> // assert
 #include <stdio.h> // printf
 
+#include "consts.h"
 
 
 
@@ -112,19 +113,19 @@ inline atom_t* clause_item( atom_t* clause, int n )
 inline int atom_iterate ( atom_t *clause, atom_t *clause_end, atom_t **iterator )
 {
     if ( iterator == NULL )
-        return -1;
+        return FAILURE;
 
 
     // initialization
     if ( *iterator == NULL ){
         *iterator = clause;
-        return 0;
+        return SUCCESS;
     } 
     
     if ( ++(*iterator) == clause_end )
-        return -1;
+        return FAILURE;
 
-    return 0;
+    return SUCCESS;
 }
 
 
@@ -162,18 +163,18 @@ inline int clause_iterate(
     atom_t **iterator)
 {
     if ( iterator == NULL )
-        return -1;
+        return FAILURE;
 
     // if iterator is not initialized, ignore n
     if ( *iterator == NULL ){
         *n = 0;
         *iterator = formula;
     } else if ( *n >= length ){
-        return -1; // end of iteration
+        return FAILURE; // end of iteration
     } else {
         *iterator = formula+(clauses_index_array[++(*n)]);
     }
-    return 0;
+    return SUCCESS;
 }
 
    

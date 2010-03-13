@@ -42,7 +42,7 @@ list_t *read_lines( FILE* input )
     char* linePtr;
     line_t *new_line;
     size_t n = 0;
-    while ( getline( &linePtr, &n, input ) != -1 ) {
+    while ( getline( &linePtr, &n, input ) != FAILURE ) {
         new_line = malloc(sizeof( line_t ));        
         new_line->content = linePtr;
         list_append( lines, &(new_line->list_node) );
@@ -151,7 +151,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
     assert( clause_index == *num_clause );
     assert( offset_in_formula == atom_num );
 
-    return 0; 
+    return SUCCESS; 
 }
         
 

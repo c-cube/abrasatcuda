@@ -21,6 +21,12 @@ as the name is changed.
 #ifndef _SOLVE_H
 #define _SOLVE_H
 
+
+#include <stdio.h>
+#include <assert.h>
+#include "clause.h"
+
+
 /*
  * type representing a truth value for a single variable.
  */
@@ -85,7 +91,7 @@ inline int next_combination( char *vars, int *cur, int n )
 
         // check for termination. The last var is [n], not [n]-1
         if (*cur == n && TRUTH_VALUE(vars[*cur]) == 1)
-            return -1;
+            return FAILURE;
 
 
         // do not consider immutable values
@@ -114,7 +120,7 @@ inline int next_combination( char *vars, int *cur, int n )
     if ( advanced )
         *cur = 1;
 
-    return 0;
+    return SUCCESS;
 }
 
 
@@ -125,15 +131,43 @@ inline int next_combination( char *vars, int *cur, int n )
  */
 inline void initialize_truth_values( char* vars, int *cur, int n )
 {
+    int has_found_mutable = 0;
+
     *cur = 1;
     for (int i = 1; i <= n; ++i ){
         if ( ! IS_IMMUTABLE(vars[i]) ){
             SET_AFFECTED(vars[i]);
             SET_FALSE(vars[i]);
+
+            // set *cur to the first interesting var
+            if ( ! has_found_mutable ){
+                has_found_mutable = 1;
+                *cur = i;
+            }
         }
     }
 }
 
+
+
+
+/*
+ * this function verifies if a formula has still a chance to be satisfiable 
+ * with the current variable affectations.
+ * Arguments : 
+ * [formula] : whole formula (raw array of atom_t)
+ * [clauses_index] : array of size [n]+1, with the offset of each clause inside [formula]
+ * [vars] : array of truth values
+ * [satisfied_clauses] : array of boolean, to know which clauses are satisfied
+ * [n] : number of clauses
+ */
+
+int formula_is_satisfied( 
+    atom_t* formula, 
+    atom_t* clauses_index,  
+    char* vars,
+    char* satisfied_clauses,
+    int n );
 
 
 #endif

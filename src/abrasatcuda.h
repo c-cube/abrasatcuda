@@ -22,6 +22,7 @@ as the name is changed.
 #define _ABRASATCUDA_H
 
 #include "clause.h"
+#include "consts.h"
 
 int solve( atom_t *formula, atom_t* clauses_index, int n );
 

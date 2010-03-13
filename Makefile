@@ -17,7 +17,7 @@ LDFLAGS=
 
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
-OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o
+OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/solve.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h
 
 
@@ -47,8 +47,8 @@ abrasatcuda:  $(OBJECTS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
 
 # binary for testing
-test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o
-	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o -o test_all
+test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o
+	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o -o test_all
 
 
 # object files
@@ -62,6 +62,8 @@ ${BUILD}/parser.o: ${SRC}/parser.c $(HEADERS)
 ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
 	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
+${BUILD}/solve.o: ${SRC}/solve.c ${SRC}/solve.h
+	$(CC) $(CFLAGS) ${SRC}/solve.c -c -o ${BUILD}/solve.o
 
 
 
