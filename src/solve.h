@@ -57,7 +57,7 @@ inline void value_print( value_t* values, int n )
         else
             escape_sequence = 34; // blue
           
-        printf("%d=\e[%dm%d\e[m, ", i, escape_sequence, TRUTH_VALUE(values[i]));
+        printf("%d=\033[%dm%d\033[m, ", i, escape_sequence, TRUTH_VALUE(values[i]));
     }
     printf("\n");
 }
@@ -67,19 +67,42 @@ inline void value_print( value_t* values, int n )
 
 /*
  * this function finds the next combination of binary values
- * for items of the array. It returns -1 if all possibilities have been enumerated
- * [vars] is the array of char (each representing the binary value of a var)
+ * for items of the array. It returns -1 if all possibilities have been enumerated.
+ * It ignores immutable vars.
+ * [vars] is the array of char (each representing the binary value of a var), mutated each iteration
  * [cur] is a reference to the current pending var, mutated each iteration.
- * [n] is the number of vars, ie the length of [vars]
+ * [n] is the number of vars; The length of [vars] is [n]+1 (var 0 does not exist)
  */
+
 inline int next_combination( char *vars, int *cur, int n )
 {
-    // check for termination
-    if (*cur == n && vars[*cur] == 1)
+    // check for termination. The last var is [n], not [n]-1
+    if (*cur == n && TRUTH_VALUE(vars[*cur]) == 1)
         return -1;
 
+    while (1){
 
-    return 0;
+        // do not consider immutable values
+        if (IS_IMMUTABLE(vars[*cur])){ 
+            (*cur)++;
+            continue; 
+        }
+
+        // omg this var is not affected yet !
+        assert( IS_AFFECTED(vars[*cur]) );
+
+        if (TRUTH_VALUE(vars[*cur])){
+            SET_TRUTH_VALUE(vars[*cur], 0);
+            ++(*cur);
+            continue;
+        }
+
+        // this var is affected to 0, switch it to 1.
+        assert(TRUTH_VALUE(vars[*cur]) == 0);
+        SET_TRUTH_VALUE(vars[*cur], 1);
+        return 0;
+    }
+
 }
 
 
