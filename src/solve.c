@@ -1,3 +1,4 @@
+
 #include "solve.h"
 
 
@@ -11,7 +12,7 @@
  * [n] is the number of vars; The length of [vars] is [n]+1 (var 0 does not exist)
  */
 
-inline int next_combination( value_t*vars, int *cur, int n )
+inline success_t next_combination( value_t*vars, int *cur, int n )
 {
     
 
@@ -83,7 +84,7 @@ inline void initialize_truth_values( value_t* vars, int *cur, int n )
  * a brute force solver, iterating over all possibilities until it exhausts them
  * or finds a satisfying affectation of vars
  */
-inline int brute_force(atom_t* formula, atom_t* clauses_index, value_t* vars, int n)
+inline success_t brute_force(atom_t* formula, atom_t* clauses_index, value_t* vars, int n)
 {
     // initialize all free vars
     int current_var;
@@ -137,8 +138,8 @@ inline int brute_force(atom_t* formula, atom_t* clauses_index, value_t* vars, in
     // try all possibilities
     while ( next_combination( vars, &current_var, n ) != FAILURE ){
         printf("combination "); value_print( vars, n );
-        int this_clause_ok = formula_is_satisfied( 
-            formula, clauses_index, vars, satisfied_clauses, n );
+        int this_clause_ok = formula_is_satisfiable( 
+            formula, clauses_index, vars, satisfied_clauses, 0, n );
         if ( this_clause_ok == SUCCESS )
             return SUCCESS; // success !
         printf("fail\n");
@@ -156,10 +157,11 @@ inline int brute_force(atom_t* formula, atom_t* clauses_index, value_t* vars, in
 
 
 // this is the entry point of a thread
-int solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int n )
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int n )
 {
     // current default implementation 
-    int answer = dpll( formula, clauses_index, vars, n );
+    truth_t answer = dpll( formula, clauses_index, vars, n );
+
 
     /*
      * other implementation : brute force (not correct yet)

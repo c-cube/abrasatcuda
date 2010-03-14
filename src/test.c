@@ -242,7 +242,7 @@ void test_solve()
     printf( "testing solve.h... \n" );
 
 
-    value_ta = 0;
+    value_t a = 0;
     printf("a = 0 is immutable : %d, affected : %d, has truth value : %d\n",
         IS_IMMUTABLE(a), IS_AFFECTED(a), TRUTH_VALUE(a));
     SET_TRUE(a);
@@ -269,7 +269,7 @@ void test_solve()
     // iterations
     printf("builds a 5 var-length truth value table\n");
 
-    value_ttab[6];
+    value_t tab[6];
     
     SET_IMMUTABLE(tab[1]);
     SET_IMMUTABLE(tab[4]);
@@ -280,15 +280,15 @@ void test_solve()
 
     printf("initializes the tab\n");
     int cur = 0;
-    initialize_truth_values( tab, &cur, 6);
+    //initialize_truth_values( tab, &cur, 6);
 
     value_print( tab, 6 );
 
     printf("showing all iterations\n");
 
-    while ( next_combination( tab, &cur, 6) != -1){
-        value_print(tab,6);
-    }
+    //while ( next_combination( tab, &cur, 6) != -1){
+    //    value_print(tab,6);
+    //}
 
     printf( "\033[44mOK\033[m !\n" );
     HLINE

@@ -5,6 +5,9 @@
 #ifndef _DPLL_H
 #define _DPLL_H
 
+#include <assert.h>
+
+#include "clause.h"
 #include "consts.h"
 #include "vars.h"
 
@@ -22,7 +25,7 @@
  * [n] : number of clauses
  */
 
-inline truth_t formula_is_satisfiable( 
+inline truth_t formula_is_satisfiable(  
     atom_t* formula, 
     atom_t* clauses_index,  
     value_t* vars,
@@ -178,6 +181,34 @@ inline int find_pushed( value_t *vars, int stack_depth, int n )
     return win_index;
 }
 
+
+/*
+ * This function unrolls every change that happened after the 
+ * false function call at depth [stack_depth].
+ * It will search for every var affected and clause satisfied at a higher depth
+ * then the one given.
+ * It does not affect changes occured at the level [stack_depth].
+ */
+inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, int stack_depth, int n )
+{
+    for ( int i = 0; i<n; ++i ){
+        // all vars affected at this depth must be unaffected
+        if ( STACK_DEPTH(vars[i]) > stack_depth ){
+            SET_NON_AFFECTED(vars[i]);
+            SET_STACK_DEPTH(vars[i],0);
+        }
+
+        if ( STACK_DEPTH(satisfied_clauses[i] ) > stack_depth ){
+            SET_NOT_SATISFIED(satisfied_clauses[i]);
+            SET_STACK_DEPTH(satisfied_clauses[i], 0);
+        }
+    }
+}
+
+            
+            
+
+
 /*
  * tries to solve the problem with the DPLL algorithm
  *
@@ -194,152 +225,11 @@ inline int find_pushed( value_t *vars, int stack_depth, int n )
  * End
  *
  */
-inline success_t dpll(
+success_t dpll(
     atom_t* formula,
     atom_t *clauses_index,
     value_t *vars,
-    int n)
-{
-    // manage false stack. We start from 1, because it allows us to detect exhaution easily on stack_depth == 0
-    int stack_depth = 1;
-
-    // initializes satisfied_clauses
-    satisfied_t satisfied_clauses[n];
-    for (int i = 0; i<n; ++i )
-        satisfied_clauses[i] = 0;
-
-    int last_pushed_var = -1;
-
-    /*
-     * Start. At this point, we have to update satisfied_clauses info, and see if 
-     * the formula is still potentially satisﬁable.
-     * If it is, we jump on branch for further exploration.
-     * If not, we have to change of branch; if we are on a positive choice branch,
-     *      we just have to go on the negative one;
-     *      if we are on a negative branch, we must backtrack because we exhausted 
-     *      the branch.
-     */
-    start:
-
-        // exhausted all possibilities at root, loser !
-        if (stack_depth == 0 )
-            return FAILURE;
-
-        // check if all clauses are satisfied, and update information about it
-        if ( all_clauses_are_satisfied( satisfied_clauses, n ) == TRUE ){
-            return SUCCESS; // win !
-        }
-
-        // try to propagate unit clauses.
-        success_t propagate_sth = unit_propagation( formula, clauses_index, 
-            vars, satisfied_clauses, stack_depth, n );
-
-        // something has changed.
-        if ( propagate_sth == SUCCESS )
-            goto check;
-        else
-            goto branch;
-
-    /*
-     * check for changes, and react properly.
-     */
-    check:
-        // if formula is no more satisfiable, we failed.
-        if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
-                                                        stack_depth, n ) == FALSE ){
-
-            assert( stack_depth > 0 );
-
-            goto failure;
-
-        } else {
-            // thos is not yet a failure nor a success, we have to dig deeper to find out.
-
-            goto branch;
-
-        }
-        
-
-    /*
-     * We just met failure.
-     * Now we have to recognize it to deal with it properly.
-     */
-    failure:
-        
-        // what is the last pushed var ?
-        int last_pushed_var = find_pushed( vars, stack_depth, n );
-
-        if ( last_pushed_var == -1 ) // root of call stack
-            return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
-
-        if ( TRUTH_VALUE( vars[last_pushed_var] ) == 1 ){
-            // the previous iteration was a test for positive affectation of this var
-            // we now have to test the negative choice.
-
-            // so we cancel changes done by the previous affectation
-            unroll( vars, satisfied_clauses, stack_depth, n);
-
-            // and go on with the new choice
-            goto failure_positive;
-
-        } else {
-            // uh-oh, this var has been thoroughly tested without results, fail.
-            unroll( vars, satisfied_clauses, stack_depth, n);
-
-            goto failure_negative;
-        }
-        
-
-    /*
-     * formula has still a chance to be satisfiable, so we 
-     * choose a var, and test it with positive value.
-     */
-    branch:
-        int next_var = heuristic( formula, clauses_index, vars, n );
-        
-        /*
-         * first try. failure of the first branch will lead to 
-         * the label "failure_positive".
-         */
-
-        // simulate a function call
-        stack_depth++;
-
-        // affect the var with positive value
-        SET_AFFECTED(vars[next_var])
-        SET_STACK_DEPTH(vars[next_var], stack_depth);
-        SET_TRUE(vars[next_var]);
-
-        goto start;
-
-    /*
-     * the try with positive value has failed.
-     * We remain at the same stack depth, but try with a negative value.
-     */
-    failure_positive:
-        SET_FALSE(vars[last_pushed_var]);
-
-        goto start;
-        
-    /* 
-     * Uh-oh, the negative try is also a failure. So, we have to backtrack because
-     * the previous choice was not the good one.
-     */
-    failure_negative:
-        SET_NON_AFFECTED(vars[last_pushed_var]);
-        SET_STACK_DEPTH(vars[last_pushed_var], 0); // forget about it
-
-        stack_depth--;
-
-        // there has been a failure, now we have to deal with it on previous recursive call.
-        goto failure;
-
-
-    end:
-        printf("what are you doing here ???\n");
-        assert(0);
-}
-
+    int n);
 
 
 

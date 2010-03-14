@@ -63,7 +63,6 @@ typedef short satisfied_t;
 
 
 #define STACK_DEPTH(x) ((x) & 0x3FFE)
-#define SET_STACK_DEPTH(x,depth) ((x) = ((x)& 0xC001) | (depth) << 1)
-
+#define SET_STACK_DEPTH(x,depth) ((x) = ((x) & 0xC001) | (depth) << 1)
 
 #endif

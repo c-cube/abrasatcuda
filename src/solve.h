@@ -26,6 +26,7 @@ as the name is changed.
 #include <assert.h>
 
 #include "clause.h"
+#include "vars.h"
 #include "dpll.h"
 
 // prints truth values in a nice way
@@ -68,7 +69,7 @@ inline void value_print( value_t* values, int n )
  * It must find out if clauses are satisfiables with this repartition, by
  * brute force over others vars.
  */
-int solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int n );
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int n );
 
 
 

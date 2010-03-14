@@ -16,6 +16,7 @@ typedef int success_t;
 
 // for predicates
 typedef short truth_t;
+
 #define TRUE (1)
 #define FALSE (0)
 
