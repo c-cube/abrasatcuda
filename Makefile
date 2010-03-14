@@ -34,8 +34,13 @@ all: $(TARGETS)
 test: test_all
 	./test_all
 
-test_main: abrasatcuda
+main: abrasatcuda
+	echo "example.cnf :"
 	./abrasatcuda tests/example.cnf
+	echo "trivial.cnf :"
+	./abrasatcuda tests/trivial.cnf
+	echo "false.cnf :"
+	./abrasatcuda tests/false.cnf
 
 check: check.hs
 	ghc -O2 --make check.hs -o check
