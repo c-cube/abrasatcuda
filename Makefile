@@ -46,7 +46,7 @@ check: check.hs
 	ghc -O2 --make check.hs -o check
 
 count:
-	grep -v '^[ ]*$$' ${src}/* | wc -l	
+	grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
 # This targets compiles the main binary
 abrasatcuda:  $(OBJECTS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
