@@ -17,7 +17,7 @@ LDFLAGS=
 
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
-OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/solve.o
+OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/solve.o ${BUILD}/dpll.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h
 
 
@@ -52,8 +52,8 @@ abrasatcuda:  $(OBJECTS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
 
 # binary for testing
-test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o
-	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o -o test_all
+test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o
+	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o -o test_all
 
 
 # object files
@@ -61,7 +61,7 @@ test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o
 ${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c $(HEADERS)
 	$(CC) $(CFLAGS) -c ${SRC}/abrasatcuda.c -o ${BUILD}/abrasatcuda.o
 
-${BUILD}/parser.o: ${SRC}/parser.c $(HEADERS)
+${BUILD}/parser.o: ${SRC}/parser.c ${SRC}/parser.h
 	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
 ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
@@ -70,6 +70,9 @@ ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
 ${BUILD}/solve.o: ${SRC}/solve.c ${SRC}/solve.h
 	$(CC) $(CFLAGS) ${SRC}/solve.c -c -o ${BUILD}/solve.o
 
+# TODO : build it as a dynamic lib, to allow runtime choice of solve function ?
+${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h
+	$(CC) $(CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
 
 
 
