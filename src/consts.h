@@ -3,6 +3,8 @@
  * intented to be included everywhere
  */
 
+#ifndef _CONSTS_H
+#define _CONSTS_H
 
 // for backtracking
 
@@ -19,3 +21,9 @@ typedef short truth_t;
 
 
 #define HLINE printf("-------------------------------------------------------\n");
+
+
+
+
+
+#endif
