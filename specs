@@ -49,3 +49,19 @@ TODO:
 DONE:
     ecrire les structures, et macros dans un header
     
+
+
+Algorithme : (DPLL)
+    Il s'agit d'une recherche exhaustive guidée par des heuristiques. 
+    À chaque étape, on cherche les clauses unitaires (un seul atome non encore affecté), on affecte les variables
+    concernées (un seul choix possibles).
+    Si toutes les clauses sont satisfaites, on retourne succès
+    Si l'une des clauses est absurde, on retourne échec
+    Sinon, on choisit de manière "éclairée" une variable, et on récurse sur les 2 affectations possibles de 
+    cette variable.
+
+Problèmes:
+    comment se souvenir de chaque changement (quand on unit_propagate ou qu'on récurse, par exemple)
+    comment implémenter la récursivité ?
+    comment occuper les threads qui ont fini trop tot (branche clairement insatisfiable)
+        -> file d'attente de tâches commune ? (pb: parcours en largeur et non en profondeur)
