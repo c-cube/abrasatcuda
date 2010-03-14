@@ -36,7 +36,7 @@ int main( int argc, char ** argv )
 
     HLINE
     printf("tries to solve\n");
-    int answer = solve( formula, clauses_index, num_clause );
+    int answer = solve( formula, clauses_index, num_clause, num_var );
 
     printf("Answer : \033[31;4m%s\033[m \n", answer == SUCCESS ? "True" : "False" );
 
@@ -57,10 +57,10 @@ int main( int argc, char ** argv )
  */
 
 
-int solve( atom_t *formula, atom_t* clauses_index, int n )
+int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 {
     // allocates space for n vars
-    value_t vars[n];
+    value_t vars[var_n];
 
     // TODO : create CUDA threads, each with its own [vars] array,
     // and dispatch it in CUDA.
@@ -70,7 +70,7 @@ int solve( atom_t *formula, atom_t* clauses_index, int n )
     // if a thread finds out that a var cannot be true (exhausted possibilities ?)
     // it may tell the other threads to set this var to 0)
 
-    return solve_thread( formula, clauses_index, vars, n );
+    return solve_thread( formula, clauses_index, vars, clause_n, var_n );
 }
 
 

@@ -9,20 +9,20 @@
  * It ignores immutable vars.
  * [vars] is the array of value_t (each representing the binary value of a var), mutated each iteration
  * [cur] is a reference to the current pending var, mutated each iteration.
- * [n] is the number of vars; The length of [vars] is [n]+1 (var 0 does not exist)
+ * [var_n] is the number of vars; The length of [vars] is [var_n]+1 (var 0 does not exist)
  */
 
-inline success_t next_combination( value_t*vars, int *cur, int n )
+inline success_t next_combination( value_t*vars, int *cur, int var_n )
 {
     
 
     int advanced = 0;
     while (1){
 
-        // check for termination. The last var is [n], not [n]-1
-        if (*cur == n && (TRUTH_VALUE(vars[*cur]) == 1 || IS_IMMUTABLE(vars[*cur]))){
+        // check for termination. The last var is [var_n], not [var_n]-1
+        if (*cur == var_n && (TRUTH_VALUE(vars[*cur]) == 1 || IS_IMMUTABLE(vars[*cur]))){
             return FAILURE;
-            printf("next_combination failed on cur = %d with ", *cur); value_print( vars, n); 
+            printf("next_combination failed on cur = %d with ", *cur); value_print( vars, var_n); 
         }
 
 
@@ -61,12 +61,12 @@ inline success_t next_combination( value_t*vars, int *cur, int n )
  * we can iterate on combinations on it.
  * It mainly SET_AFFECTED all the truth values and set them to 0
  */
-inline void initialize_truth_values( value_t* vars, int *cur, int n )
+inline void initialize_truth_values( value_t* vars, int *cur, int var_n )
 {
     int has_found_mutable = 0;
 
     *cur = 1;
-    for (int i = 1; i <= n; ++i ){
+    for (int i = 1; i <= var_n; ++i ){
         if ( ! IS_IMMUTABLE(vars[i]) ){
             SET_AFFECTED(vars[i]);
             SET_FALSE(vars[i]);
@@ -84,19 +84,20 @@ inline void initialize_truth_values( value_t* vars, int *cur, int n )
  * a brute force solver, iterating over all possibilities until it exhausts them
  * or finds a satisfying affectation of vars
  */
-inline success_t brute_force(atom_t* formula, atom_t* clauses_index, value_t* vars, int n)
+inline success_t brute_force(atom_t* formula, atom_t* clauses_index, 
+    value_t* vars, int clause_n, int var_n)
 {
     // initialize all free vars
     int current_var;
-    initialize_truth_values( vars, &current_var, n );
+    initialize_truth_values( vars, &current_var, var_n );
 
-    printf("current array of vars : "); value_print(vars,n);
+    printf("current array of vars : "); value_print(vars,var_n);
 
     // compute which clauses are satisfied
-    satisfied_t satisfied_clauses[n];
+    satisfied_t satisfied_clauses[var_n];
 
     int cur_index;
-    for (cur_index = 0; cur_index < n; ++cur_index ){
+    for (cur_index = 0; cur_index < var_n; ++cur_index ){
         
         int clause_satisfied = 0;
         atom_t* clause = formula + clauses_index[cur_index];
@@ -136,10 +137,10 @@ inline success_t brute_force(atom_t* formula, atom_t* clauses_index, value_t* va
     printf("tries every possibility !\n");
     
     // try all possibilities
-    while ( next_combination( vars, &current_var, n ) != FAILURE ){
-        printf("combination "); value_print( vars, n );
-        int this_clause_ok = formula_is_satisfiable( 
-            formula, clauses_index, vars, satisfied_clauses, 0, n );
+    while ( next_combination( vars, &current_var, var_n ) != FAILURE ){
+        printf("combination "); value_print( vars, var_n );
+        int this_clause_ok = formula_is_satisfiable( formula, clauses_index, 
+                vars, satisfied_clauses, 0, clause_n, var_n );
         if ( this_clause_ok == SUCCESS )
             return SUCCESS; // success !
         printf("fail\n");
@@ -157,10 +158,10 @@ inline success_t brute_force(atom_t* formula, atom_t* clauses_index, value_t* va
 
 
 // this is the entry point of a thread
-success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int n )
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
 {
     // current default implementation 
-    truth_t answer = dpll( formula, clauses_index, vars, n );
+    truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n );
 
 
     /*
@@ -170,7 +171,7 @@ success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, i
     // int answer = brute_force( formula, clauses_index, vars, n); 
 
     if( answer == SUCCESS )
-        value_print( vars, n );
+        value_print( vars, var_n );
 
     return answer;
 

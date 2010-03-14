@@ -30,9 +30,9 @@ as the name is changed.
 #include "dpll.h"
 
 // prints truth values in a nice way
-inline void value_print( value_t* values, int n )
+inline void value_print( value_t* values, int var_n )
 {
-    for (int i=1; i<=n; ++i){
+    for (int i=1; i<=var_n; ++i){
         int escape_sequence = 0;
         if ( IS_IMMUTABLE(values[i] ))
             escape_sequence = 31; // red
@@ -69,7 +69,8 @@ inline void value_print( value_t* values, int n )
  * It must find out if clauses are satisfiables with this repartition, by
  * brute force over others vars.
  */
-success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int n );
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, 
+    int clause_n, int var_n );
 
 
 

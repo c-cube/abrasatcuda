@@ -35,11 +35,11 @@ test: test_all
 	./test_all
 
 main: abrasatcuda
-	echo "example.cnf :"
+	echo -e "\e[45;4mexample.cnf :\e[m"
 	./abrasatcuda tests/example.cnf
-	echo "trivial.cnf :"
+	echo -e "\e[45;4mtrivial.cnf :\e[m"
 	./abrasatcuda tests/trivial.cnf
-	echo "false.cnf :"
+	echo -e "\e[45;4mfalse.cnf :\e[m"
 	./abrasatcuda tests/false.cnf
 
 check: check.hs

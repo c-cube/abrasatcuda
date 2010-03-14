@@ -18,11 +18,13 @@
  * are satisfied or not.
  * Arguments : 
  * [formula] : whole formula (raw array of atom_t)
- * [clauses_index] : array of size [n]+1, with the offset of each clause inside [formula]
+ * [clauses_index] : array of size [clause_n]+1, with the offset of 
+ *      each clause inside [formula]
  * [vars] : array of truth values
  * [satisfied_clauses] : array of boolean, to know which clauses are satisfied
  * [stack_depth] : current depth of the recursion stack
- * [n] : number of clauses
+ * [clause_n] : number of clauses
+ * [var_n] : number of var
  */
 
 inline truth_t formula_is_satisfiable(  
@@ -31,10 +33,11 @@ inline truth_t formula_is_satisfiable(
     value_t* vars,
     satisfied_t* satisfied_clauses,
     int stack_depth,
-    int n )
+    int clause_n,
+    int var_n )
 {
     // for each clause
-    for (int i = 0; i<n; ++i ){
+    for (int i = 0; i<clause_n; ++i ){
 
         // this clause is already satisfied, next
         if ( SATISFIED(satisfied_clauses[i]) )
@@ -93,10 +96,10 @@ inline truth_t formula_is_satisfiable(
  */
 inline truth_t all_clauses_are_satisfied( 
     satisfied_t *satisfied_clauses,
-    int n)
+    int clause_n)
 {
 
-    for (int i = 0; i < n; ++i ){
+    for (int i = 0; i < clause_n; ++i ){
         if ( ! SATISFIED( satisfied_clauses[i] ) )
             return FALSE;
     }
@@ -107,12 +110,12 @@ inline truth_t all_clauses_are_satisfied(
 /*
  * This finds unit clauses and propagates them.
  */
-inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, int stack_depth, int n )
+inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, int stack_depth, int clause_n, int var_n )
 {
     success_t did_something = FAILURE;
 
     //for each clause
-    for ( int index = 0; index < n; ++index ){
+    for ( int index = 0; index < clause_n; ++index ){
 
         atom_t *clause = formula + (clauses_index[index]);
         atom_t *clause_end = formula + (clauses_index[index+1]);
@@ -156,23 +159,20 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
  * gives the number of the var chosen by an heuristic for
  * the next branch to explore
  */
-inline int heuristic(
+int heuristic(
     atom_t* formula,
     atom_t *clauses_index,
     value_t *vars,
-    int n)
-{
-    // TODO
-    return 0;
-}
+    int clause_n,
+    int var_n);
 
 /*
  * this function finds which var of [vars] has been pushed at this [stack_depth].
  */
-inline int find_pushed( value_t *vars, int stack_depth, int n )
+inline int find_pushed( value_t *vars, int stack_depth, int var_n )
 {
     int win_index = -1;
-    for (int i = 0; i<n; ++i ){
+    for (int i = 0; i<var_n; ++i ){
         if ( IS_AFFECTED(vars[i]) && STACK_DEPTH(vars[i] == stack_depth) ){
             assert( win_index == -1 ); // only one var by push
             win_index = i;
@@ -189,14 +189,18 @@ inline int find_pushed( value_t *vars, int stack_depth, int n )
  * then the one given.
  * It does not affect changes occured at the level [stack_depth].
  */
-inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, int stack_depth, int n )
+inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
+    int stack_depth, int clause_n, int var_n )
 {
-    for ( int i = 0; i<n; ++i ){
+    for ( int i = 0; i < var_n; ++i ){
         // all vars affected at this depth must be unaffected
         if ( STACK_DEPTH(vars[i]) > stack_depth ){
             SET_NON_AFFECTED(vars[i]);
             SET_STACK_DEPTH(vars[i],0);
         }
+    }
+
+    for ( int i = 0; i < clause_n; ++i ){
 
         if ( STACK_DEPTH(satisfied_clauses[i] ) > stack_depth ){
             SET_NOT_SATISFIED(satisfied_clauses[i]);
@@ -229,7 +233,8 @@ success_t dpll(
     atom_t* formula,
     atom_t *clauses_index,
     value_t *vars,
-    int n);
+    int clause_n,
+    int var_n);
 
 
 
