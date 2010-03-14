@@ -85,13 +85,16 @@ inline void value_print( value_t* values, int n )
 
 inline int next_combination( char *vars, int *cur, int n )
 {
+    
 
     int advanced = 0;
     while (1){
 
         // check for termination. The last var is [n], not [n]-1
-        if (*cur == n && TRUTH_VALUE(vars[*cur]) == 1)
+        if (*cur == n && (TRUTH_VALUE(vars[*cur]) == 1 || IS_IMMUTABLE(vars[*cur]))){
             return FAILURE;
+            printf("next_combination failed on cur = %d with ", *cur); value_print( vars, n); 
+        }
 
 
         // do not consider immutable values

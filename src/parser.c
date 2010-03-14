@@ -132,7 +132,9 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
             if ( current_token == 0 ){
                 // remember where new clause begins
                 (*clauses_index)[ ++ clause_index ] = offset_in_formula; // clause_t here
+                DEBUG("clauses_index[%d] = %d\n", clause_index, offset_in_formula );
                 offset_in_line = 0; // begin next line
+                assert( (*clauses_index)[clause_index] == offset_in_formula );
                 break;
             } else {
                 offset_in_line = offset_in_line_bis; 
@@ -150,6 +152,9 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
     DEBUG("number of clauses = %d, clause_index = %d\n", *num_clause, clause_index );
     assert( clause_index == *num_clause );
     assert( offset_in_formula == atom_num );
+    printf("offset_in_formula = %d, num_clause = %d,  clause_index[n] = %d\n", offset_in_formula, 
+        *num_clause, (*clauses_index)[*num_clause]);
+    assert( offset_in_formula == (*clauses_index)[*num_clause] );
 
     return SUCCESS; 
 }
