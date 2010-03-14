@@ -242,7 +242,7 @@ void test_solve()
     printf( "testing solve.h... \n" );
 
 
-    char a = 0;
+    value_ta = 0;
     printf("a = 0 is immutable : %d, affected : %d, has truth value : %d\n",
         IS_IMMUTABLE(a), IS_AFFECTED(a), TRUTH_VALUE(a));
     SET_TRUE(a);
@@ -269,7 +269,7 @@ void test_solve()
     // iterations
     printf("builds a 5 var-length truth value table\n");
 
-    char tab[6];
+    value_ttab[6];
     
     SET_IMMUTABLE(tab[1]);
     SET_IMMUTABLE(tab[4]);

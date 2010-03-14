@@ -132,7 +132,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
             if ( current_token == 0 ){
                 // remember where new clause begins
                 (*clauses_index)[ ++ clause_index ] = offset_in_formula; // clause_t here
-                DEBUG("clauses_index[%d] = %d\n", clause_index, offset_in_formula );
+                //DEBUG("clauses_index[%d] = %d\n", clause_index, offset_in_formula );
                 offset_in_line = 0; // begin next line
                 assert( (*clauses_index)[clause_index] == offset_in_formula );
                 break;
