@@ -1,5 +1,6 @@
 
 #include "dpll.h"
+#include "solve.h" // value_print
 
 // a simple "heuristic" (just picks up the first non-affected var it finds)
 int heuristic(
@@ -10,10 +11,12 @@ int heuristic(
     int var_n)
 {
     // iterate on vars
-    for (int i = 0; i<var_n; ++i){
-        if ( ! (IS_AFFECTED(vars[i])
-                || IS_IMMUTABLE(vars[i])))
+    for (int i = 1; i <= var_n; ++i){
+        if ( ! ( IS_AFFECTED(vars[i])
+              || IS_IMMUTABLE(vars[i])))
+        {
             return i;
+        }
     }
 
     return -1; // no free var found !
@@ -46,7 +49,7 @@ success_t dpll(
 
     /*
      * Start. At this point, we have to update satisfied_clauses info, and see if 
-     * the formula is still potentially satisﬁable.
+     * the formula is still potentially satisfiable.
      * If it is, we jump on branch for further exploration.
      * If not, we have to change of branch; if we are on a positive choice branch,
      *      we just have to go on the negative one;
@@ -54,10 +57,21 @@ success_t dpll(
      *      the branch.
      */
     start:
+        printf("@start\n");
+        value_print( vars, var_n );
 
         // exhausted all possibilities at root, loser !
         if (stack_depth == 0 )
             return FAILURE;
+
+
+        // updates info on clauses
+        if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
+                        stack_depth, clause_n, var_n ) == FALSE ){
+
+            assert( stack_depth > 0 );
+            goto failure;
+        }
 
         // check if all clauses are satisfied, and update information about it
         if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
@@ -68,30 +82,21 @@ success_t dpll(
         success_t propagate_sth = unit_propagation( formula, clauses_index, 
             vars, satisfied_clauses, stack_depth, clause_n, var_n );
 
-        // something has changed.
-        if ( propagate_sth == SUCCESS )
-            goto check;
-        else
-            goto branch;
 
-    /*
-     * check for changes, and react properly.
-     */
-    check:
         // if formula is no more satisfiable, we failed.
-        if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
-                        stack_depth, clause_n, var_n ) == FALSE ){
+        if ( propagate_sth == SUCCESS ){
+            if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
+                            stack_depth, clause_n, var_n ) == FALSE ){
 
-            assert( stack_depth > 0 );
+                assert( stack_depth > 0 );
+                goto failure;
+            }         
+        }             
+        
+        // this is not yet a failure nor a success, we have to dig deeper to find out.
+        goto branch;
 
-            goto failure;
-
-        } else {
-            // thos is not yet a failure nor a success, we have to dig deeper to find out.
-
-            goto branch;
-
-        }
+        
         
 
     /*
@@ -99,6 +104,7 @@ success_t dpll(
      * Now we have to recognize it to deal with it properly.
      */
     failure:
+        printf("@failure\n");
         
         // what is the last pushed var ?
         last_pushed_var = find_pushed( vars, stack_depth, var_n );
@@ -128,6 +134,7 @@ success_t dpll(
      * choose a var, and test it with positive value.
      */
     branch:
+        printf("@branch\n");
         next_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
 
         assert( next_var != -1 ); // all vars affected but formula not satisfiable ??
@@ -153,6 +160,7 @@ success_t dpll(
      * We remain at the same stack depth, but try with a negative value.
      */
     failure_positive:
+        printf("@failure positive\n");
         SET_FALSE(vars[last_pushed_var]);
 
         goto start;
@@ -162,6 +170,7 @@ success_t dpll(
      * the previous choice was not the good one.
      */
     failure_negative:
+        printf("@failure negative\n");
 
         // go back in the stack
         stack_depth--;

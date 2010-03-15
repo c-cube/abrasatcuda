@@ -53,7 +53,7 @@ inline truth_t formula_is_satisfiable(
         for ( iterator = clause; iterator < clause_end; ++ iterator ){
             int name = VARIABLE_NAME(*iterator);
             // if this var is not affected, there may be still a chance
-            if ( ! IS_AFFECTED(vars[name]) ){
+            if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
                 clause_satisfiable = TRUE;
                 break;
             }
@@ -65,6 +65,7 @@ inline truth_t formula_is_satisfiable(
             if ( is_negative ){
                 // clause satisfied
                 if ( ! TRUTH_VALUE(vars[name]) ){ 
+                    printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
                     clause_satisfiable = TRUE;
@@ -73,6 +74,7 @@ inline truth_t formula_is_satisfiable(
             } else {
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) ){ 
+                    printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
                     clause_satisfiable = TRUE;
@@ -82,8 +84,10 @@ inline truth_t formula_is_satisfiable(
         }
 
         // there is not free var or satisfying atom, the clause is therefore empty, fail !
-        if ( clause_satisfiable == FALSE )
+        if ( clause_satisfiable == FALSE ){
+            printf("clause %d not satisfiable\n",i);
             return FALSE;
+        }
 
     }
     
@@ -105,6 +109,11 @@ inline truth_t all_clauses_are_satisfied(
     }
     return TRUE;
 }
+
+
+
+
+
 
 
 /*
@@ -134,6 +143,7 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
 
         // propagate the unit clause !
         if ( num_atom == 1 ){
+            printf("unit clause %d, unit var %d\n", index, VARIABLE_NAME(*unit_atom));
             did_something = SUCCESS;
             
             int name = VARIABLE_NAME(*unit_atom);
