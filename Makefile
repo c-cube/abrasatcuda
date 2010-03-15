@@ -48,7 +48,7 @@ check: check.hs
 count:
 	grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
 # This targets compiles the main binary
-abrasatcuda:  $(OBJECTS)
+abrasatcuda:  $(OBJECTS) $(HEADERS)
 	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
 
 # binary for testing
