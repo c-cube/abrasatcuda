@@ -35,11 +35,11 @@ test: test_all
 	./test_all
 
 main: abrasatcuda
-	echo -e "\e[45;4mexample.cnf :\e[m"
+	@echo -e "\n\e[45;4mexample.cnf :\e[m"
 	./abrasatcuda tests/example.cnf
-	echo -e "\e[45;4mtrivial.cnf :\e[m"
+	@echo -e "\n\e[45;4mtrivial.cnf :\e[m"
 	./abrasatcuda tests/trivial.cnf
-	echo -e "\e[45;4mfalse.cnf :\e[m"
+	@echo -e "\n\e[45;4mfalse.cnf :\e[m"
 	./abrasatcuda tests/false.cnf
 
 check: check.hs
@@ -71,7 +71,7 @@ ${BUILD}/solve.o: ${SRC}/solve.c ${SRC}/solve.h
 	$(CC) $(CFLAGS) ${SRC}/solve.c -c -o ${BUILD}/solve.o
 
 # TODO : build it as a dynamic lib, to allow runtime choice of solve function ?
-${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h
+${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
 	$(CC) $(CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
 
 
