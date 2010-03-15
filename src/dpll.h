@@ -37,9 +37,10 @@ inline truth_t formula_is_satisfiable(
     int var_n )
 {
     // for each clause
-    for (int i = 0; i<clause_n; ++i ){
+    for (int i = 0; i < clause_n; ++i ){
 
         // this clause is already satisfied, next
+        assert( STACK_DEPTH(satisfied_clauses[i]) <= stack_depth);
         if ( SATISFIED(satisfied_clauses[i]) )
             continue;
 
@@ -49,11 +50,12 @@ inline truth_t formula_is_satisfiable(
         atom_t *iterator;
 
         // for this clause, check if it is satisfied, or still has a chance
-        int clause_satisfiable = FALSE;
+        truth_t clause_satisfiable = FALSE;
         for ( iterator = clause; iterator < clause_end; ++ iterator ){
             int name = VARIABLE_NAME(*iterator);
             // if this var is not affected, there may be still a chance
             if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
+                printf("clause %d satisfiable thank to free var %d\n", i, name);
                 clause_satisfiable = TRUE;
                 break;
             }
@@ -104,7 +106,7 @@ inline truth_t all_clauses_are_satisfied(
 {
 
     for (int i = 0; i < clause_n; ++i ){
-        if ( ! SATISFIED( satisfied_clauses[i] ) )
+        if ( SATISFIED( satisfied_clauses[i] ) != TRUE )
             return FALSE;
     }
     return TRUE;
@@ -125,6 +127,10 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
 
     //for each clause
     for ( int index = 0; index < clause_n; ++index ){
+
+        // if clause is already satisfied, just don't mind
+        if ( SATISFIED(satisfied_clauses[index]) == TRUE )
+            continue;
 
         atom_t *clause = formula + (clauses_index[index]);
         atom_t *clause_end = formula + (clauses_index[index+1]);
@@ -182,7 +188,7 @@ int heuristic(
 inline int find_pushed( value_t *vars, int stack_depth, int var_n )
 {
     int win_index = -1;
-    for (int i = 0; i<var_n; ++i ){
+    for (int i = 1; i <= var_n; ++i ){
         if ( IS_AFFECTED(vars[i]) && STACK_DEPTH(vars[i] == stack_depth) ){
             assert( win_index == -1 ); // only one var by push
             win_index = i;
@@ -202,7 +208,7 @@ inline int find_pushed( value_t *vars, int stack_depth, int var_n )
 inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
     int stack_depth, int clause_n, int var_n )
 {
-    for ( int i = 0; i < var_n; ++i ){
+    for ( int i = 1; i <= var_n; ++i ){
         // all vars affected at this depth must be unaffected
         if ( STACK_DEPTH(vars[i]) > stack_depth ){
             SET_NON_AFFECTED(vars[i]);

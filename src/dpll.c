@@ -57,11 +57,12 @@ success_t dpll(
      *      the branch.
      */
     start:
-        printf("@start\n");
+        printf("\033[31m->\033[m @start\n");
         value_print( vars, var_n );
+        satisfied_print( satisfied_clauses, clause_n );
 
         // exhausted all possibilities at root, loser !
-        if (stack_depth == 0 )
+        if ( stack_depth <= 0 )
             return FAILURE;
 
 
@@ -75,6 +76,7 @@ success_t dpll(
 
         // check if all clauses are satisfied, and update information about it
         if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
+            printf("all clauses satisfied !\n");
             return SUCCESS; // win !
         }
 
@@ -85,6 +87,7 @@ success_t dpll(
 
         // if formula is no more satisfiable, we failed.
         if ( propagate_sth == SUCCESS ){
+            printf("propagate successfull !\n");
             if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
                             stack_depth, clause_n, var_n ) == FALSE ){
 
@@ -104,13 +107,15 @@ success_t dpll(
      * Now we have to recognize it to deal with it properly.
      */
     failure:
-        printf("@failure\n");
+        printf("\033[31m->\033[m @failure [stack depth %d]\n", stack_depth);
         
         // what is the last pushed var ?
         last_pushed_var = find_pushed( vars, stack_depth, var_n );
 
-        if ( last_pushed_var == -1 ) // root of call stack
+        if ( last_pushed_var == -1 ){ // root of call stack
+            printf("failure at stack depth %d, no last_pushed_var\n",stack_depth);
             return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
+        }
 
         if ( TRUTH_VALUE( vars[last_pushed_var] ) == 1 ){
             // the previous iteration was a test for positive affectation of this var
@@ -134,10 +139,17 @@ success_t dpll(
      * choose a var, and test it with positive value.
      */
     branch:
-        printf("@branch\n");
+        printf("\033[31m->\033[m @branch\n");
         next_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
 
-        assert( next_var != -1 ); // all vars affected but formula not satisfiable ??
+        // assert( next_var != -1 ); // all vars affected but formula not satisfiable ??
+        if ( next_var == -1 ){
+            if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
+                return SUCCESS;
+            } else {
+                goto failure;
+            }
+        }
         printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
         
         /*
@@ -160,7 +172,7 @@ success_t dpll(
      * We remain at the same stack depth, but try with a negative value.
      */
     failure_positive:
-        printf("@failure positive\n");
+        printf("\033[31m->\033[m @failure positive\n");
         SET_FALSE(vars[last_pushed_var]);
 
         goto start;
@@ -170,7 +182,7 @@ success_t dpll(
      * the previous choice was not the good one.
      */
     failure_negative:
-        printf("@failure negative\n");
+        printf("\033[31m->\033[m @failure negative\n");
 
         // go back in the stack
         stack_depth--;
