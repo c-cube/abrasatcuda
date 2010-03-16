@@ -55,10 +55,14 @@ success_t dpll(
      *      the branch.
      */
     start:
+#ifdef DEBUG
         printf("\033[31m->\033[m @start\n");
+#endif
         // debug
+#ifdef DEBUG
         value_print( vars, var_n );
         satisfied_print( satisfied_clauses, clause_n );
+#endif
 
         // exhausted all possibilities at root, loser !
         if ( stack_depth <= 0 )
@@ -75,7 +79,9 @@ success_t dpll(
 
         // check if all clauses are satisfied
         if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
+#ifdef DEBUG
             printf("all clauses satisfied !\n");
+#endif
             return SUCCESS; // win !
         }
 
@@ -85,7 +91,9 @@ success_t dpll(
 
 
         if ( propagate_sth == SUCCESS ){
+#ifdef DEBUG
             printf("propagate successfull !\n");
+#endif
             
             // if formula is no more satisfiable, we failed.
             if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
@@ -105,7 +113,9 @@ success_t dpll(
      * choose a var, and test it with positive value.
      */
     branch:
+#ifdef DEBUG
         printf("\033[31m->\033[m @branch\n");
+#endif
         next_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
 
         // assert( next_var != -1 ); // all vars affected but formula not satisfiable ??
@@ -113,7 +123,9 @@ success_t dpll(
             if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
                 return SUCCESS;
             } else {
+#ifdef DEBUG
                 printf("all vars affected, but not all clauses satisfied ?!\n");
+#endif
 
                 stack_depth--;
                 goto failure;
@@ -123,7 +135,9 @@ success_t dpll(
         // simulate a function call
         stack_depth++;
 
+#ifdef DEBUG
         printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
+#endif
         
         /*
          * first try. failure of the first branch will lead to 
@@ -142,7 +156,9 @@ success_t dpll(
      * Now we have to recognize it to deal with it properly.
      */
     failure:
+#ifdef DEBUG
         printf("\033[31m->\033[m @failure [stack depth %d]\n", stack_depth);
+#endif
         
         // exhausted all possibilities at root, loser !
         if ( stack_depth <= 0 )
@@ -157,7 +173,9 @@ success_t dpll(
         last_pushed_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
 
         if ( last_pushed_var == -1 ){ // root of call stack
+#ifdef DEBUG
             printf("failure at stack depth %d, no last_pushed_var\n",stack_depth);
+#endif
             return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
         }
 
@@ -179,8 +197,10 @@ success_t dpll(
      * We remain at the same stack depth, but try with a negative value.
      */
     failure_positive:
+#ifdef DEBUG
         printf("\033[31m->\033[m @failure positive\n");
         printf("switching var %d to false\n", last_pushed_var);
+#endif
 
         // there has been an unroll, remember that this var is still affected
         SET_AFFECTED(vars[last_pushed_var]);
@@ -194,7 +214,9 @@ success_t dpll(
      * the previous choice was not the good one.
      */
     failure_negative:
+#ifdef DEBUG
         printf("\033[31m->\033[m @failure negative\n");
+#endif
 
         // unroll every change made at this level and upper
         unroll( vars, satisfied_clauses, stack_depth, clause_n, var_n);

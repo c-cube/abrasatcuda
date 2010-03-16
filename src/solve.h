@@ -65,6 +65,9 @@ inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n )
         if ( SATISFIED(satisfied_clauses[i]) ){
             escape_sequence = 32;
             signal_char = '|';
+        } else {
+            signal_char = '_';
+            escape_sequence = 34;
         }
         printf( "%d=\033[%dm%c\033[m, ", i, escape_sequence, signal_char );
     }

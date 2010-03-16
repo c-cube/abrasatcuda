@@ -11,6 +11,8 @@
 #include "consts.h"
 #include "vars.h"
 
+// to change to avoid all messages
+#define DEBUG 1
 
 /*
  * this function verifies if a formula has still a chance to be satisfiable 
@@ -55,7 +57,9 @@ inline truth_t formula_is_satisfiable(
             int name = VARIABLE_NAME(*iterator);
             // if this var is not affected, there may be still a chance
             if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
+#ifdef DEBUG
                 printf("clause %d satisfiable thank to free var %d\n", i, name);
+#endif
                 clause_satisfiable = TRUE;
                 break;
             }
@@ -67,7 +71,9 @@ inline truth_t formula_is_satisfiable(
             if ( is_negative ){
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
+#ifdef DEBUG
                     printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+#endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
                     clause_satisfiable = TRUE;
@@ -76,7 +82,9 @@ inline truth_t formula_is_satisfiable(
             } else {
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
+#ifdef DEBUG
                     printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+#endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
                     clause_satisfiable = TRUE;
@@ -87,7 +95,9 @@ inline truth_t formula_is_satisfiable(
 
         // there is not free var or satisfying atom, the clause is obviously empty, fail !
         if ( clause_satisfiable == FALSE ){
+#ifdef DEBUG
             printf("clause %d not satisfiable\n",i);
+#endif
             return FALSE;
         }
 
@@ -149,7 +159,9 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
 
         // propagate the unit clause !
         if ( num_atom == 1 ){
+#ifdef DEBUG
             printf("unit clause %d, unit var %d\n", index, VARIABLE_NAME(*unit_atom));
+#endif
             did_something = SUCCESS;
             
             int name = VARIABLE_NAME(*unit_atom);
@@ -217,8 +229,9 @@ inline void unroll( value_t *vars, satisfied_t *satisfied_clauses,
     for ( int i = 0; i < clause_n; ++i ){
 
         if ( STACK_DEPTH(satisfied_clauses[i] ) >= stack_depth ){
-            SET_NOT_SATISFIED(satisfied_clauses[i]);
-            SET_STACK_DEPTH(satisfied_clauses[i], 0);
+            satisfied_clauses[i] = 0;
+            //SET_NOT_SATISFIED(satisfied_clauses[i]);
+            //SET_STACK_DEPTH(satisfied_clauses[i], 0);
         }
     }
 }
