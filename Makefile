@@ -41,6 +41,8 @@ main: abrasatcuda
 	./abrasatcuda tests/trivial.cnf
 	@echo -e "\n\e[45;4mfalse.cnf :\e[m"
 	./abrasatcuda tests/false.cnf
+	@echo -e "\n\e[45;4mquinn.cnf :\e[m"
+	./abrasatcuda tests/quinn.cnf
 
 check: check.hs
 	ghc -O2 --make check.hs -o check
