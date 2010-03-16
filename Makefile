@@ -36,13 +36,13 @@ test: test_all
 
 main: abrasatcuda
 	@echo -e "\n\e[45;4mexample.cnf :\e[m"
-	./abrasatcuda tests/example.cnf
+	@./abrasatcuda tests/example.cnf
 	@echo -e "\n\e[45;4mtrivial.cnf :\e[m"
-	./abrasatcuda tests/trivial.cnf
+	@./abrasatcuda tests/trivial.cnf
 	@echo -e "\n\e[45;4mfalse.cnf :\e[m"
-	./abrasatcuda tests/false.cnf
+	@./abrasatcuda tests/false.cnf
 	@echo -e "\n\e[45;4mquinn.cnf :\e[m"
-	./abrasatcuda tests/quinn.cnf
+	@./abrasatcuda tests/quinn.cnf
 
 check: check.hs
 	ghc -O2 --make check.hs -o check
@@ -80,10 +80,10 @@ ${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
 clean:
-	rm -f ${BUILD}/*~ ${BUILD}/a.out ${BUILD}/core
-	rm -f ${BUILD}/*.o
-	rm -f test_all abrasatcuda
+	@rm -f ${BUILD}/*~ ${BUILD}/a.out ${BUILD}/core
+	@rm -f ${BUILD}/*.o
+	@rm -f test_all abrasatcuda
 
 #Cette cible effectue un nettoyage complet de tout fichier généré. Elle efface notamment les exécutables.
 distclean: clean
-	rm -f $(TARGETS)
+	@rm -f $(TARGETS)
