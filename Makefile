@@ -1,7 +1,7 @@
 #Variable contenant le nom du compilateur
 CC=gcc
 #Variable contenant les options passées au compilateur
-CFLAGS=-Wall -pedantic -Os -g  -std=gnu99 #-m32 -Werror
+CFLAGS=-Wall -pedantic -Os -std=gnu99 #-m32 -Werror
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
 #L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
@@ -18,7 +18,7 @@ LDFLAGS=
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda test_all
 OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/solve.o ${BUILD}/dpll.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h
 
 
 # dossiers divers

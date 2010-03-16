@@ -227,9 +227,8 @@ inline void unroll( value_t *vars, satisfied_t *satisfied_clauses,
     for ( int i = 0; i < clause_n; ++i ){
 
         if ( STACK_DEPTH(satisfied_clauses[i] ) >= stack_depth ){
-            satisfied_clauses[i] = 0;
-            //SET_NOT_SATISFIED(satisfied_clauses[i]);
-            //SET_STACK_DEPTH(satisfied_clauses[i], 0);
+            SET_NOT_SATISFIED(satisfied_clauses[i]);
+            SET_STACK_DEPTH(satisfied_clauses[i], 0);
         }
     }
 }

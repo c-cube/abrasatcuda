@@ -26,15 +26,14 @@ int main( int argc, char ** argv )
 
     HLINE
 #ifdef DEBUG
-    printf("parses file %s", file_path );
+    printf("parses file %s\n", file_path );
 #endif
     parse( file_path, &formula, &clauses_index, &num_var, &num_clause );
 
     HLINE
 #ifdef DEBUG
-    printf("file parsed, formula of %d clauses and %d var built\n",
+    printf("file parsed, formula of %d clauses and %d var built\n",num_clause, num_var );
 #endif
-        num_clause, num_var );
 
     formula_print( formula, clauses_index, num_clause );
 

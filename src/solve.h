@@ -46,7 +46,8 @@ inline void value_print( value_t* values, int var_n )
         } 
         printf("%d=\033[%dm%d\033[m", i, escape_sequence, TRUTH_VALUE(values[i]));
 
-        if (IS_AFFECTED(values[i]) || IS_IMMUTABLE(values[i]))
+        //if (IS_AFFECTED(values[i]) || IS_IMMUTABLE(values[i]))
+        if ( STACK_DEPTH(values[i]) > 0 )
             printf("[%d], ", STACK_DEPTH(values[i]));
         else
             printf(", ");
@@ -69,7 +70,15 @@ inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n )
             signal_char = '_';
             escape_sequence = 34;
         }
-        printf( "%d=\033[%dm%c\033[m, ", i, escape_sequence, signal_char );
+        printf( "%d=\033[%dm%c\033[m", i, escape_sequence, signal_char );
+
+        // print stack depth, if any
+        //if ( STACK_DEPTH(satisfied_clauses[i]) > 0 )
+        //    printf("[%d], ", STACK_DEPTH(satisfied_clauses[i]));
+        //else
+        //    printf(", ");
+
+        printf(", ");
     }
     printf("\n");
 }

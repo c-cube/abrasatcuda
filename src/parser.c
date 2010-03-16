@@ -19,6 +19,12 @@ int parse( const char* file_path, atom_t **formula, atom_t **clauses_index, int 
     // open file
     FILE* input = fopen( file_path, "r" );
 
+    // check
+    if ( input == NULL ){
+        printf("unable to open file %s, exit\n", file_path );
+        exit(-1);
+    }
+
     // read lines from file
     list_t *lines = read_lines( input );
     fclose( input );
@@ -77,12 +83,12 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
     int current_token = 0; 
     char *offset_in_line, *offset_in_line_bis;
     // for each line (list_pop returns a list node)
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
     printf("starts loop of parse_lines\n");
 #endif
     while ( (list_iterator = list_pop( lines )) != NULL ){
         iterator = line_of_list_node(list_iterator);
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf( "parser loop with line %s", iterator->content );
 #endif
         
@@ -114,7 +120,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
 
         DROP_COMMENT(iterator) // if line is a comment, drop it
 
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
         printf("searching for clauses\n");
 #endif
 
@@ -137,7 +143,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
             if ( current_token == 0 ){
                 // remember where new clause begins
                 (*clauses_index)[ ++ clause_index ] = offset_in_formula; // clause_t here
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
                 printf("clauses_index[%d] = %d\n", clause_index, offset_in_formula );
 #endif
                 offset_in_line = 0; // begin next line
@@ -161,10 +167,11 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
 #endif
     assert( clause_index == *num_clause );
     assert( offset_in_formula == atom_num );
-#ifdef DEBUG
+#ifdef DEBUG_PARSER
     printf("offset_in_formula = %d, num_clause = %d,  clause_index[n] = %d\n", offset_in_formula, 
+            *num_clause, (*clauses_index)[*num_clause]);
 #endif
-        *num_clause, (*clauses_index)[*num_clause]);
+        
     assert( offset_in_formula == (*clauses_index)[*num_clause] );
 
     return SUCCESS; 
