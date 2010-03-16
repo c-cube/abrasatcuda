@@ -66,7 +66,7 @@ inline truth_t formula_is_satisfiable(
 
             if ( is_negative ){
                 // clause satisfied
-                if ( ! TRUTH_VALUE(vars[name]) ){ 
+                if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
                     printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -75,7 +75,7 @@ inline truth_t formula_is_satisfiable(
                 }
             } else {
                 // clause satisfied
-                if ( TRUTH_VALUE(vars[name]) ){ 
+                if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
                     printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -85,7 +85,7 @@ inline truth_t formula_is_satisfiable(
             }
         }
 
-        // there is not free var or satisfying atom, the clause is therefore empty, fail !
+        // there is not free var or satisfying atom, the clause is obviously empty, fail !
         if ( clause_satisfiable == FALSE ){
             printf("clause %d not satisfiable\n",i);
             return FALSE;
@@ -158,9 +158,9 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
             SET_STACK_DEPTH(satisfied_clauses[index], stack_depth); // remember where we did that
 
             if ( IS_NEGATED(*unit_atom) )
-                SET_TRUE(vars[name]);
-            else
                 SET_FALSE(vars[name]);
+            else
+                SET_TRUE(vars[name]);
             // remember at what depth we change this var
             SET_AFFECTED(vars[name]);
             SET_STACK_DEPTH(vars[name], stack_depth);
@@ -175,14 +175,13 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
  * gives the number of the var chosen by an heuristic for
  * the next branch to explore
  */
-int heuristic(
-    atom_t* formula,
-    atom_t *clauses_index,
-    value_t *vars,
-    int clause_n,
-    int var_n);
+int heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n );
+
+
 
 /*
+ * @DEPRECATED@ 
+ * deprecated, since several vars may be pushed at a single stack depth (unit propagation)
  * this function finds which var of [vars] has been pushed at this [stack_depth].
  */
 inline int find_pushed( value_t *vars, int stack_depth, int var_n )
@@ -201,16 +200,15 @@ inline int find_pushed( value_t *vars, int stack_depth, int var_n )
 /*
  * This function unrolls every change that happened after the 
  * false function call at depth [stack_depth].
- * It will search for every var affected and clause satisfied at a higher depth
- * then the one given.
- * It does not affect changes occured at the level [stack_depth].
+ * It will search for every var affected and clause satisfied at a 
+ * __higher or equal__ depth then the one given.
  */
 inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
     int stack_depth, int clause_n, int var_n )
 {
     for ( int i = 1; i <= var_n; ++i ){
         // all vars affected at this depth must be unaffected
-        if ( STACK_DEPTH(vars[i]) > stack_depth ){
+        if ( STACK_DEPTH(vars[i]) >= stack_depth ){
             SET_NON_AFFECTED(vars[i]);
             SET_STACK_DEPTH(vars[i],0);
         }
@@ -218,7 +216,7 @@ inline void unroll( value_t *vars, satisfied_t *satisfied_clauses,
 
     for ( int i = 0; i < clause_n; ++i ){
 
-        if ( STACK_DEPTH(satisfied_clauses[i] ) > stack_depth ){
+        if ( STACK_DEPTH(satisfied_clauses[i] ) >= stack_depth ){
             SET_NOT_SATISFIED(satisfied_clauses[i]);
             SET_STACK_DEPTH(satisfied_clauses[i], 0);
         }

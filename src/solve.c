@@ -83,6 +83,7 @@ inline void initialize_truth_values( value_t* vars, int *cur, int var_n )
 
 /*
  * @DEPRECATED@
+ * TODO : a correct implementation, for benchmarking
  * a brute force solver, iterating over all possibilities until it exhausts them
  * or finds a satisfying affectation of vars
  */

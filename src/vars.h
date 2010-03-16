@@ -36,6 +36,7 @@ typedef short value_t;
 #define SET_NON_IMMUTABLE(x) ((x) &= 0x7FFF)
 
 #define TRUTH_VALUE(x) ((x) & 0x0001)
+
 #define SET_TRUE(x) ((x) |= 0x0001)
 #define SET_FALSE(x) ((x) &= 0xFFFE)
 
