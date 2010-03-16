@@ -25,6 +25,9 @@ typedef short truth_t;
 
 
 
+// for switching debug off and on
+#define DEBUG 1
+
 
 
 #endif

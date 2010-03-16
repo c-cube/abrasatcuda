@@ -25,17 +25,23 @@ int main( int argc, char ** argv )
     int num_var, num_clause;
 
     HLINE
+#ifdef DEBUG
     printf("parses file %s", file_path );
+#endif
     parse( file_path, &formula, &clauses_index, &num_var, &num_clause );
 
     HLINE
+#ifdef DEBUG
     printf("file parsed, formula of %d clauses and %d var built\n",
+#endif
         num_clause, num_var );
 
     formula_print( formula, clauses_index, num_clause );
 
     HLINE
+#ifdef DEBUG
     printf("tries to solve\n");
+#endif
     int answer = solve( formula, clauses_index, num_clause, num_var );
 
     printf("Answer : \033[31;4m%s\033[m \n", answer == SUCCESS ? "True" : "False" );

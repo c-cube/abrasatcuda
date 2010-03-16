@@ -10,7 +10,6 @@
 // drop a line of comments
 #define DROP_COMMENT(iterator) if ( (iterator)->content[0] == 'c' ) continue; 
 
-#define DEBUG printf
 
 #define CLAUSE_N(formula,clauses_index,n) ((clause_t*) formula[(*clauses_index)[n]])
 
@@ -78,10 +77,14 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
     int current_token = 0; 
     char *offset_in_line, *offset_in_line_bis;
     // for each line (list_pop returns a list node)
-    //DEBUG("starts loop of parse_lines\n");
+#ifdef DEBUG
+    printf("starts loop of parse_lines\n");
+#endif
     while ( (list_iterator = list_pop( lines )) != NULL ){
         iterator = line_of_list_node(list_iterator);
-        //DEBUG( "parser loop with line %s", iterator->content );
+#ifdef DEBUG
+        printf( "parser loop with line %s", iterator->content );
+#endif
         
         // before beginning of clause list, initialize everything
         if (is_looking_for_pb){
@@ -94,7 +97,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
             sscanf( iterator->content + 5, "%d %d", num_var, num_clause);  
             is_looking_for_pb = 0;
 
-            DEBUG("problem of size #var = %d, #clause = %d\n", *num_var, *num_clause);
+            printf("problem of size #var = %d, #clause = %d\n", *num_var, *num_clause);
             // allocate formula
             formula_length = *num_clause * *num_var * 5;
             *formula = malloc( formula_length * sizeof(short int)) ; // what a beautiful heuristic !
@@ -111,7 +114,9 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
 
         DROP_COMMENT(iterator) // if line is a comment, drop it
 
-        //DEBUG("searching for clauses\n");
+#ifdef DEBUG
+        printf("searching for clauses\n");
+#endif
 
         // ok, now we are sure we have a clause line.
         
@@ -132,7 +137,9 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
             if ( current_token == 0 ){
                 // remember where new clause begins
                 (*clauses_index)[ ++ clause_index ] = offset_in_formula; // clause_t here
-                //DEBUG("clauses_index[%d] = %d\n", clause_index, offset_in_formula );
+#ifdef DEBUG
+                printf("clauses_index[%d] = %d\n", clause_index, offset_in_formula );
+#endif
                 offset_in_line = 0; // begin next line
                 assert( (*clauses_index)[clause_index] == offset_in_formula );
                 break;
@@ -149,10 +156,14 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
         continue;   // next line
 
     }
-    DEBUG("number of clauses = %d, clause_index = %d\n", *num_clause, clause_index );
+#ifdef DEBUG
+    printf("number of clauses = %d, clause_index = %d\n", *num_clause, clause_index );
+#endif
     assert( clause_index == *num_clause );
     assert( offset_in_formula == atom_num );
+#ifdef DEBUG
     printf("offset_in_formula = %d, num_clause = %d,  clause_index[n] = %d\n", offset_in_formula, 
+#endif
         *num_clause, (*clauses_index)[*num_clause]);
     assert( offset_in_formula == (*clauses_index)[*num_clause] );
 
