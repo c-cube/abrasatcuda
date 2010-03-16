@@ -32,7 +32,7 @@ as the name is changed.
 // prints truth values in a nice way
 inline void value_print( value_t* values, int var_n )
 {
-    printf("    values : ");
+    printf("    \033[39;4mvalues :\033[m ");
     for (int i=1; i<=var_n; ++i){
         int escape_sequence = 0;
         if ( IS_IMMUTABLE(values[i] ))
@@ -58,7 +58,7 @@ inline void value_print( value_t* values, int var_n )
 // prints satisfied clauses in a nice way
 inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n )
 {
-    printf("    clauses : ");
+    printf("    \033[39;4mclauses :\033[m ");
     int escape_sequence = 34;
     char signal_char = '_';
     for (int i = 0; i < clause_n; ++ i){

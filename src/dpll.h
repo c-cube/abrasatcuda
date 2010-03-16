@@ -12,7 +12,7 @@
 #include "vars.h"
 
 // to change to avoid all messages
-#define DEBUG 1
+//#define DEBUG 1
 
 /*
  * this function verifies if a formula has still a chance to be satisfiable 
