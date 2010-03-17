@@ -1,9 +1,10 @@
 #include <stdio.h>
 
-#include "parser.h"
-#include "solve.h"
+#include "parser.h" // parse
 #include "abrasatcuda.h"
 #include "consts.h"
+
+#include "dispatch.h" // solve
 
 
 
@@ -55,31 +56,6 @@ int main( int argc, char ** argv )
 
 
 
-/*
- * this function's purpose is to manage to solve the problem.
- * It relies on solve_thread (one or many instances) to do so.
- */
-
-
-int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
-{
-    // allocates space for n vars
-    value_t vars[var_n];
-
-    // initialization
-    for (int i=1; i <= var_n; ++i)
-        vars[i] = 0;
-
-    // TODO : create CUDA threads, each with its own [vars] array,
-    // and dispatch it in CUDA.
-    // TODO : find the k most "interesting" vars, and create 2^k threads
-    // with different var affectations.
-    // TODO : think of a way to share information between threads (for example,
-    // if a thread finds out that a var cannot be true (exhausted possibilities ?)
-    // it may tell the other threads to set this var to 0)
-
-    return solve_thread( formula, clauses_index, vars, clause_n, var_n );
-}
 
 
 
