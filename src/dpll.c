@@ -24,7 +24,7 @@ static inline truth_t formula_is_satisfiable(
     atom_t* clauses_index,  
     value_t* vars,
     satisfied_t* satisfied_clauses,
-    int stack_depth,
+    unsigned int stack_depth,
     int clause_n,
     int var_n )
 {
@@ -121,7 +121,7 @@ static inline truth_t all_clauses_are_satisfied(
 /*
  * This finds unit clauses and propagates them.
  */
-static inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, int stack_depth, int clause_n, int var_n )
+static inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
 {
     success_t did_something = FAILURE;
 
@@ -202,7 +202,7 @@ inline void initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
  * __higher or equal__ depth then the one given.
  */
 static inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
-    int stack_depth, int clause_n, int var_n )
+    unsigned int stack_depth, int clause_n, int var_n )
 {
     for ( int i = 1; i <= var_n; ++i ){
         // all vars affected at this depth must be unaffected
@@ -246,18 +246,17 @@ static inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *va
 
 
 /*
- * finds the last pushed var
+ * When a failure occur, we hav to find what was the last var we choosed
+ * and pushed on the stack. This is a job for find_pushed_var.
  */
-static inline atom_t find_pushed_var( value_t *vars, int stack_depth, int var_n )
+static inline atom_t find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
 {
-    atom_t answer = 0;
+    atom_t answer = -1;
     for ( int i=1; i <= var_n; ++i ){
         if ( STACK_DEPTH(vars[i]) == stack_depth )
             answer = i;
     }
 
-    if (stack_depth > 1)
-        assert( answer > 0 );
     assert( answer <= var_n );
 
     return answer;
@@ -299,8 +298,8 @@ success_t dpll(
      * one var affected at each branch), and stack_depth_plus holds the stack level in which unit clauses propagating
      * can store satisfied clauses and affected vars
      */
-    int stack_depth = 1;
-    int stack_depth_plus = stack_depth;
+    unsigned int stack_depth = 1;
+    unsigned int stack_depth_plus = stack_depth + 1; // always stack_depth_plus = stack_depth + 1
 
     // initializes satisfied_clauses
     satisfied_t satisfied_clauses[clause_n];
@@ -401,6 +400,9 @@ success_t dpll(
 
         // simulate a function call
         stack_depth += 2;
+        stack_depth_plus += 2;
+        assert( stack_depth_plus % 2 == 0);
+        assert( stack_depth % 2 == 1);
 
 #ifdef DEBUG
         printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
@@ -487,6 +489,7 @@ success_t dpll(
 
         // go back in the stack
         stack_depth -= 2;
+        stack_depth_plus -= 2;
 
         // there has been a failure, now we have to deal with it on previous recursive call.
         goto epic_fail;
