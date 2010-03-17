@@ -1,7 +1,15 @@
+# switch debug on/off
+DEBUG=yes
+
 #Variable contenant le nom du compilateur
 CC=gcc
+
 #Variable contenant les options passées au compilateur
-CFLAGS=-Wall -pedantic -Os -std=gnu99 #-m32 -Werror
+ifeq ($(DEBUG),yes)
+	CFLAGS=-Wall -pedantic -Os -g -std=gnu99 -DDEBUG=1 #-m32 -Werror
+else
+	CFLAGS=-Wall -pedantic -Os -std=gnu99
+endif
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
 #L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
@@ -16,9 +24,10 @@ export LD_LIBRARY_PATH := .
 LDFLAGS=
 
 #Variable contenant la liste des cibles 
-TARGETS=abrasatcuda test_all
-OBJECTS=${BUILD}/abrasatcuda.o ${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/solve.o ${BUILD}/dpll.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h
+TARGETS=abrasatcuda_bf abrasatcuda_dpll 
+OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o  
+MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h
 
 
 # dossiers divers
@@ -28,13 +37,14 @@ BUILD=build
 
 
 # default target
-all: $(TARGETS)
+all: $(TARGETS) $(MODULES)
+
 
 # launches tests
 test: test_all
 	./test_all
 
-main: abrasatcuda
+main: abrasatcuda_bf abrasatcuda_dpll
 	@echo -e "\n\e[45;4mexample.cnf :\e[m"
 	@./abrasatcuda tests/example.cnf
 	@echo -e "\n\e[45;4mtrivial.cnf :\e[m"
@@ -49,32 +59,36 @@ check: check.hs
 
 count:
 	grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
+
+
 # This targets compiles the main binary
-abrasatcuda:  $(OBJECTS) $(HEADERS)
-	$(CC) $(LDFLAGS)  $(OBJECTS) -o abrasatcuda
+abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o ${SRC}/abrasatcuda.c -o abrasatcuda_bf
+
+
+abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/dpll.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
+
+
 
 # binary for testing
+# @deprecated@
 test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o
 	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o -o test_all
 
 
 # object files
-
-${BUILD}/abrasatcuda.o: ${SRC}/abrasatcuda.c $(HEADERS)
-	$(CC) $(CFLAGS) -c ${SRC}/abrasatcuda.c -o ${BUILD}/abrasatcuda.o
-
 ${BUILD}/parser.o: ${SRC}/parser.c ${SRC}/parser.h
 	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
 ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
 	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
-${BUILD}/solve.o: ${SRC}/solve.c ${SRC}/solve.h
-	$(CC) $(CFLAGS) ${SRC}/solve.c -c -o ${BUILD}/solve.o
-
-# TODO : build it as a dynamic lib, to allow runtime choice of solve function ?
 ${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
 	$(CC) $(CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
+
+${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/solve.h
+	$(CC) $(CFLAGS) ${SRC}/brute_force.c -c -o ${BUILD}/brute_force.o
 
 
 
@@ -82,7 +96,7 @@ ${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
 clean:
 	@rm -f ${BUILD}/*~ ${BUILD}/a.out ${BUILD}/core
 	@rm -f ${BUILD}/*.o
-	@rm -f test_all abrasatcuda
+	@rm -f test_all abrasatcuda_bf abrasatcuda_dpll
 
 #Cette cible effectue un nettoyage complet de tout fichier généré. Elle efface notamment les exécutables.
 distclean: clean

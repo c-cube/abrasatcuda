@@ -1,6 +1,9 @@
 
 #include "dpll.h"
 #include "solve.h" // value_print
+#include "clause.h"
+#include "consts.h"
+#include "vars.h"
 
 /*
  * this function verifies if a formula has still a chance to be satisfiable 
@@ -16,7 +19,6 @@
  * [clause_n] : number of clauses
  * [var_n] : number of var
  */
-
 inline truth_t formula_is_satisfiable(  
     atom_t* formula, 
     atom_t* clauses_index,  
@@ -251,7 +253,7 @@ inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int
  * End
  *
  */
-inline success_t dpll(
+success_t dpll(
     atom_t* formula,
     atom_t *clauses_index,
     value_t *vars,

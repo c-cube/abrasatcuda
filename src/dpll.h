@@ -7,13 +7,14 @@
 
 #include <assert.h>
 
-#include "clause.h"
 #include "consts.h"
 #include "vars.h"
+#include "clause.h"
+
 
 
 // only function exported by a solver module
-success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n );
 
 
 #endif

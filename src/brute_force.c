@@ -1,5 +1,114 @@
 #include "brute_force.h"
+#include "consts.h"
+#include "vars.h"
+#include "solve.h"
 
+/*
+ * this function verifies if a formula has still a chance to be satisfiable 
+ * with the current (partial) variable affectations. It also updates which clauses
+ * are satisfied or not.
+ * Arguments : 
+ * [formula] : whole formula (raw array of atom_t)
+ * [clauses_index] : array of size [clause_n]+1, with the offset of 
+ *      each clause inside [formula]
+ * [vars] : array of truth values
+ * [satisfied_clauses] : array of boolean, to know which clauses are satisfied
+ * [stack_depth] : current depth of the recursion stack
+ * [clause_n] : number of clauses
+ * [var_n] : number of var
+ */
+inline truth_t formula_is_satisfiable(  
+    atom_t* formula, 
+    atom_t* clauses_index,  
+    value_t* vars,
+    satisfied_t* satisfied_clauses,
+    int stack_depth,
+    int clause_n,
+    int var_n )
+{
+    // for each clause
+    for (int i = 0; i < clause_n; ++i ){
+
+        // this clause is already satisfied, next
+        assert( STACK_DEPTH(satisfied_clauses[i]) <= stack_depth);
+        if ( SATISFIED(satisfied_clauses[i]) )
+            continue;
+
+        atom_t *clause = formula + clauses_index[i];
+        atom_t *clause_end = formula + clauses_index[i+1];
+        
+        atom_t *iterator;
+
+        // for this clause, check if it is satisfied, or still has a chance
+        truth_t clause_satisfiable = FALSE;
+        for ( iterator = clause; iterator < clause_end; ++ iterator ){
+            int name = VARIABLE_NAME(*iterator);
+            // if this var is not affected, there may be still a chance
+            if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
+#ifdef DEBUG
+                printf("clause %d satisfiable thank to free var %d\n", i, name);
+#endif
+                clause_satisfiable = TRUE;
+                break;
+            }
+
+            // at this point, the var is either immutable either affected.
+            assert( IS_IMMUTABLE(vars[name]) || IS_AFFECTED(vars[name]) );
+            int is_negative = IS_NEGATED(*iterator);
+
+            if ( is_negative ){
+                // clause satisfied
+                if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
+#ifdef DEBUG
+                    printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+#endif
+                    SET_SATISFIED(satisfied_clauses[i]);
+                    SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
+                    clause_satisfiable = TRUE;
+                    break;
+                }
+            } else {
+                // clause satisfied
+                if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
+#ifdef DEBUG
+                    printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+#endif
+                    SET_SATISFIED(satisfied_clauses[i]);
+                    SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
+                    clause_satisfiable = TRUE;
+                    break;
+                }
+            }
+        }
+
+        // there is not free var or satisfying atom, the clause is obviously empty, fail !
+        if ( clause_satisfiable == FALSE ){
+#ifdef DEBUG
+            printf("clause %d not satisfiable\n",i);
+#endif
+            return FALSE;
+        }
+
+    }
+    
+    return TRUE;
+}
+
+
+/*
+ * this function returns TRUE if all clauses are satisfied
+ */
+inline truth_t all_clauses_are_satisfied( 
+    satisfied_t *satisfied_clauses,
+    int clause_n)
+{
+
+    for (int i = 0; i < clause_n; ++i ){
+        if ( SATISFIED( satisfied_clauses[i] ) != TRUE )
+            return FALSE;
+    }
+    return TRUE;
+}
 
 /*
  * this function finds the next combination of binary values
@@ -83,7 +192,7 @@ inline void initialize_truth_values( value_t* vars, int *cur, int var_n )
  * a brute force solver, iterating over all possibilities until it exhausts them
  * or finds a satisfying affectation of vars
  */
-inline success_t brute_force(atom_t* formula, atom_t* clauses_index, 
+success_t brute_force(atom_t* formula, atom_t* clauses_index, 
     value_t* vars, int clause_n, int var_n)
 {
     // initialize all free vars
@@ -156,9 +265,8 @@ inline success_t brute_force(atom_t* formula, atom_t* clauses_index,
 // this is the entry point of a thread
 success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
 {
-    initialize_values( vars, var_n );
 
-    // current default implementation 
+    // current implementation 
     truth_t answer = brute_force( formula, clauses_index, vars, clause_n, var_n );
 
 
