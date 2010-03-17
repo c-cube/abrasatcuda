@@ -86,7 +86,7 @@ ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
 	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
 ${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
-	$(CC) $(CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
+	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
 
 ${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/solve.h
 	$(CC) $(CFLAGS) ${SRC}/brute_force.c -c -o ${BUILD}/brute_force.o
