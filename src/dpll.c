@@ -19,7 +19,8 @@
  * [clause_n] : number of clauses
  * [var_n] : number of var
  */
-static inline truth_t formula_is_satisfiable(  
+static inline truth_t 
+formula_is_satisfiable(  
     atom_t* formula, 
     atom_t* clauses_index,  
     value_t* vars,
@@ -48,7 +49,7 @@ static inline truth_t formula_is_satisfiable(
             // if this var is not affected, there may be still a chance
             if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
 #ifdef DEBUG
-                printf("clause %d satisfiable thank to free var %d\n", i, name);
+                //printf("clause %d satisfiable thank to free var %d\n", i, name);
 #endif
                 clause_satisfiable = TRUE;
                 break;
@@ -62,7 +63,7 @@ static inline truth_t formula_is_satisfiable(
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
 #ifdef DEBUG
-                    printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -73,7 +74,7 @@ static inline truth_t formula_is_satisfiable(
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
 #ifdef DEBUG
-                    printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -100,7 +101,8 @@ static inline truth_t formula_is_satisfiable(
 /*
  * this function returns TRUE if all clauses are satisfied
  */
-static inline truth_t all_clauses_are_satisfied( 
+static inline truth_t 
+all_clauses_are_satisfied( 
     satisfied_t *satisfied_clauses,
     int clause_n)
 {
@@ -121,7 +123,8 @@ static inline truth_t all_clauses_are_satisfied(
 /*
  * This finds unit clauses and propagates them.
  */
-static inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
+static inline success_t 
+unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
 {
     success_t did_something = FAILURE;
 
@@ -173,7 +176,8 @@ static inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index
 }
 
 
-static inline void initialize_values( truth_t* vars, int var_n )
+static inline void 
+initialize_values( truth_t* vars, int var_n )
 {
     for (int i=1; i <= var_n; ++ i){
         //if ( ! IS_IMMUTABLE(vars[i]) ){
@@ -185,7 +189,8 @@ static inline void initialize_values( truth_t* vars, int var_n )
     }
 }
 
-inline void initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
+inline void 
+initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
 {
     for (int i = 1; i <= var_n; ++i){ 
         SET_NON_IMMUTABLE( satisfied_clauses[i]);
@@ -201,7 +206,8 @@ inline void initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
  * It will search for every var affected and clause satisfied at a 
  * __higher or equal__ depth then the one given.
  */
-static inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
+static inline void 
+unroll( value_t *vars, satisfied_t *satisfied_clauses, 
     unsigned int stack_depth, int clause_n, int var_n )
 {
     for ( int i = 1; i <= var_n; ++i ){
@@ -230,7 +236,8 @@ static inline void unroll( value_t *vars, satisfied_t *satisfied_clauses,
 
 // a simple "heuristic" (just picks up the first non-affected var it finds)
 // TODO : find a better heuristic
-static inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n)
+static inline int 
+heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n)
 {
     // iterate on vars
     for (int i = 1; i <= var_n; ++i){
@@ -250,7 +257,8 @@ static inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *va
  * When a failure occur, we hav to find what was the last var we choosed
  * and pushed on the stack. This is a job for find_pushed_var.
  */
-static inline atom_t find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
+static inline atom_t 
+find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
 {
     atom_t answer = -1;
     for ( int i=1; i <= var_n; ++i ){
@@ -290,7 +298,8 @@ static inline atom_t find_pushed_var( value_t *vars, unsigned int stack_depth, i
  * End
  *
  */
-success_t dpll(
+success_t 
+dpll(
     atom_t* formula,
     atom_t *clauses_index,
     value_t *vars,
@@ -521,7 +530,8 @@ failure_negative:
  * The function exported by the module
  * according to the solve.h interface
  */
-success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
+success_t 
+solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
 {
     initialize_values( vars, var_n );
 
