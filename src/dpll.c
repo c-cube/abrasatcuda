@@ -155,7 +155,8 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
         // propagate the unit clause !
         if ( num_atom == 1 ){
 #ifdef DEBUG
-            printf("unit clause %d, unit var %d\n", index, VARIABLE_NAME(*unit_atom));
+            printf("unit clause %d, unit var %d", index, VARIABLE_NAME(*unit_atom));
+            clause_print( clause, clause_end ); printf("\n"); 
 #endif
             did_something = SUCCESS;
             
