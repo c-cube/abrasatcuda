@@ -33,12 +33,11 @@ int main( int argc, char ** argv )
     HLINE
 #ifdef DEBUG
     printf("file parsed, formula of %d clauses and %d var built\n",num_clause, num_var );
-#endif
+
 
     formula_print( formula, clauses_index, num_clause );
 
     HLINE
-#ifdef DEBUG
     printf("tries to solve\n");
 #endif
     int answer = solve( formula, clauses_index, num_clause, num_var );

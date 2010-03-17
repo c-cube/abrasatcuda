@@ -76,7 +76,7 @@ typedef struct coincoin {
  * list_t start;
  * while ( list_iterate( start, &iterator )) { process_item( iterator ); } 
  */
-inline short int list_iterate( list_t *list, LIST_NODE_T** iterator )
+static inline short int list_iterate( list_t *list, LIST_NODE_T** iterator )
 {
     if ( iterator == NULL )
         return -1;
@@ -98,7 +98,7 @@ inline short int list_iterate( list_t *list, LIST_NODE_T** iterator )
  * tests for membership of obj to the list
  * node belongs to. Returns 1 on success, 0 on failure.
  */
-inline unsigned short int list_member( list_t *list, LIST_NODE_T* obj )
+static inline unsigned short int list_member( list_t *list, LIST_NODE_T* obj )
 {
     if ( list == NULL || list->is_empty )
         return 0;
@@ -116,7 +116,7 @@ inline unsigned short int list_member( list_t *list, LIST_NODE_T* obj )
 /*
  * length of a list
  */
-inline int list_length( list_t* list )
+static inline int list_length( list_t* list )
 {
     if ( list == NULL || list->is_empty )
         return 0;
@@ -129,7 +129,7 @@ inline int list_length( list_t* list )
     return answer;
 }
 
-inline void list_push( list_t* list, LIST_NODE_T* obj )
+static inline void list_push( list_t* list, LIST_NODE_T* obj )
 {
     if ( list == NULL )
         return;
@@ -145,7 +145,7 @@ inline void list_push( list_t* list, LIST_NODE_T* obj )
     }
 }
 
-inline void list_append( list_t *list, LIST_NODE_T* obj )
+static inline void list_append( list_t *list, LIST_NODE_T* obj )
 {
     if ( list == NULL )
         return;
@@ -161,7 +161,7 @@ inline void list_append( list_t *list, LIST_NODE_T* obj )
 
 
 
-inline LIST_NODE_T *list_pop( list_t* list )
+static inline LIST_NODE_T *list_pop( list_t* list )
 {
     if ( list == NULL )
         return NULL;

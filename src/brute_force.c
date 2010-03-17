@@ -17,7 +17,7 @@
  * [clause_n] : number of clauses
  * [var_n] : number of var
  */
-inline truth_t is_satisfiable(  
+static inline truth_t is_satisfiable(  
     atom_t* formula, 
     atom_t* clauses_index,  
     value_t* vars,
@@ -86,7 +86,7 @@ inline truth_t is_satisfiable(
  * [var_n] is the number of vars; The length of [vars] is [var_n]+1 (var 0 does not exist)
  */
 
-inline success_t next_combination( value_t*vars, int *cur, int var_n )
+static inline success_t next_combination( value_t*vars, int *cur, int var_n )
 {
 
     assert( *cur >= 1);
@@ -139,7 +139,7 @@ inline success_t next_combination( value_t*vars, int *cur, int var_n )
  * we can iterate on combinations on it.
  * It mainly SET_AFFECTED all the truth values and set them to 0
  */
-inline void initialize_truth_values( value_t* vars, int var_n )
+static inline void initialize_truth_values( value_t* vars, int var_n )
 {
     for ( int i = 1; i <= var_n; ++i ){
         if ( ! IS_IMMUTABLE(vars[i]) ){

@@ -19,7 +19,7 @@
  * [clause_n] : number of clauses
  * [var_n] : number of var
  */
-inline truth_t formula_is_satisfiable(  
+static inline truth_t formula_is_satisfiable(  
     atom_t* formula, 
     atom_t* clauses_index,  
     value_t* vars,
@@ -100,7 +100,7 @@ inline truth_t formula_is_satisfiable(
 /*
  * this function returns TRUE if all clauses are satisfied
  */
-inline truth_t all_clauses_are_satisfied( 
+static inline truth_t all_clauses_are_satisfied( 
     satisfied_t *satisfied_clauses,
     int clause_n)
 {
@@ -121,7 +121,7 @@ inline truth_t all_clauses_are_satisfied(
 /*
  * This finds unit clauses and propagates them.
  */
-inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, int stack_depth, int clause_n, int var_n )
+static inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, int stack_depth, int clause_n, int var_n )
 {
     success_t did_something = FAILURE;
 
@@ -173,7 +173,7 @@ inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index, value
 }
 
 
-inline void initialize_values( truth_t* vars, int var_n )
+static inline void initialize_values( truth_t* vars, int var_n )
 {
     for (int i=1; i <= var_n; ++ i){
         //if ( ! IS_IMMUTABLE(vars[i]) ){
@@ -192,7 +192,7 @@ inline void initialize_values( truth_t* vars, int var_n )
  * It will search for every var affected and clause satisfied at a 
  * __higher or equal__ depth then the one given.
  */
-inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
+static inline void unroll( value_t *vars, satisfied_t *satisfied_clauses, 
     int stack_depth, int clause_n, int var_n )
 {
     for ( int i = 1; i <= var_n; ++i ){
@@ -220,7 +220,7 @@ inline void unroll( value_t *vars, satisfied_t *satisfied_clauses,
  */
 
 // a simple "heuristic" (just picks up the first non-affected var it finds)
-inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n)
+static inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n)
 {
     // iterate on vars
     for (int i = 1; i <= var_n; ++i){

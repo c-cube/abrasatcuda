@@ -74,7 +74,7 @@ int variable_name( atom_t atom );
 // typedef atom_t* clause_t; // forget about it, it just obsfucates types.
 
 
-inline atom_t* clause_item( atom_t* clause, int n )
+static inline atom_t* clause_item( atom_t* clause, int n )
 {
     return ((atom_t*)clause) + n;
 }
@@ -92,7 +92,7 @@ inline atom_t* clause_item( atom_t* clause, int n )
 * or :
 * while ( -1 != atom_iterate(clauses_index[n], clauses_index[n+1], n, &iterator )){ ... }
 */
-inline int atom_iterate ( atom_t *clause, atom_t *clause_end, atom_t **iterator )
+static inline int atom_iterate ( atom_t *clause, atom_t *clause_end, atom_t **iterator )
 {
     if ( iterator == NULL )
         return FAILURE;
@@ -126,7 +126,7 @@ typedef atom_t* formula_t;
 /*
  * returns the atom_t* associated with index n in the formula
  */
-inline atom_t *formula_item( atom_t *formula, atom_t *clauses_index, int n)
+static inline atom_t *formula_item( atom_t *formula, atom_t *clauses_index, int n)
 {
     return formula + (clauses_index[n]);
 }
@@ -137,7 +137,7 @@ inline atom_t *formula_item( atom_t *formula, atom_t *clauses_index, int n)
 * preferred usage is : while ( -1 != clause_iterate(...)  )
 */
 
-inline int clause_iterate( 
+static inline int clause_iterate( 
     atom_t *formula,
     atom_t *clauses_index_array,
     int length,
@@ -165,7 +165,7 @@ inline int clause_iterate(
 
 
 
-inline void formula_print(
+static inline void formula_print(
     atom_t *formula,
     atom_t *clauses_index,
     int n )
