@@ -192,6 +192,7 @@ inline void initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
         SET_NON_AFFECTED(satisfied_clauses[i]);
         SET_FALSE(satisfied_clauses[i]);
         SET_STACK_DEPTH(satisfied_clauses[i], 0);
+    }       
 }
 
 /*
@@ -264,6 +265,15 @@ static inline atom_t find_pushed_var( value_t *vars, unsigned int stack_depth, i
 
 
 
+
+
+
+
+#define INVARIANT_STACK {                               \
+        assert( stack_depth_plus % 2 == 0);             \
+        assert( stack_depth % 2 == 1);                  \
+        assert( stack_depth_plus == stack_depth + 1); }
+
 /*
  * tries to solve the problem with the DPLL algorithm
  *
@@ -326,11 +336,15 @@ start:
         satisfied_print( satisfied_clauses, clause_n );
 #endif
 
+        INVARIANT_STACK
+
         // exhausted all possibilities at root, loser !
         if ( stack_depth <= 0 )
             return FAILURE;
 
         stack_depth_plus = stack_depth + 1; // stack_depth_plus is the stack depth of propagated variables
+
+        INVARIANT_STACK
 
         // updates info on clauses. New affectations are put on stack_depth_plus
         if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
@@ -398,8 +412,7 @@ branch:
         // simulate a function call
         stack_depth += 2;
         stack_depth_plus += 2;
-        assert( stack_depth_plus % 2 == 0);
-        assert( stack_depth % 2 == 1);
+        INVARIANT_STACK
 
 #ifdef DEBUG
         printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
@@ -466,7 +479,9 @@ failure_positive:
 #ifdef DEBUG
         printf("\033[31m->\033[m @failure positive\n");
         printf("switching var %d to false\n", last_pushed_var);
-#endif
+#endif 
+
+        INVARIANT_STACK
 
         // there has been an unroll, remember that this var is still affected
         SET_AFFECTED(vars[last_pushed_var]);
@@ -487,6 +502,8 @@ failure_negative:
         // go back in the stack
         stack_depth -= 2;
         stack_depth_plus -= 2;
+
+        INVARIANT_STACK
 
         // there has been a failure, now we have to deal with it on previous recursive call.
         goto epic_fail;
