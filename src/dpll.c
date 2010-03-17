@@ -83,7 +83,7 @@ static inline truth_t formula_is_satisfiable(
             }
         }
 
-        // there is not free var or satisfying atom, the clause is obviously empty, fail !
+        // there is no free var or satisfying atom, the clause is obviously empty, fail !
         if ( clause_satisfiable == FALSE ){
 #ifdef DEBUG
             printf("clause %d not satisfiable\n",i);
@@ -156,7 +156,7 @@ static inline success_t unit_propagation( atom_t* formula, atom_t *clauses_index
             
             int name = VARIABLE_NAME(*unit_atom);
 
-            SET_SATISFIED(satisfied_clauses[index]); // the clause is satisfied, by choice 
+            SET_SATISFIED(satisfied_clauses[index]); // the clause is satisfied, by necessity
             SET_STACK_DEPTH(satisfied_clauses[index], stack_depth); // remember where we did that
 
             if ( IS_NEGATED(*unit_atom) )
@@ -185,6 +185,15 @@ static inline void initialize_values( truth_t* vars, int var_n )
     }
 }
 
+inline void initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
+{
+    for (int i = 1; i <= var_n; ++i){ 
+        SET_NON_IMMUTABLE( satisfied_clauses[i]);
+        SET_NON_AFFECTED(satisfied_clauses[i]);
+        SET_FALSE(satisfied_clauses[i]);
+        SET_STACK_DEPTH(satisfied_clauses[i], 0);
+        
+}
 
 /*
  * This function unrolls every change that happened after the 
