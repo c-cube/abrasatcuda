@@ -4,11 +4,12 @@ DEBUG=yes
 #Variable contenant le nom du compilateur
 CC=gcc
 
+CFLAGS=-Wall -pedantic -Os -std=gnu99
 #Variable contenant les options passées au compilateur
 ifeq ($(DEBUG),yes)
-	CFLAGS=-Wall -pedantic -Os -g -std=gnu99 -DDEBUG=1 #-m32 -Werror
+	DEBUG_CFLAGS=-Wall -pedantic -Os -g -std=gnu99 -DDEBUG=1 #-m32 -Werror
 else
-	CFLAGS=-Wall -pedantic -Os -std=gnu99
+	DEBUG_CFLAGS=
 endif
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
@@ -67,7 +68,7 @@ abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o
 
 
 abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/dpll.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DEBUG_CFLAGS)  $(OBJECTS) ${BUILD}/dpll.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
 
 
 
