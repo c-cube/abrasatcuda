@@ -1,5 +1,5 @@
 # switch debug on/off
-DEBUG=yes
+DEBUG=n
 
 #Variable contenant le nom du compilateur
 CC=gcc

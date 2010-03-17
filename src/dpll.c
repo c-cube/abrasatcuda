@@ -5,6 +5,52 @@
 #include "consts.h"
 #include "vars.h"
 
+
+inline void update_satisfied( atom_t *formula, atom_t *clauses_index, value_t *vars, satisfied_t *satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
+{
+    // for each clause
+    for (int i = 0; i < clause_n; ++i ){
+
+        atom_t *clause = formula + clauses_index[i];
+        atom_t *clause_end = formula + clauses_index[i+1];
+
+        atom_t* iterator = NULL;
+        // for this clause, check if it is satisfied, or still has a chance
+        for ( iterator = clause; iterator < clause_end; ++ iterator ){
+            int name = VARIABLE_NAME(*iterator);
+
+            if (! ( IS_IMMUTABLE(vars[name]) || IS_AFFECTED(vars[name]) ))
+                continue;
+
+            int is_negative = IS_NEGATED(*iterator);
+
+            if ( is_negative ){
+                // clause satisfied
+                if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
+#ifdef DEBUG
+                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+#endif
+                    SET_SATISFIED(satisfied_clauses[i]);
+                    SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
+                    break;
+                }
+            } else {
+                // clause satisfied
+                if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
+#ifdef DEBUG
+                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+#endif
+                    SET_SATISFIED(satisfied_clauses[i]);
+                    SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+
+
 /*
  * this function verifies if a formula has still a chance to be satisfiable 
  * with the current (partial) variable affectations. It also updates which clauses
@@ -34,6 +80,7 @@ formula_is_satisfiable(
 
         // this clause is already satisfied, next
         assert( STACK_DEPTH(satisfied_clauses[i]) <= stack_depth);
+
         if ( SATISFIED(satisfied_clauses[i]) )
             continue;
 
@@ -129,9 +176,11 @@ static inline success_t
 unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
 {
     success_t did_something = FAILURE;
+    success_t did_something_this_turn = FAILURE;
 
     //for each clause
     for ( int index = 0; index < clause_n; ++index ){
+        did_something_this_turn = FAILURE;
 
         // if clause is already satisfied, just don't mind
         if ( SATISFIED(satisfied_clauses[index]) == TRUE )
@@ -159,6 +208,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
             clause_print( clause, clause_end ); printf("\n"); 
 #endif
             did_something = SUCCESS;
+            did_something_this_turn = SUCCESS;
             
             int name = VARIABLE_NAME(*unit_atom);
 
@@ -173,7 +223,17 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
             SET_AFFECTED(vars[name]);
             SET_STACK_DEPTH(vars[name], stack_depth);
         }
+        
+
+        // update info on satisfied clauses
+        if ( did_something_this_turn == SUCCESS ){
+            update_satisfied( formula, clauses_index, vars, satisfied_clauses, stack_depth, clause_n, var_n );
+        }
     }
+
+
+
+
    
     return did_something;
 }
