@@ -42,8 +42,9 @@ formula_is_satisfiable(
         
         atom_t *iterator;
 
-        // for this clause, check if it is satisfied, or still has a chance
         truth_t clause_satisfiable = FALSE;
+
+        // for this clause, check if it is satisfied, or still has a chance
         for ( iterator = clause; iterator < clause_end; ++ iterator ){
             int name = VARIABLE_NAME(*iterator);
             // if this var is not affected, there may be still a chance
@@ -87,7 +88,8 @@ formula_is_satisfiable(
         // there is no free var or satisfying atom, the clause is obviously empty, fail !
         if ( clause_satisfiable == FALSE ){
 #ifdef DEBUG
-            printf("clause %d not satisfiable\n",i);
+            value_print( vars, var_n );
+            printf("clause %d not satisfiable ",i); clause_print( clause, clause_end ); printf("\n"); 
 #endif
             return FALSE;
         }
@@ -539,8 +541,11 @@ solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_
     truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n );
 
 
+    value_print( vars, var_n );
     if( answer == SUCCESS )
-        value_print( vars, var_n );
+        printf("yeah !\n");
+    if ( answer == FAILURE )
+        printf("oh noes !\n");
 
     return answer;
 
