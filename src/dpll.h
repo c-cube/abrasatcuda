@@ -2,8 +2,8 @@
  * module for dpll calculations
  */
 
-#ifndef _DPLL_H
-#define _DPLL_H
+#ifndef DPLL_H
+#define DPLL_H
 
 #include <assert.h>
 

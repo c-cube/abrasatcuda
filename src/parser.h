@@ -4,8 +4,8 @@
 
 
 
-#ifndef _PARSER_H
-#define _PARSER_H 1
+#ifndef PARSER_H
+#define PARSER_H 1
 
 // getline !
 #define _GNU_SOURCE

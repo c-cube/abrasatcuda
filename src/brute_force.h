@@ -1,6 +1,6 @@
 
-#ifndef _BRUTE_FORCE_H
-#define _BRUTE_FORCE_H
+#ifndef BRUTE_FORCE_H
+#define BRUTE_FORCE_H
 
 
 #include "clause.h"

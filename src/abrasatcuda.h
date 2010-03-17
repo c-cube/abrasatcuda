@@ -3,8 +3,8 @@
  */
 
 
-#ifndef _ABRASATCUDA_H
-#define _ABRASATCUDA_H
+#ifndef ABRASATCUDA_H
+#define ABRASATCUDA_H
 
 #include "clause.h"
 #include "consts.h"

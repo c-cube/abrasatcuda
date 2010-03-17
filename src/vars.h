@@ -3,8 +3,8 @@
  * and satisfied clauses array manipulation
  */
 
-#ifndef _VARS_H
-#define _VARS_H
+#ifndef VARS_H
+#define VARS_H
 
 // TODO : write tests for stack manipulation !!!
 
