@@ -1,5 +1,5 @@
 # switch debug on/off
-DEBUG=yes
+DEBUG=n
 
 #Variable contenant le nom du compilateur
 CC=gcc
@@ -28,7 +28,7 @@ LDFLAGS=
 TARGETS=abrasatcuda_bf abrasatcuda_dpll 
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o  
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h Makefile
 
 
 # dossiers divers
@@ -59,7 +59,7 @@ check: check.hs
 	ghc -O2 --make check.hs -o check
 
 count:
-	grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
+	@echo "number of code/comment lines : "; grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
 
 
 # This targets compiles the main binary
