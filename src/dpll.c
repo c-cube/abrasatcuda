@@ -236,6 +236,25 @@ static inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *va
 }
 
 
+/*
+ * finds the last pushed var
+ */
+static inline atom_t find_pushed_var( value_t *vars, int stack_depth, int var_n )
+{
+    atom_t answer = 0;
+    for ( int i=1; i <= var_n; ++i ){
+        if ( STACK_DEPTH(vars[i]) == stack_depth )
+            answer = i;
+    }
+
+    if (stack_depth > 1)
+        assert( answer > 0 );
+    assert( answer <= var_n );
+
+    return answer;
+}
+
+
 
 /*
  * tries to solve the problem with the DPLL algorithm
@@ -261,10 +280,18 @@ success_t dpll(
     int var_n)
 {
     
+#ifdef DEBUG
     printf("launches dpll with %d clauses and %d vars\n", clause_n, var_n );
+#endif
 
-    // manage false stack. We start from 1, because it allows us to detect exhaution easily on stack_depth == 0
+    /* 
+     * manage false stack. We start from 1, because it allows us to detect exhaution easily on stack_depth == 0.
+     * We add 2 to stack_depth at each branch. stack_depth holds the current *true* stack level (with only
+     * one var affected at each branch), and stack_depth_plus holds the stack level in which unit clauses propagating
+     * can store satisfied clauses and affected vars
+     */
     int stack_depth = 1;
+    int stack_depth_plus = stack_depth;
 
     // initializes satisfied_clauses
     satisfied_t satisfied_clauses[clause_n];
@@ -298,13 +325,14 @@ success_t dpll(
         if ( stack_depth <= 0 )
             return FAILURE;
 
+        stack_depth_plus = stack_depth + 1;
 
-        // updates info on clauses
+        // updates info on clauses. New affectations are put on stack_depth_plus
         if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
-                        stack_depth, clause_n, var_n ) == FALSE )
+                        stack_depth_plus, clause_n, var_n ) == FALSE )
         {
             assert( stack_depth > 0 );
-            goto failure;
+            goto epic_fail;
         }
 
         // check if all clauses are satisfied
@@ -317,7 +345,7 @@ success_t dpll(
 
         // try to propagate unit clauses.
         propagate_sth = unit_propagation( formula, clauses_index, 
-            vars, satisfied_clauses, stack_depth, clause_n, var_n );
+            vars, satisfied_clauses, stack_depth_plus, clause_n, var_n );
 
 
         if ( propagate_sth == SUCCESS ){
@@ -327,10 +355,10 @@ success_t dpll(
             
             // if formula is no more satisfiable, we failed.
             if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
-                            stack_depth, clause_n, var_n ) == FALSE )
+                            stack_depth_plus, clause_n, var_n ) == FALSE )
             {
                 assert( stack_depth > 0 );
-                goto failure;
+                goto epic_fail;
             }  
         }             
         
@@ -357,13 +385,13 @@ success_t dpll(
                 printf("all vars affected, but not all clauses satisfied ?!\n");
 #endif
 
-                stack_depth--;
-                goto failure;
+                // stack_depth -= 2; // TWO levels down FIXME : pertinent ?
+                goto epic_fail;
             }
         }
 
         // simulate a function call
-        stack_depth++;
+        stack_depth += 2;
 
 #ifdef DEBUG
         printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
@@ -385,26 +413,26 @@ success_t dpll(
      * We just met failure.
      * Now we have to recognize it to deal with it properly.
      */
-    failure:
+    epic_fail:
 #ifdef DEBUG
-        printf("\033[31m->\033[m @failure [stack depth %d]\n", stack_depth);
+        printf("\033[31m->\033[m @epic_fail [stack depth %d]\n", stack_depth);
 #endif
         
         // exhausted all possibilities at root, loser !
         if ( stack_depth <= 0 )
             return FAILURE;
 
+
+        // what is the last pushed var ?
+        last_pushed_var = find_pushed_var( vars, stack_depth, var_n );
+
         // so we cancel changes done by the previous affectation
         unroll( vars, satisfied_clauses, stack_depth, clause_n, var_n);
 
 
-        // what is the last pushed var ?
-        // we have to recompute it because no information is stored about the previous choice.
-        last_pushed_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
-
         if ( last_pushed_var == -1 ){ // root of call stack
 #ifdef DEBUG
-            printf("failure at stack depth %d, no last_pushed_var\n",stack_depth);
+            printf("epic_fail at stack depth %d, no last_pushed_var\n",stack_depth);
 #endif
             return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
         }
@@ -448,14 +476,11 @@ success_t dpll(
         printf("\033[31m->\033[m @failure negative\n");
 #endif
 
-        // unroll every change made at this level and upper
-        unroll( vars, satisfied_clauses, stack_depth, clause_n, var_n);
-
         // go back in the stack
-        stack_depth--;
+        stack_depth -= 2;
 
         // there has been a failure, now we have to deal with it on previous recursive call.
-        goto failure;
+        goto epic_fail;
 
 
     // end:
