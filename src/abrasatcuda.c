@@ -67,6 +67,10 @@ int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     // allocates space for n vars
     value_t vars[var_n];
 
+    // initialization
+    for (int i=1; i <= var_n; ++i)
+        vars[i] = 0;
+
     // TODO : create CUDA threads, each with its own [vars] array,
     // and dispatch it in CUDA.
     // TODO : find the k most "interesting" vars, and create 2^k threads
