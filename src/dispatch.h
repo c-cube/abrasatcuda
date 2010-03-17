@@ -14,7 +14,7 @@
 #define DISPATCH_H
 
 #include "consts.h"
-#include "clauses.h"
+#include "clause.h"
 #include "vars.h"
 
 

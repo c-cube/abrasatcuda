@@ -27,8 +27,8 @@ LDFLAGS=
 #Variable contenant la liste des cibles 
 TARGETS=abrasatcuda_bf abrasatcuda_dpll 
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o  
-MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h Makefile
+MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/single_thread.h ${SRC}/dispatch.h Makefile
 
 
 # dossiers divers
@@ -63,12 +63,12 @@ count:
 
 
 # This targets compiles the main binary
-abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o ${SRC}/abrasatcuda.c -o abrasatcuda_bf
+abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o  ${BUILD}/single_thread.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -o abrasatcuda_bf
 
 
-abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DEBUG_CFLAGS)  $(OBJECTS) ${BUILD}/dpll.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
+abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o 
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DEBUG_CFLAGS)  $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
 
 
 
@@ -91,6 +91,8 @@ ${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
 ${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/solve.h
 	$(CC) $(CFLAGS) ${SRC}/brute_force.c -c -o ${BUILD}/brute_force.o
 
+${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/solve.h
+	$(CC) $(CFLAGS) ${SRC}/single_thread.c -c -o ${BUILD}/single_thread.o
 
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
