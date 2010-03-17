@@ -1,6 +1,4 @@
-
-#include "solve.h"
-
+#include "brute_force.h"
 
 
 /*
@@ -57,7 +55,6 @@ inline success_t next_combination( value_t*vars, int *cur, int var_n )
 
 
 /*
- * @DEPRECATED@
  * this function initializes an array of truth value before
  * we can iterate on combinations on it.
  * It mainly SET_AFFECTED all the truth values and set them to 0
@@ -82,7 +79,6 @@ inline void initialize_truth_values( value_t* vars, int *cur, int var_n )
 }
 
 /*
- * @DEPRECATED@
  * TODO : a correct implementation, for benchmarking
  * a brute force solver, iterating over all possibilities until it exhausts them
  * or finds a satisfying affectation of vars
@@ -153,22 +149,8 @@ inline success_t brute_force(atom_t* formula, atom_t* clauses_index,
 }
 
 
-    
 
 
-
-
-void initialize_values( truth_t* vars, int var_n )
-{
-    for (int i=1; i <= var_n; ++ i){
-        //if ( ! IS_IMMUTABLE(vars[i]) ){
-            SET_NON_IMMUTABLE(vars[i]);
-            SET_NON_AFFECTED(vars[i]);
-            SET_FALSE(vars[i]);
-            SET_STACK_DEPTH(vars[i], 0);
-        //}
-    }
-}
 
 
 // this is the entry point of a thread
@@ -177,7 +159,7 @@ success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, i
     initialize_values( vars, var_n );
 
     // current default implementation 
-    truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n );
+    truth_t answer = brute_force( formula, clauses_index, vars, clause_n, var_n );
 
 
     if( answer == SUCCESS )

@@ -2,22 +2,6 @@
  * utilities for solver.
  */
 
-/* LICENSE :
-DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-                   Version 2, December 2004 
-
-Copyright (C) 2004 Sam Hocevar <sam@hocevar.net> 
-
-Everyone is permitted to copy and distribute verbatim or modified 
-copies of this license document, and changing it is allowed as long 
-as the name is changed. 
-
-           DO WHAT THE FUCK YOU WANT TO PUBLIC LICENSE 
-  TERMS AND CONDITIONS FOR COPYING, DISTRIBUTION AND MODIFICATION 
-
-    0. You just DO WHAT THE FUCK YOU WANT TO.
-*/
-
 #ifndef _SOLVE_H
 #define _SOLVE_H
 
@@ -27,7 +11,6 @@ as the name is changed.
 
 #include "clause.h"
 #include "vars.h"
-#include "dpll.h"
 
 // prints truth values in a nice way
 inline void value_print( value_t* values, int var_n )
