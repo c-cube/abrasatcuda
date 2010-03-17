@@ -192,7 +192,6 @@ inline void initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
         SET_NON_AFFECTED(satisfied_clauses[i]);
         SET_FALSE(satisfied_clauses[i]);
         SET_STACK_DEPTH(satisfied_clauses[i], 0);
-        
 }
 
 /*
@@ -229,6 +228,7 @@ static inline void unroll( value_t *vars, satisfied_t *satisfied_clauses,
  */
 
 // a simple "heuristic" (just picks up the first non-affected var it finds)
+// TODO : find a better heuristic
 static inline int heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n)
 {
     // iterate on vars
@@ -319,12 +319,9 @@ success_t dpll(
      *      if we are on a negative branch, we must backtrack because we exhausted 
      *      the branch.
      */
-    start:
+start:
 #ifdef DEBUG
         printf("\033[31m->\033[m @start\n");
-#endif
-        // debug
-#ifdef DEBUG
         value_print( vars, var_n );
         satisfied_print( satisfied_clauses, clause_n );
 #endif
@@ -333,7 +330,7 @@ success_t dpll(
         if ( stack_depth <= 0 )
             return FAILURE;
 
-        stack_depth_plus = stack_depth + 1;
+        stack_depth_plus = stack_depth + 1; // stack_depth_plus is the stack depth of propagated variables
 
         // updates info on clauses. New affectations are put on stack_depth_plus
         if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
@@ -378,7 +375,7 @@ success_t dpll(
      * formula has still a chance to be satisfiable, so we 
      * choose a var, and test it with positive value.
      */
-    branch:
+branch:
 #ifdef DEBUG
         printf("\033[31m->\033[m @branch\n");
 #endif
@@ -424,7 +421,7 @@ success_t dpll(
      * We just met failure.
      * Now we have to recognize it to deal with it properly.
      */
-    epic_fail:
+epic_fail:
 #ifdef DEBUG
         printf("\033[31m->\033[m @epic_fail [stack depth %d]\n", stack_depth);
 #endif
@@ -465,7 +462,7 @@ success_t dpll(
      * the try with positive value has failed.
      * We remain at the same stack depth, but try with a negative value.
      */
-    failure_positive:
+failure_positive:
 #ifdef DEBUG
         printf("\033[31m->\033[m @failure positive\n");
         printf("switching var %d to false\n", last_pushed_var);
@@ -482,7 +479,7 @@ success_t dpll(
      * Uh-oh, the negative try is also a failure. So, we have to backtrack because
      * the previous choice was not the good one.
      */
-    failure_negative:
+failure_negative:
 #ifdef DEBUG
         printf("\033[31m->\033[m @failure negative\n");
 #endif
