@@ -1,7 +1,13 @@
 #include "heuristic.h"
+#include "vars.h" // to set immutable vars
+#include <stdlib.h> // malloc, free
+
+// utility function to set vars
+static inline void to_base_two( int *, int);
 
 // holds the address of interest table
 static double **interest_ptr = NULL;
+
 
 /*
  * This function tries to evaluate how important the var is
@@ -109,4 +115,42 @@ choose_immutable_vars( atom_t *formula, atom_t *clauses_index, value_t *vars, va
     }
     assert(is_sorted);
 #endif
+}
+
+void
+set_immutable_vars( value_t * all_vars, int var_n, int thread_n)
+{
+  
+  int * base_two_decomp = (int *) malloc( sizeof(int) * 32);
+  int var_count, var_affected;
+  for (int i = 0; i < thread_n; ++i)
+  {
+    to_base_two( base_two_decomp, i);
+    var_count = var_affected = 0;
+    while (var_count < var_n)
+    {
+      if ( IS_IMMUTABLE( all_vars[ i * var_n + var_count] ))
+      {
+        assert( var_affected < 32);
+        if ( to_base_two[var_affected] )
+          SET_TRUE( all_vars[ i * var_n + var_count]);
+        else
+          SET_FALSE( all_vars[ i * var_n + var_count]);
+        ++var_affected;
+      }
+      ++var_count;
+    }
+  }
+  free(base_two_decomp);
+}
+
+
+static inline void
+to_base_two( int * base_2_array, int input)
+{
+  for (int i = 0; i < 32; ++i)
+  {
+    base_2_array[i] = input % 2;
+    input /= 2; //compiler does optimize this I guess :)
+  } 
 }

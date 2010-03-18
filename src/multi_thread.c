@@ -103,8 +103,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     choose_immutable_vars( formula, clauses_index, all_vars, sorted_vars, clause_n, var_n );
 
     // sets immutable vars (differently for each thread...)
-    // TODO
-
+    set_immutable_vars( all_vars, var_n, THREAD_NUM);
 
     // starts THREAD_NUM threads
     for (int i = 0; i < THREAD_NUM; ++i ){
