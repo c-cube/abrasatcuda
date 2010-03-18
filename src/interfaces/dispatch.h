@@ -24,8 +24,18 @@
  * It relies on solve_thread (one or many instances) to do so.
  */
 
-int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n );
+#ifdef CUDA
+__global__ void solve( atom_t *formula, atom_t* clauses_index, value_t ** vars_affectations, int clause_n, int var_n , truth_t * answers, int thread_n);
+#else
+int solve( atom_t *formula, atom_t* clauses_index, value_t ** vars_affectations, int clause_n, int var_n, truth_t * answers, int thread_n);
+#endif
 
+/*
+* this functions makes sure the gpu memory is in a proper state
+*/
+#ifdef CUDA
+prepare_gpu_memory( atom_t * formula, __device__ atom_t * formula_d, atom_t * clauses_index, __device__ atom_t clauses_index_d, value_t ** vars_affectations, __device__ value_t ** vars_affectations_d, int clause_n, int var_n, truth_t * answers, int thread_n);
+#endif
 
     // TODO : create CUDA threads, each with its own [vars] array,
     // and dispatch it in CUDA.
