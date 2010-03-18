@@ -7,17 +7,6 @@ int variable_name( atom_t atom ){   return atom & 0x3FFF; }
 
 
 
-short make_atom( int n )
-{
-    return ( 0x8000                               // used ?
-             | (n<0 ? 0x4000 : 0x0)               // negated ?
-             | (0x3FFF & (n<0 ? (0xFFFF ^ n)+1 : n) ) 
-             // small part for the name, with binary complement if < 0
-           );
-}
-
-
-
 
 
 void clause_print( atom_t *clause, atom_t* clause_end )
