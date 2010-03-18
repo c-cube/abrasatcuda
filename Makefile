@@ -1,15 +1,24 @@
 # switch debug on/off
-DEBUG=n
+DEBUG=n # yes,no,prod
+PROFILE=yes
 
 #Variable contenant le nom du compilateur
 CC=gcc
 
 CFLAGS=-Wall -pedantic -Os -std=gnu99
 #Variable contenant les options passées au compilateur
+DBG=
 ifeq ($(DEBUG),yes)
-	DEBUG_CFLAGS=-Wall -pedantic -Os -g -std=gnu99 -DDEBUG=1 #-m32 -Werror
-else
-	DEBUG_CFLAGS=
+	DBG=-g -DDEBUG=1 #-m32 -Werror
+endif
+ifeq ($(DEBUG),prod)
+	DBG=-DNDEBUG=1 # NDEBUG disables all assert() statements
+endif
+
+
+PROF=
+ifeq ($(PROFILE),yes)
+	PROF=-pg
 endif
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
@@ -55,6 +64,11 @@ main: abrasatcuda_bf abrasatcuda_dpll
 	@echo -e "\n\e[45;4mquinn.cnf :\e[m"
 	@./abrasatcuda tests/quinn.cnf
 
+
+prof:
+	gprof ./abrasatcuda
+
+
 check: check.hs
 	ghc -O2 --make check.hs -o check
 
@@ -68,7 +82,7 @@ abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o  ${BUILD}/single_th
 
 
 abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o 
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DEBUG_CFLAGS)  $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
 
 
 
@@ -80,19 +94,19 @@ test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${B
 
 # object files
 ${BUILD}/parser.o: ${SRC}/parser.c ${SRC}/parser.h
-	$(CC) $(CFLAGS) -c ${SRC}/parser.c -o ${BUILD}/parser.o
+	$(CC) $(CFLAGS) $(DBG) -c ${SRC}/parser.c -o ${BUILD}/parser.o
 
 ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
-	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
+	$(CC) $(CFLAGS) $(DBG) $(PROF) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
 ${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
+	$(CC) $(CFLAGS) $(DBG) $(PROF) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
 
 ${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/interfaces/solve.h
 	$(CC) $(CFLAGS) ${SRC}/brute_force.c -c -o ${BUILD}/brute_force.o
 
 ${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) ${SRC}/single_thread.c -c -o ${BUILD}/single_thread.o
+	$(CC) $(CFLAGS) ${SRC}/single_thread.c $(DBG) $(PROF) -c -o ${BUILD}/single_thread.o
 
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
