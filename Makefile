@@ -1,9 +1,30 @@
+#--------------------------------------------------------------
+# CONFIGURATION VARS
+#--------------------------------------------------------------
 # switch debug on/off (yes,no,prod)
-DEBUG=n
-PROFILE=yes
+DEBUG=no
+# switch profiling on/off (yes,no)
+PROFILE=no
 
-#Variable contenant le nom du compilateur
+# this var defines how to parallelize
+# It can take one of those values :
+# pthread (for posix threads)
+# single (no parallelism)
+# cuda (solve on cuda)
+PARALLEL=pthread
+
+
+#--------------------------------------------------------------
+# predefined vars, and real makefile vars
+#--------------------------------------------------------------
+
+
+# current compiler
 CC=gcc
+
+# some vars
+SRC=src
+BUILD=build
 
 CFLAGS=-Wall -pedantic -Os -std=gnu99 #-m32 -Werror
 #Variable contenant les options passées au compilateur
@@ -30,20 +51,31 @@ endif
 #L'option -m indique que le code généré doit être pour un environement 32 bits
 #L'option -c indique que le compilateur doit se contenter de la génération d'un fichier objet. La création d'un exécutable se fera si nécessaire dans un second temps.
 
+# in case you prefer compile the program as a dynamic lib, this allows to use local .so files
 export LD_LIBRARY_PATH := .
-#Variable contenant les options passées au compilateur pour l'édition de liens
-LDFLAGS=
 
-#Variable contenant la liste des cibles 
+
+# lists of targets, headers, objets files...
 TARGETS=abrasatcuda_bf abrasatcuda_dpll 
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o  
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/single_thread.h ${SRC}/interfaces/dispatch.h Makefile
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h Makefile
 
+# default dispatching method
+DISPATCH_HEADER=${SRC}/single_thread.h
 
-# dossiers divers
-SRC=src
-BUILD=build
+# var containing parameters to be passed to the linker, for creating the final executable
+LDFLAGS=
+ifeq ($(PARALLEL),pthread)
+	LDFLAGS=-lpthread
+	DISPATCH_HEADER=${SRC}/multi_thread.h
+	DISPATCH_OBJECT=${BUILD}/multi_thread.o
+endif
+ifeq ($(PARALLEL),cuda)
+	CC=nvcc
+	# TODO
+endif
+
 
 
 
@@ -80,12 +112,12 @@ count:
 
 
 # This targets compiles the main binary
-abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o  ${BUILD}/single_thread.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -o abrasatcuda_bf
+abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT)	
+	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_bf
 
 
-abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o 
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
+abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) 
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
 
 
 
@@ -110,6 +142,11 @@ ${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/interfa
 
 ${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/interfaces/solve.h
 	$(CC) $(CFLAGS) ${SRC}/single_thread.c $(DBG) $(PROF) -c -o ${BUILD}/single_thread.o
+
+${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/interfaces/solve.h
+	$(CC) $(CFLAGS) ${SRC}/multi_thread.c $(DBG) $(PROF) -c -o ${BUILD}/multi_thread.o
+
+
 
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
