@@ -132,7 +132,7 @@ set_immutable_vars( value_t * all_vars, int var_n, int thread_n)
       if ( IS_IMMUTABLE( all_vars[ i * var_n + var_count] ))
       {
         assert( var_affected < 32);
-        if ( to_base_two[var_affected] )
+        if ( base_two_decomp[var_affected] )
           SET_TRUE( all_vars[ i * var_n + var_count]);
         else
           SET_FALSE( all_vars[ i * var_n + var_count]);

@@ -115,6 +115,6 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
         // really launches this thread
         launch_thread( formula, clauses_index, cur_vars, clause_n, var_n, threads + i ); 
     }
-
+    return 0; //TODO : set appropriate return value
 }
 
