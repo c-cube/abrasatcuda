@@ -1,18 +1,19 @@
-# switch debug on/off
-DEBUG=n # yes,no,prod
+# switch debug on/off (yes,no,prod)
+DEBUG=n
 PROFILE=yes
 
 #Variable contenant le nom du compilateur
 CC=gcc
 
-CFLAGS=-Wall -pedantic -Os -std=gnu99
+CFLAGS=-Wall -pedantic -Os -std=gnu99 #-m32 -Werror
 #Variable contenant les options passées au compilateur
 DBG=
 ifeq ($(DEBUG),yes)
-	DBG=-g -DDEBUG=1 #-m32 -Werror
+	DBG=-g -DDEBUG=1 
 endif
+# NDEBUG disables all assert() statements, so it accelerates the program
 ifeq ($(DEBUG),prod)
-	DBG=-DNDEBUG=1 # NDEBUG disables all assert() statements
+	DBG=-DNDEBUG=1 
 endif
 
 
@@ -63,6 +64,8 @@ main: abrasatcuda_bf abrasatcuda_dpll
 	@./abrasatcuda tests/false.cnf
 	@echo -e "\n\e[45;4mquinn.cnf :\e[m"
 	@./abrasatcuda tests/quinn.cnf
+	@echo -e "\n\e[45;4maim-50.cnf :\e[m"
+	time ./abrasatcuda tests/aim-50-1_6-yes1-4.cnf
 
 
 prof:
