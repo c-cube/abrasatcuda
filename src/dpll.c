@@ -1,6 +1,6 @@
 
 #include "dpll.h"
-#include "solve.h" // value_print
+#include "interfaces/solve.h" // value_print
 #include "clause.h"
 #include "consts.h"
 #include "vars.h"

@@ -2,7 +2,7 @@
 
 #include "consts.h"
 #include "vars.h"
-#include "solve.h"
+#include "interfaces/solve.h"
 
 
 /*

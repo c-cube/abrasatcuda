@@ -4,7 +4,7 @@
 #include "abrasatcuda.h"
 #include "consts.h"
 
-#include "dispatch.h" // solve
+#include "interfaces/dispatch.h" // solve
 
 
 
