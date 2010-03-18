@@ -28,7 +28,7 @@ LDFLAGS=
 TARGETS=abrasatcuda_bf abrasatcuda_dpll 
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o  
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/single_thread.h ${SRC}/dispatch.h Makefile
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/single_thread.h ${SRC}/interfaces/dispatch.h Makefile
 
 
 # dossiers divers
@@ -85,13 +85,13 @@ ${BUILD}/parser.o: ${SRC}/parser.c ${SRC}/parser.h
 ${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
 	$(CC) $(CFLAGS) ${SRC}/clause.c -c -o ${BUILD}/clause.o
 
-${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/solve.h
+${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/interfaces/solve.h
 	$(CC) $(CFLAGS) $(DEBUG_CFLAGS) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
 
-${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/solve.h
+${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/interfaces/solve.h
 	$(CC) $(CFLAGS) ${SRC}/brute_force.c -c -o ${BUILD}/brute_force.o
 
-${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/solve.h
+${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/interfaces/solve.h
 	$(CC) $(CFLAGS) ${SRC}/single_thread.c -c -o ${BUILD}/single_thread.o
 
 

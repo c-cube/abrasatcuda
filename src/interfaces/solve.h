@@ -9,8 +9,8 @@
 #include <stdio.h>
 #include <assert.h>
 
-#include "clause.h"
-#include "vars.h"
+#include "../clause.h"
+#include "../vars.h"
 
 // prints truth values in a nice way
 static inline void value_print( value_t* values, int var_n )

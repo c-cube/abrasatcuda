@@ -1,5 +1,5 @@
 #include "single_thread.h"
-#include "solve.h" // solve_thread
+#include "interfaces/solve.h" // solve_thread
 
 
 
