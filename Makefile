@@ -14,6 +14,9 @@ PROFILE=no
 PARALLEL=pthread
 
 
+# for pthread, this var sets the number of threads launched
+THREAD_NUM=4
+
 #--------------------------------------------------------------
 # predefined vars, and real makefile vars
 #--------------------------------------------------------------
@@ -57,17 +60,18 @@ export LD_LIBRARY_PATH := .
 
 # lists of targets, headers, objets files...
 TARGETS=abrasatcuda_bf abrasatcuda_dpll 
-OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o  
+OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h Makefile
+HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
 
 # default dispatching method
 DISPATCH_HEADER=${SRC}/single_thread.h
 
 # var containing parameters to be passed to the linker, for creating the final executable
-LDFLAGS=
+# default : linked against math
+LDFLAGS=-lm
 ifeq ($(PARALLEL),pthread)
-	LDFLAGS=-lpthread
+	LDFLAGS=-lpthread -lm
 	DISPATCH_HEADER=${SRC}/multi_thread.h
 	DISPATCH_OBJECT=${BUILD}/multi_thread.o
 endif
@@ -78,6 +82,9 @@ endif
 
 
 
+#--------------------------------------------------------------
+# targets
+#--------------------------------------------------------------
 
 # default target
 all: $(TARGETS) $(MODULES)
@@ -144,7 +151,10 @@ ${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/i
 	$(CC) $(CFLAGS) ${SRC}/single_thread.c $(DBG) $(PROF) -c -o ${BUILD}/single_thread.o
 
 ${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) ${SRC}/multi_thread.c $(DBG) $(PROF) -c -o ${BUILD}/multi_thread.o
+	$(CC) $(CFLAGS) -DTHREAD_NUM=${THREAD_NUM} ${SRC}/multi_thread.c $(DBG) $(PROF) -c -o ${BUILD}/multi_thread.o
+
+${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
+	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
 
 

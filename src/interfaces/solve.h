@@ -11,6 +11,7 @@
 
 #include "../clause.h"
 #include "../vars.h"
+#include "../consts.h"
 
 // prints truth values in a nice way
 static inline void value_print( value_t* values, int var_n )
