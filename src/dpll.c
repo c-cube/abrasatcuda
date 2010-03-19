@@ -26,6 +26,9 @@
  * [clause_n] : number of clauses
  * [var_n] : number of var
  */
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 truth_t 
 #else
@@ -119,6 +122,9 @@ formula_is_satisfiable(
 /*
  * this function returns TRUE if all clauses are satisfied
  */
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 truth_t
 #else
@@ -146,6 +152,9 @@ all_clauses_are_satisfied(
  * This finds unit clauses and propagates them.
  * It returns whether or not the formula is still satisfiable after unit propagation
  */
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 truth_t
 #else
@@ -236,6 +245,9 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
 }
 
 
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 void
 #else
@@ -253,6 +265,9 @@ initialize_values( truth_t* vars, int var_n )
     }
 }
 
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 void
 #else
@@ -274,6 +289,9 @@ initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
  * It will search for every var affected and clause satisfied at a 
  * __higher or equal__ depth then the one given.
  */
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 void
 #else
@@ -308,6 +326,9 @@ unroll( value_t *vars, satisfied_t *satisfied_clauses,
 
 // a simple "heuristic" (just picks up the first non-affected var it finds)
 // TODO : find a better heuristic
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 int
 #else
@@ -333,6 +354,9 @@ heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, 
  * When a failure occur, we hav to find what was the last var we choosed
  * and pushed on the stack. This is a job for find_pushed_var.
  */
+#ifdef CUDA
+__device__
+#endif
 #ifdef PROF
 atom_t
 #else
@@ -378,6 +402,9 @@ find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
  * End
  *
  */
+#ifdef CUDA
+__device__
+#endif
 success_t 
 dpll(
     atom_t* formula,
@@ -601,6 +628,9 @@ failure_negative:
  * The function exported by the module
  * according to the solve.h interface
  */
+#ifdef CUDA
+__device__
+#endif
 success_t 
 solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
 {

@@ -25,7 +25,7 @@
  */
 
 #ifdef CUDA
-__global__ void solve( atom_t *formula, atom_t* clauses_index, value_t * vars_affectations, int clause_n, int var_n , truth_t * answers, int thread_n);
+__global__ void cuda_solve( atom_t *formula, atom_t* clauses_index, value_t * vars_affectations, int clause_n, int var_n , truth_t * answers, int thread_n);
 #else
 // TODO : unifify solve declaration with that of abrasatcuda.h
 //int solve( atom_t *formula, atom_t* clauses_index, value_t ** vars_affectations, int clause_n, int var_n, truth_t * answers, int thread_n);
