@@ -13,9 +13,9 @@ SRC=src
 BUILD=build
 DIST=dist
 
-CFLAGS=-Wall -pedantic -Os -std=gnu99 #-m32 -Werror
+CFLAGS=-Wall -pedantic -Os -std=gnu99 -DPARALLEL=$(PARALLEL) #-m32 -Werror
 #Variable contenant les options passées au compilateur
-DBG=
+DBG=-g
 ifeq ($(DEBUG),yes)
 	DBG=-g -DDEBUG=1 
 endif
