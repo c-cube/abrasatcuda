@@ -44,7 +44,7 @@ thread_func( void *void_args )
     int var_n = args->var_n;
 
 #ifdef DEBUG
-    printf("thread %d has vars ", pthread_self()); 
+    printf("thread %lu has vars ", (unsigned long int) pthread_self()); 
     value_print(vars, var_n);
 #endif
 
@@ -52,11 +52,14 @@ thread_func( void *void_args )
     success_t result = solve_thread( formula, clauses_index, vars, clause_n, var_n );
 
 #ifdef DEBUG
-    printf("thread %d has found %s\n", unsigned long int) pthread_self(), result == SUCCESS ? "true" : "false" );
+    printf("thread %lu has found %s\n", (unsigned long int) pthread_self(), result == SUCCESS ? "true" : "false" );
 #endif
 
     // now notify the main thread
     // TODO
+
+
+    return NULL;
 }
 
 
@@ -85,7 +88,7 @@ launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause
 /*
  * this solves the problem on several thread
  */
-int 
+success_t 
 solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 {
 #ifdef DEBUG
@@ -99,11 +102,17 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     value_t *all_vars = calloc(THREAD_NUM * (var_n+1), sizeof(value_t));
 
     // determine how to choose immutable vars
+#ifdef DEBUG
+    printf("sorts vars by value\n");
+#endif
     value_t sorted_vars[var_n+1];
-    choose_immutable_vars( formula, clauses_index, all_vars, sorted_vars, clause_n, var_n );
+    sort_vars_by_value( formula, clauses_index, all_vars, sorted_vars, clause_n, var_n );
 
     // sets immutable vars (differently for each thread...)
-    set_immutable_vars( all_vars, var_n, THREAD_NUM);
+#ifdef DEBUG
+    printf("chooses immutable vars and sets them\n");
+#endif
+    set_immutable_vars( all_vars, var_n, THREAD_NUM );
 
     // starts THREAD_NUM threads
     for (int i = 0; i < THREAD_NUM; ++i ){
@@ -115,6 +124,12 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
         // really launches this thread
         launch_thread( formula, clauses_index, cur_vars, clause_n, var_n, threads + i ); 
     }
-    return 0; //TODO : set appropriate return value
+
+
+    // now, wait for all threads to terminate
+    for (int i=0; i < THREAD_NUM; ++i)
+        pthread_join( threads[i], NULL );
+
+    return SUCCESS; //TODO : set appropriate return value
 }
 

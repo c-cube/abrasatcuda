@@ -11,8 +11,8 @@ PROFILE=no
 # pthread (for posix threads)
 # single (no parallelism)
 # cuda (solve on cuda)
-PARALLEL=single
-#PARALLEL=pthread
+#PARALLEL=single
+PARALLEL=pthread
 
 
 # for pthread, this var sets the number of threads launched

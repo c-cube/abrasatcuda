@@ -7,7 +7,7 @@
  * this solves the problem on a single thread, as a normal
  * C program.
  */
-int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
+success_t solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 {
     // allocates space for n vars
     value_t vars[var_n];
