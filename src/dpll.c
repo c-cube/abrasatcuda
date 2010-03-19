@@ -611,10 +611,6 @@ solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_
 
 
     value_print( vars, var_n );
-    if( answer == SUCCESS )
-        print("yeah !\n");
-    if ( answer == FAILURE )
-        print("oh noes !\n");
 
     return answer;
 
