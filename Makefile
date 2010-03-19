@@ -2,7 +2,7 @@
 # CONFIGURATION VARS
 #--------------------------------------------------------------
 # switch debug on/off (yes,no,prod)
-DEBUG=no
+DEBUG=yes
 # switch profiling on/off (yes,no)
 PROFILE=no
 
@@ -11,7 +11,8 @@ PROFILE=no
 # pthread (for posix threads)
 # single (no parallelism)
 # cuda (solve on cuda)
-PARALLEL=pthread
+PARALLEL=single
+#PARALLEL=pthread
 
 
 # for pthread, this var sets the number of threads launched
@@ -28,6 +29,7 @@ CC=gcc
 # some vars
 SRC=src
 BUILD=build
+DIST=dist
 
 CFLAGS=-Wall -pedantic -Os -std=gnu99 #-m32 -Werror
 #Variable contenant les options passées au compilateur
@@ -59,13 +61,14 @@ export LD_LIBRARY_PATH := .
 
 
 # lists of targets, headers, objets files...
-TARGETS=abrasatcuda_bf abrasatcuda_dpll 
+TARGETS=${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll 
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
 
 # default dispatching method
 DISPATCH_HEADER=${SRC}/single_thread.h
+DISPATCH_OBJECT=${BUILD}/single_thread.o
 
 # var containing parameters to be passed to the linker, for creating the final executable
 # default : linked against math
@@ -91,10 +94,10 @@ all: $(TARGETS) $(MODULES)
 
 
 # launches tests
-test: test_all
-	./test_all
+test: ${DIST}/test_all
+	./${DIST}/test_all
 
-main: abrasatcuda_bf abrasatcuda_dpll
+main: ${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll
 	@echo -e "\n\e[45;4mexample.cnf :\e[m"
 	@./abrasatcuda tests/example.cnf
 	@echo -e "\n\e[45;4mtrivial.cnf :\e[m"
@@ -111,27 +114,27 @@ prof:
 	gprof ./abrasatcuda
 
 
-check: check.hs
-	ghc -O2 --make check.hs -o check
+check: ${SRC}/check.hs
+	ghc -O2 --make ${SRC}/check.hs -o ${DIST}/check
 
 count:
 	@echo "number of code/comment lines : "; grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
 
 
 # This targets compiles the main binary
-abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT)	
-	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_bf
+${DIST}/abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT)	
+	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_bf
 
 
-abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) 
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_dpll
+${DIST}/abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) 
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_dpll
 
 
 
 # binary for testing
 # @deprecated@
-test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o
-	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o -o test_all
+${DIST}/test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o
+	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o -o ${DIST}/test_all
 
 
 # object files
