@@ -49,7 +49,7 @@ thread_func( void *void_args )
     success_t result = solve_thread( formula, clauses_index, vars, clause_n, var_n );
 
 #ifdef DEBUG
-    printf("thread %lu has found %s\n", (unsigned long int) pthread_self(), result == SUCCESS ? "true" : "false" );
+    print("thread %lu has found %s\n", (unsigned long int) pthread_self(), result == SUCCESS ? "true" : "false" );
 #endif
 
     // now notify the main thread
@@ -89,7 +89,7 @@ success_t
 solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 {
 #ifdef DEBUG
-    printf("uses %d threads\n", THREAD_NUM);
+    print("uses %d threads\n", THREAD_NUM);
 #endif
     // create structure to hold pthread_t
     pthread_t threads[THREAD_NUM];
@@ -100,14 +100,14 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 
     // determine how to choose immutable vars
 #ifdef DEBUG
-    printf("sorts vars by value\n");
+    print("sorts vars by value\n");
 #endif
     int sorted_vars[var_n+1];
     sort_vars_by_value( formula, clauses_index, all_vars, sorted_vars, clause_n, var_n );
 
     // sets immutable vars (differently for each thread...)
 #ifdef DEBUG
-    printf("chooses immutable vars and sets them\n");
+    print("chooses immutable vars and sets them\n");
 #endif
     set_immutable_vars( all_vars, sorted_vars, var_n, THREAD_NUM );
 
@@ -115,7 +115,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     for (int i = 0; i < THREAD_NUM; ++i ){
         value_t *cur_vars = all_vars + (i * (var_n+1));
 #ifdef DEBUG
-        printf("launches thread %d with vars ", i); value_print( cur_vars, var_n); 
+        print("launches thread %d with vars ", i); value_print( cur_vars, var_n); 
 #endif
         
         // really launches this thread

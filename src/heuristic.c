@@ -158,7 +158,7 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
       return;
   
   int base_two_decomp[32];
-  int var_affected, sorted_var_index;
+  int var_affected;
 
   // this holds the number of immutable value per thread
   int immutable_per_thread = 0;
@@ -181,13 +181,15 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
   // for each thread
   for (int i = 0; i < thread_n; ++i)
   {
+    // current vars array
+    value_t *vars = all_vars + (i * (var_n+1) );
+
     to_base_two( base_two_decomp, i);
-    var_affected = 0; // index of first var name to choose in [sorted_vars]
-    sorted_var_index = 1; // index in [sorted_vars]
+    var_affected = 1; // index of first var name to choose in [sorted_vars]
     while (1)
     {
       // check if we have affected enough values for this vars instance. 
-      if ( (i > thread_correct_index && var_affected > immutable_per_thread +1)
+      if ( (i >= thread_correct_index && var_affected > immutable_per_thread +1)
           || var_affected > immutable_per_thread ){
         break;
       }
@@ -196,11 +198,11 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
 
       // the var we choose now is the [var_affected]-th in decreasing order
       int var_name = sorted_vars[var_affected]; 
-      if ( base_two_decomp[var_affected] )
-        SET_TRUE( all_vars[ i * (var_n+1) + var_name ]);
+      if ( base_two_decomp[var_affected] == 1 )
+        SET_TRUE( vars[var_name]);
       else
-        SET_FALSE( all_vars[ i * (var_n+1) + var_name]);
-      SET_IMMUTABLE(all_vars[ i * (var_n+1) + var_name]); 
+        SET_FALSE( vars[var_name]);
+      SET_IMMUTABLE( vars[var_name]); 
       ++var_affected;
     }
   }
@@ -210,7 +212,7 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
 static inline void
 to_base_two( int * base_2_array, int input)
 {
-  for (int i = 0; i < 32; ++i)
+  for (int i = 1; i < 32; ++i)
   {
     base_2_array[i] = input % 2;
     input /= 2; // compiler does optimize this I guess :)
