@@ -66,8 +66,8 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
         // double value = 100 * ((double) total_occur_num) / 
         //    ((double) abs(negative_occur_num - positive_occur_num)+1);
 
-#ifdef DEBUG
-        printf("var %d (+%d, -%d) is given a mark of %lf\n", i, positive_occur_num[i], negative_occur_num[i], value);
+#if DEBUG > 1
+        print("var %d (+%d, -%d) is given a mark of %lf\n", i, positive_occur_num[i], negative_occur_num[i], value);
 #endif
 
         interest[i] = value;
@@ -115,20 +115,20 @@ sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, int *
     // we start sorting vars from the first one, which is at [sorted_vars]+1
     interest_ptr = interest;
 #ifdef DEBUG
-    printf("starts to sort\n");
+    print("starts to sort\n");
 #endif
     qsort( sorted_vars+1, var_n, sizeof(int), &compare );
 
 #ifdef DEBUG
     // check if sorted
-    printf("checks if sorted\n");
+    print("checks if sorted\n");
     for (int i=1; i <= var_n; ++ i)
-        printf("%d ", sorted_vars[i]);
-    printf("\n");
+        print("%d ", sorted_vars[i]);
+    print("\n");
     int is_sorted = 1;
     for (int i=1; i < var_n; ++i ){
         if ( ! ( interest[sorted_vars[i]] >= interest[sorted_vars[i+1]] ) ){
-            printf("var %d (value %lf) not >= than var %d (value %lf)\n",
+            print("var %d (value %lf) not >= than var %d (value %lf)\n",
                 sorted_vars[i], interest[sorted_vars[i]],
                 sorted_vars[i+1], interest[sorted_vars[i+1]]);
             is_sorted = 0;
@@ -174,7 +174,7 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
   int thread_correct_index = 1 << immutable_per_thread;
 
 #ifdef DEBUG
-  printf("we affect %d immutable vars, optimum with %d threads\n", immutable_per_thread, thread_correct_index);
+  print("we affect %d immutable vars, optimum with %d threads\n", immutable_per_thread, thread_correct_index);
 #endif
 
   // FIXME : problems in affectation (segfault on some tests, and otherwise bad affectations)

@@ -30,7 +30,7 @@ update_satisfied( atom_t *formula, atom_t *clauses_index, value_t *vars, satisfi
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
 #ifdef DEBUG
-                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                    //print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -40,7 +40,7 @@ update_satisfied( atom_t *formula, atom_t *clauses_index, value_t *vars, satisfi
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
 #ifdef DEBUG
-                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                    //print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -100,7 +100,7 @@ formula_is_satisfiable(
             // if this var is not affected, there may be still a chance
             if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
 #ifdef DEBUG
-                //printf("clause %d satisfiable thank to free var %d\n", i, name);
+                //print("clause %d satisfiable thank to free var %d\n", i, name);
 #endif
                 clause_satisfiable = TRUE;
                 break;
@@ -114,7 +114,7 @@ formula_is_satisfiable(
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
 #ifdef DEBUG
-                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                    //print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -125,7 +125,7 @@ formula_is_satisfiable(
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
 #ifdef DEBUG
-                    //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                    //print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                     SET_SATISFIED(satisfied_clauses[i]);
                     SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -139,7 +139,7 @@ formula_is_satisfiable(
         if ( clause_satisfiable == FALSE ){
 #ifdef DEBUG
             value_print( vars, var_n );
-            printf("clause %d not satisfiable ",i); clause_print( clause, clause_end ); printf("\n"); 
+            print("clause %d not satisfiable ",i); clause_print( clause, clause_end ); print("\n"); 
 #endif
             return FALSE;
         }
@@ -209,8 +209,8 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
         // propagate the unit clause !
         if ( num_atom == 1 ){
 #ifdef DEBUG
-            printf("unit clause %d, unit var %d", index, VARIABLE_NAME(*unit_atom));
-            clause_print( clause, clause_end ); printf("\n"); 
+            print("unit clause %d, unit var %d", index, VARIABLE_NAME(*unit_atom));
+            clause_print( clause, clause_end ); print("\n"); 
 #endif
             did_something = SUCCESS;
             did_something_this_turn = SUCCESS;
@@ -219,9 +219,9 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
 
             SET_SATISFIED(satisfied_clauses[index]); // the clause is satisfied, by necessity
 #ifdef DEBUG
-            //printf("set clause %d to satisfied\n", index);
+            //print("set clause %d to satisfied\n", index);
             //if ( SATISFIED(satisfied_clauses[index] ))
-            //  printf("indeed satisfied\n");
+            //  print("indeed satisfied\n");
 #endif        
             SET_STACK_DEPTH(satisfied_clauses[index], stack_depth); // remember where we did that
 
@@ -387,7 +387,7 @@ dpll(
 {
     
 #ifdef DEBUG
-    printf("launches dpll with %d clauses and %d vars\n", clause_n, var_n );
+    print("launches dpll with %d clauses and %d vars\n", clause_n, var_n );
 #endif
 
     /* 
@@ -419,7 +419,7 @@ dpll(
      */
 start:
 #ifdef DEBUG
-        printf("\033[31m->\033[m @start\n");
+        print("\033[31m->\033[m @start\n");
         value_print( vars, var_n );
         satisfied_print( satisfied_clauses, clause_n );
 #endif
@@ -445,7 +445,7 @@ start:
         // check if all clauses are satisfied
         if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
 #ifdef DEBUG
-            printf("all clauses satisfied !\n");
+            print("all clauses satisfied !\n");
 #endif
             return SUCCESS; // win !
         }
@@ -457,7 +457,7 @@ start:
 
         if ( propagate_sth == SUCCESS ){
 #ifdef DEBUG
-            printf("propagate successfull !\n");
+            print("propagate successfull !\n");
 #endif
             
             // if formula is no more satisfiable, we failed.
@@ -479,7 +479,7 @@ start:
      */
 branch:
 #ifdef DEBUG
-        printf("\033[31m->\033[m @branch\n");
+        print("\033[31m->\033[m @branch\n");
 #endif
         next_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
 
@@ -489,7 +489,7 @@ branch:
                 return SUCCESS;
             } else {
 #ifdef DEBUG
-                printf("all vars affected, but not all clauses satisfied ?!\n");
+                print("all vars affected, but not all clauses satisfied ?!\n");
 #endif
 
                 // stack_depth -= 2; // TWO levels down FIXME : pertinent ?
@@ -503,7 +503,7 @@ branch:
         INVARIANT_STACK
 
 #ifdef DEBUG
-        printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
+        print("chooses var %d at stack depth %d\n", next_var, stack_depth );
 #endif
         
         /*
@@ -524,7 +524,7 @@ branch:
      */
 epic_fail:
 #ifdef DEBUG
-        printf("\033[31m->\033[m @epic_fail [stack depth %d]\n", stack_depth);
+        print("\033[31m->\033[m @epic_fail [stack depth %d]\n", stack_depth);
 #endif
         
         // exhausted all possibilities at root, loser !
@@ -541,7 +541,7 @@ epic_fail:
 
         if ( last_pushed_var == -1 ){ // root of call stack
 #ifdef DEBUG
-            printf("epic_fail at stack depth %d, no last_pushed_var\n",stack_depth);
+            print("epic_fail at stack depth %d, no last_pushed_var\n",stack_depth);
 #endif
             return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
         }
@@ -565,8 +565,8 @@ epic_fail:
      */
 failure_positive:
 #ifdef DEBUG
-        printf("\033[31m->\033[m @failure positive\n");
-        printf("switching var %d to false\n", last_pushed_var);
+        print("\033[31m->\033[m @failure positive\n");
+        print("switching var %d to false\n", last_pushed_var);
 #endif 
 
         INVARIANT_STACK
@@ -584,7 +584,7 @@ failure_positive:
      */
 failure_negative:
 #ifdef DEBUG
-        printf("\033[31m->\033[m @failure negative\n");
+        print("\033[31m->\033[m @failure negative\n");
 #endif
 
         // go back in the stack
@@ -598,7 +598,7 @@ failure_negative:
 
 
     // end:
-        printf("what are you doing here ???\n");
+        print("what are you doing here ???\n");
         assert(0);
         return FAILURE; // never reached
 }
@@ -621,9 +621,9 @@ solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_
 
     value_print( vars, var_n );
     if( answer == SUCCESS )
-        printf("yeah !\n");
+        print("yeah !\n");
     if ( answer == FAILURE )
-        printf("oh noes !\n");
+        print("oh noes !\n");
 
     return answer;
 

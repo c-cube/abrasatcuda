@@ -68,7 +68,7 @@ static inline void
 launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n, pthread_t *thread )
 {
     // create a struct to encapsulate args
-    struct solve_args *args = malloc(sizeof(struct solve_args));
+    struct solve_args *args = (struct solve_args*) malloc(sizeof(struct solve_args));
     args->formula = formula;
     args->clauses_index = clauses_index;
     args->vars = vars;
@@ -119,7 +119,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 #endif
         
         // really launches this thread
-        launch_thread( formula, clauses_index, cur_vars, clause_n, var_n, threads + i ); 
+        launch_thread( formula, clauses_index, cur_vars, clause_n, var_n, threads + ((pthread_t) i) ); 
     }
 
 

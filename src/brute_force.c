@@ -46,7 +46,7 @@ static inline truth_t is_satisfiable(
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
 #ifdef DEBUG
-                    printf("clause %d satisfied by atom %d\n", i, name);
+                    print("clause %d satisfied by atom %d\n", i, name);
 #endif
                     clause_satisfiable = TRUE;
                     break;
@@ -55,7 +55,7 @@ static inline truth_t is_satisfiable(
                 // clause satisfied
                 if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
 #ifdef DEBUG
-                    printf("clause %d satisfied by atom %d\n", i, name);
+                    print("clause %d satisfied by atom %d\n", i, name);
 #endif
                     clause_satisfiable = TRUE;
                     break;
@@ -66,7 +66,7 @@ static inline truth_t is_satisfiable(
         // there is not free var or satisfying atom, the clause is obviously empty, fail !
         if ( clause_satisfiable == FALSE ){
 #ifdef DEBUG
-            printf("clause %d not satisfiable\n",i);
+            print("clause %d not satisfiable\n",i);
 #endif
             return FALSE;
         }
@@ -99,7 +99,7 @@ static inline success_t next_combination( value_t*vars, int *cur, int var_n )
         if (*cur == var_n && (TRUTH_VALUE(vars[*cur]) || IS_IMMUTABLE(vars[*cur]))){
             return FAILURE;
 #ifdef DEBUG
-            printf("next_combination failed on cur = %d with ", *cur); value_print( vars, var_n); 
+            print("next_combination failed on cur = %d with ", *cur); value_print( vars, var_n); 
 #endif
         }
 
@@ -164,7 +164,7 @@ success_t brute_force(atom_t* formula, atom_t* clauses_index,
 
 #ifdef DEBUG
     value_print(vars,var_n);
-    printf("tries every possibility !\n");
+    print("tries every possibility !\n");
 #endif
     
     /*
@@ -182,11 +182,11 @@ success_t brute_force(atom_t* formula, atom_t* clauses_index,
         if ( all_ok == FALSE ){
             continue; // not ok
 #ifdef DEBUG
-            printf("fail\n");
+            print("fail\n");
 #endif
         } else {
 #ifdef DEBUG
-            printf("all clauses ok\n");
+            print("all clauses ok\n");
 #endif
             return SUCCESS;
         }

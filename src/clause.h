@@ -14,7 +14,7 @@
 #include <stdlib.h> // malloc
 #include <string.h> // memcpy
 #include <assert.h> // assert
-#include <stdio.h> // printf
+#include <stdio.h> // print
 
 #include "consts.h"
 
@@ -182,9 +182,9 @@ static inline void formula_print(
             formula_item( formula, clauses_index, i ), 
             formula_item( formula, clauses_index, i+1 ) );
         if (i<n-1)
-            printf("\033[36m /\\ \033[m\n");
+            print("\033[36m /\\ \033[m\n");
         else
-            printf("\n");
+            print("\n");
     }
 } 
 
