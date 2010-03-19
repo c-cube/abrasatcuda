@@ -1,4 +1,4 @@
-include options
+include config
 
 #--------------------------------------------------------------
 # predefined vars, and real makefile vars
