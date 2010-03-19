@@ -1,22 +1,4 @@
-#--------------------------------------------------------------
-# CONFIGURATION VARS
-#--------------------------------------------------------------
-# switch debug on/off (yes,no,prod)
-DEBUG=yes
-# switch profiling on/off (yes,no)
-PROFILE=no
-
-# this var defines how to parallelize
-# It can take one of those values :
-# pthread (for posix threads)
-# single (no parallelism)
-# cuda (solve on cuda)
-#PARALLEL=single
-PARALLEL=pthread
-
-
-# for pthread, this var sets the number of threads launched
-THREAD_NUM=4
+include options
 
 #--------------------------------------------------------------
 # predefined vars, and real makefile vars
