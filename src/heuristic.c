@@ -20,9 +20,14 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
     // number of times vars appear positively or negatively in the formula
     int positive_occur_num[var_n+1];
     int negative_occur_num[var_n+1];
+    for (int i=1; i <= var_n; ++i){
+        positive_occur_num[i] = 0;
+        negative_occur_num[i] = 0;
+    }
 
     int name = 0;
 
+    // loop over all atoms of formula, and for each, update appropriate occurrence number
     for ( int i = 0; i < clause_n; ++i ){
         
         atom_t *clause = formula + (clauses_index[i]);
@@ -55,10 +60,14 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
         // total number of occurrences
         int total_occur_num = positive_occur_num[i] + negative_occur_num[i];
 
-        double value = exp( ((double) (total_occur_num)) / 
+        // FIXME : exp behaves strangely (exp(0) is 0 ??)
+        double value = exp(5 *  ((double) (total_occur_num)) / 
             ((double) abs(negative_occur_num - positive_occur_num)+1) );
+        // double value = 100 * ((double) total_occur_num) / 
+        //    ((double) abs(negative_occur_num - positive_occur_num)+1);
+
 #ifdef DEBUG
-        printf("var %d is given a mark of %lf\n", i, value);
+        printf("var %d (+%d, -%d) is given a mark of %lf\n", i, positive_occur_num[i], negative_occur_num[i], value);
 #endif
 
         interest[i] = value;
@@ -70,16 +79,17 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
 static int 
 compare( const void *a, const void *b )
 {
-    value_t my_a = *((value_t*) a);
-    value_t my_b = *((value_t*) b);
+    int my_a = *((value_t*) a);
+    int my_b = *((value_t*) b);
 
     // the function uses this to compare vars
     assert( interest_ptr != NULL );
 
+    // we want to sort in the decreasing order
     if ( interest_ptr[my_a] < interest_ptr[my_b] )
-        return -1;
+        return +1;
     if ( interest_ptr[my_a] > interest_ptr[my_b] )
-        return 1;
+        return -1;
     else 
         return 0;
 }
@@ -89,30 +99,36 @@ compare( const void *a, const void *b )
 
 // function explained in heuristic.h
 void
-sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, value_t *sorted_vars, int clause_n, int var_n )
+sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, int *sorted_vars, int clause_n, int var_n )
 {
     // array for handling marks given to every var
     double interest[var_n+1];
 
     // compute marks
     compute_values( formula, clauses_index, vars, interest, clause_n, var_n );
-    
 
     // initializes the array sorted_vars
-    for (int i=0; i <= var_n; ++i )
+    for (int i=1; i <= var_n; ++i )
         sorted_vars[i] = i;
 
     // sort the array. It uses compare as a compare function.
     // we start sorting vars from the first one, which is at [sorted_vars]+1
     interest_ptr = interest;
-    qsort( sorted_vars+1, var_n, sizeof(value_t), &compare );
+#ifdef DEBUG
+    printf("starts to sort\n");
+#endif
+    qsort( sorted_vars+1, var_n, sizeof(int), &compare );
 
 #ifdef DEBUG
     // check if sorted
+    printf("checks if sorted\n");
+    for (int i=1; i <= var_n; ++ i)
+        printf("%d ", sorted_vars[i]);
+    printf("\n");
     int is_sorted = 1;
     for (int i=1; i < var_n; ++i ){
-        if ( ! ( interest[sorted_vars[i]] <= interest[sorted_vars[i+1]] ) ){
-            printf("var %d (value %lf) not <= than var %d (value %lf)\n",
+        if ( ! ( interest[sorted_vars[i]] >= interest[sorted_vars[i+1]] ) ){
+            printf("var %d (value %lf) not >= than var %d (value %lf)\n",
                 sorted_vars[i], interest[sorted_vars[i]],
                 sorted_vars[i+1], interest[sorted_vars[i+1]]);
             is_sorted = 0;
@@ -125,35 +141,72 @@ sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, value
 
 
 
-// TODO : comment ;)
+/*
+ * TODO : more comments ;)
+ *
+ * parameters :
+ * [all_vars] : array containing [thread_n] arrays of vars (each of size [var_n]+1)
+ * [sorted_vars] : array of size [var_n]+1 containing the names of vars 
+ *      in decreasing order of interest.
+ */
 void
-set_immutable_vars( value_t * all_vars, int var_n, int thread_n)
+set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_n)
 {
+  // if there is only one thread, exit
+  assert( thread_n > 0);
+  if ( thread_n == 1)
+      return;
   
-  int * base_two_decomp = (int *) malloc( sizeof(int) * 32);
-  int var_count, var_affected;
+  int base_two_decomp[32];
+  int var_affected, sorted_var_index;
+
+  // this holds the number of immutable value per thread
+  int immutable_per_thread = 0;
+  int thread_num = thread_n >> 1;
+  // based on a rounded base 2 logarithm : round(log_2(thread_n)) == immutable_per_thread
+  while ( thread_num > 0){
+    immutable_per_thread++; 
+    thread_num = thread_num >> 1;
+  }
+  // this shows what is the max index until which we can do a perfect allocation
+  // of [immutable_per_thread] variables. 
+  // if we are further, we can choose [immutable_per_thread]+1 vars instead.
+  int thread_correct_index = 1 << immutable_per_thread;
+
+#ifdef DEBUG
+  printf("we affect %d immutable vars, optimum with %d threads\n", immutable_per_thread, thread_correct_index);
+#endif
+
+  // FIXME : problems in affectation (segfault on some tests, and otherwise bad affectations)
+  // for each thread
   for (int i = 0; i < thread_n; ++i)
   {
     to_base_two( base_two_decomp, i);
-    var_count = var_affected = 0;
-    while (var_count < var_n)
+    var_affected = 0; // index of first var name to choose in [sorted_vars]
+    sorted_var_index = 1; // index in [sorted_vars]
+    while (1)
     {
-      if ( IS_IMMUTABLE( all_vars[ i * var_n + var_count] ))
-      {
-        assert( var_affected < 32);
-        if ( base_two_decomp[var_affected] )
-          SET_TRUE( all_vars[ i * var_n + var_count]);
-        else
-          SET_FALSE( all_vars[ i * var_n + var_count]);
-        ++var_affected;
+      // check if we have affected enough values for this vars instance. 
+      if ( (i > thread_correct_index && var_affected > immutable_per_thread +1)
+          || var_affected > immutable_per_thread ){
+        break;
       }
-      ++var_count;
+
+      assert( var_affected < 32); // 2 ^ 32 threads is *huge* !
+
+      // the var we choose now is the [var_affected]-th in decreasing order
+      int var_name = sorted_vars[var_affected]; 
+      if ( base_two_decomp[var_affected] )
+        SET_TRUE( all_vars[ i * (var_n+1) + var_name ]);
+      else
+        SET_FALSE( all_vars[ i * (var_n+1) + var_name]);
+      SET_IMMUTABLE(all_vars[ i * (var_n+1) + var_name]); 
+      ++var_affected;
     }
   }
-  free(base_two_decomp);
 }
 
-// TODO : comment
+// converts [input] into an array of bits, which is [base_2_array].
 static inline void
 to_base_two( int * base_2_array, int input)
 {

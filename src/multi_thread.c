@@ -43,10 +43,7 @@ thread_func( void *void_args )
     int clause_n = args->clause_n;
     int var_n = args->var_n;
 
-#ifdef DEBUG
-    printf("thread %lu has vars ", (unsigned long int) pthread_self()); 
-    value_print(vars, var_n);
-#endif
+    free( void_args );
 
     // runs the solve_thread() function
     success_t result = solve_thread( formula, clauses_index, vars, clause_n, var_n );
@@ -105,14 +102,14 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 #ifdef DEBUG
     printf("sorts vars by value\n");
 #endif
-    value_t sorted_vars[var_n+1];
+    int sorted_vars[var_n+1];
     sort_vars_by_value( formula, clauses_index, all_vars, sorted_vars, clause_n, var_n );
 
     // sets immutable vars (differently for each thread...)
 #ifdef DEBUG
     printf("chooses immutable vars and sets them\n");
 #endif
-    set_immutable_vars( all_vars, var_n, THREAD_NUM );
+    set_immutable_vars( all_vars, sorted_vars, var_n, THREAD_NUM );
 
     // starts THREAD_NUM threads
     for (int i = 0; i < THREAD_NUM; ++i ){
@@ -130,6 +127,10 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     for (int i=0; i < THREAD_NUM; ++i)
         pthread_join( threads[i], NULL );
 
-    return SUCCESS; //TODO : set appropriate return value
+
+    // TODO : write a synchronization mechanism to allow a thread to 
+    // notify the main thread that it found true, so we can stop all threads and return SUCCESS
+
+    return SUCCESS; //TODO
 }
 
