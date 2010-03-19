@@ -61,7 +61,7 @@ formula_is_satisfiable(
             int name = VARIABLE_NAME(*iterator);
             // if this var is not affected, there may be still a chance
             if ( ! ( IS_AFFECTED(vars[name]) || IS_IMMUTABLE(vars[name]) ) ){
-#ifdef DEBUG
+#if DEBUG > 1
                 //printf("clause %d satisfiable thank to free var %d\n", i, name);
 #endif
                 clause_satisfiable = TRUE;
@@ -78,7 +78,7 @@ formula_is_satisfiable(
                 if ( is_negative ){
                     // clause satisfied
                     if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
-#ifdef DEBUG
+#if DEBUG > 1
                         //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                         SET_SATISFIED(satisfied_clauses[i]);
@@ -89,7 +89,7 @@ formula_is_satisfiable(
                 } else {
                     // clause satisfied
                     if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
-#ifdef DEBUG
+#if DEBUG > 1
                         //printf("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                         SET_SATISFIED(satisfied_clauses[i]);
@@ -103,7 +103,7 @@ formula_is_satisfiable(
 
         // there is no free var or satisfying atom, the clause is obviously empty, fail !
         if ( clause_satisfiable == FALSE ){
-#ifdef DEBUG
+#if DEBUG > 1
             value_print( vars, var_n );
             printf("clause %d not satisfiable ",i); clause_print( clause, clause_end ); printf("\n"); 
 #endif
@@ -188,7 +188,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
          * __START FROM THE BEGINNING__ (some clauses may have become unit ones)
          */
         if ( num_atom == 1 ){
-#ifdef DEBUG
+#if DEBUG > 1
             printf("unit clause %d, unit var %d", index, VARIABLE_NAME(*unit_atom));
             clause_print( clause, clause_end ); printf("\n"); 
 #endif
@@ -196,7 +196,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
             int name = VARIABLE_NAME(*unit_atom);
 
             SET_SATISFIED(satisfied_clauses[index]); // the clause is satisfied, by necessity
-#ifdef DEBUG
+#if DEBUG > 1
             //printf("set clause %d to satisfied\n", index);
             //if ( SATISFIED(satisfied_clauses[index] ))
             //  printf("indeed satisfied\n");
@@ -387,7 +387,7 @@ dpll(
     int var_n)
 {
     
-#ifdef DEBUG
+#if DEBUG > 1
     printf("launches dpll with %d clauses and %d vars\n", clause_n, var_n );
 #endif
 
@@ -418,7 +418,7 @@ dpll(
      *      the branch.
      */
 start:
-#ifdef DEBUG
+#if DEBUG > 1
         printf("\033[31m->\033[m @start\n");
         value_print( vars, var_n );
         satisfied_print( satisfied_clauses, clause_n );
@@ -444,7 +444,7 @@ start:
 
         // check if all clauses are satisfied
         if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
-#ifdef DEBUG
+#if DEBUG > 1
             printf("all clauses satisfied !\n");
 #endif
             return SUCCESS; // win !
@@ -470,7 +470,7 @@ start:
      * choose a var, and test it with positive value.
      */
 branch:
-#ifdef DEBUG
+#if DEBUG > 1
         printf("\033[31m->\033[m @branch\n");
 #endif
         next_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
@@ -480,7 +480,7 @@ branch:
             if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
                 return SUCCESS;
             } else {
-#ifdef DEBUG
+#if DEBUG > 1
                 printf("all vars affected, but not all clauses satisfied ?!\n");
 #endif
 
@@ -494,7 +494,7 @@ branch:
         stack_depth_plus += 2;
         INVARIANT_STACK
 
-#ifdef DEBUG
+#if DEBUG > 1
         printf("chooses var %d at stack depth %d\n", next_var, stack_depth );
 #endif
         
@@ -515,7 +515,7 @@ branch:
      * Now we have to recognize it to deal with it properly.
      */
 epic_fail:
-#ifdef DEBUG
+#if DEBUG > 1
         printf("\033[31m->\033[m @epic_fail [stack depth %d]\n", stack_depth);
 #endif
         
@@ -532,7 +532,7 @@ epic_fail:
 
 
         if ( last_pushed_var == -1 ){ // root of call stack
-#ifdef DEBUG
+#if DEBUG > 1
             printf("epic_fail at stack depth %d, no last_pushed_var\n",stack_depth);
 #endif
             return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
@@ -556,7 +556,7 @@ epic_fail:
      * We remain at the same stack depth, but try with a negative value.
      */
 failure_positive:
-#ifdef DEBUG
+#if DEBUG > 1
         printf("\033[31m->\033[m @failure positive\n");
         printf("switching var %d to false\n", last_pushed_var);
 #endif 
@@ -575,7 +575,7 @@ failure_positive:
      * the previous choice was not the good one.
      */
 failure_negative:
-#ifdef DEBUG
+#if DEBUG > 1
         printf("\033[31m->\033[m @failure negative\n");
 #endif
 
