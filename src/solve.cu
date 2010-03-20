@@ -19,7 +19,7 @@
 * chooses immutable vars and sets them differently for each thread
 */
 __host__ void
-prepare_presets( atom_t * formula, atom_t * clauses_index, value_t * vars, int clause_n, int var_n, int thread_n, value_t * all_vars)
+prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var_n, int thread_n, value_t * all_vars)
 {
   *all_vars = calloc(thread_n * (var_n+1), sizeof(value_t));
 
@@ -106,9 +106,9 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 
   value_t * vars_affectations;
   // we select and preset k variablees, where 2^k = THREAD_NUM
-  prepare_presets( formula, clauses_index, vars, clause_n, var_n, THREAD_NUM, vars_affectations);
+  prepare_presets( formula, clauses_index, clause_n, var_n, THREAD_NUM, vars_affectations);
   
-  truth_t * answers = malloc ( THREAD_NUM * sizeof(truth_t));
+  truth_t * answers = (truth_t *) malloc ( THREAD_NUM * sizeof(truth_t));
 
   size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
 
@@ -116,7 +116,7 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
   prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answers, answers_d, THREAD_NUM);
 
   // now we call the cuda kernel to solve each instance
-  cuda_solve<<<8,THREAD_NUM/8, shared_mem_size>>> ( formula_d, clause_index_d, vars_affectations_d, clause_n, var_n, answers_d, THREAD_NUM);
+  cuda_solve<<<8,THREAD_NUM/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answers_d, THREAD_NUM);
 
   cudaMemcpy( answers, answers_d, THREAD_NUM * sizeof(truth_t), cudaMemcpyDeviceToHost);
 
