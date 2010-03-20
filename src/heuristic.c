@@ -60,11 +60,8 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
         // total number of occurrences
         int total_occur_num = positive_occur_num[i] + negative_occur_num[i];
 
-        // FIXME : exp behaves strangely (exp(0) is 0 ??)
         double value = exp(5 *  ((double) (total_occur_num)) / 
             ((double) abs(negative_occur_num - positive_occur_num)+1) );
-        // double value = 100 * ((double) total_occur_num) / 
-        //    ((double) abs(negative_occur_num - positive_occur_num)+1);
 
 #if DEBUG > 1
         print("var %d (+%d, -%d) is given a mark of %lf\n", i, positive_occur_num[i], negative_occur_num[i], value);
@@ -177,7 +174,6 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
   print("we affect %d immutable vars, optimum with %d threads\n", immutable_per_thread, thread_correct_index);
 #endif
 
-  // FIXME : problems in affectation (segfault on some tests, and otherwise bad affectations)
   // for each thread
   for (int i = 0; i < thread_n; ++i)
   {
@@ -189,8 +185,8 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
     while (1)
     {
       // check if we have affected enough values for this vars instance. 
-      if ( (i >= thread_correct_index && var_affected > immutable_per_thread +1)
-          || var_affected > immutable_per_thread ){
+      if ( var_affected > immutable_per_thread +1
+          || ( i < thread_correct_index && var_affected > immutable_per_thread ) ){
         break;
       }
 
