@@ -41,7 +41,7 @@ endif
 #for cuda compilation
 CUDA=
 ifeq ($(PARALLEL),cuda)
-	CUDA=-DCUDA=1 -DNDEBUG=1 
+	CUDA=-DCUDA=1 -DNDEBUG=1 -DDEBUG=0
 endif
 
 PROF=
@@ -132,7 +132,7 @@ ${DIST}/abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJEC
 	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_dpll
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
-	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(DBG) $(PROF) $(CUDA) $(OBJECTS) $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
+	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(PROF) $(CUDA) $(OBJECTS) $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
 
 
 # binary for testing
@@ -164,7 +164,7 @@ ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
 ${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll.c
-	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
+	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -o ${BUILD}/cuda.o
 
 
 

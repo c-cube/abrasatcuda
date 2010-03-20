@@ -110,7 +110,10 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
   
   truth_t * answers = (truth_t *) malloc ( THREAD_NUM * sizeof(truth_t));
 
-  size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
+  // apparently, can't decide this size at execution..
+  //size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
+  size_t shared_mem_size = 8 * 128 * sizeof( value_t);
+  // so no more than 128 variables...
 
   // transfering all data to the gpu global memory
   prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answers, answers_d, THREAD_NUM);
