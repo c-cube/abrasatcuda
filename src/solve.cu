@@ -78,7 +78,7 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     int block_id = blockIdx.x * blockDim.x;
     int id_in_block = threadIdx.x;
     // TODO : retrieve block idee. CRITICAL for retrieving affectations correctly
-    extern __shared__ value_t * vars_in_global;
+    extern __shared__ value_t vars_in_global[];
     // TODO : verify this affectation is correct
     for ( int i = 1; i <= var_n; ++i) 
     {
