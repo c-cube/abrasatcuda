@@ -21,7 +21,7 @@
 __host__ void
 prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var_n, int thread_n, value_t * all_vars)
 {
-  *all_vars = calloc(thread_n * (var_n+1), sizeof(value_t));
+  *all_vars = (value_t *) calloc(thread_n * (var_n+1), sizeof(value_t));
 
 #ifdef DEBUG
   printf("sorts vars by value\n");
