@@ -84,6 +84,9 @@ static inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n
  * It must find out if clauses are satisfiables with this repartition, by
  * brute force over others vars.
  */
+#ifdef CUDA
+__device__
+#endif
 success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, 
     int clause_n, int var_n );
 

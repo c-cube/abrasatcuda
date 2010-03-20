@@ -163,7 +163,7 @@ ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
 ${BUILD}/cuda.o: ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c ${SRC}/dpll.h
-	$(NVCC) $(NVFLAGS) ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.h ${SRC}/dpll.c $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
+	$(NVCC) $(NVFLAGS) ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
 
 
 
