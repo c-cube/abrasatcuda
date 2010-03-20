@@ -1,6 +1,6 @@
-#include "interfaces/solve.h"
 #include "interfaces/dispatch.h"
 #include "heuristic.h"
+#include "dpll.c"
 
 
 // sets the number of threads

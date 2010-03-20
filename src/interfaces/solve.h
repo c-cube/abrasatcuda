@@ -86,6 +86,7 @@ static inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n
  */
 #ifdef CUDA
 __device__ static inline
+// not a good idea..
 #endif
 success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, 
     int clause_n, int var_n );

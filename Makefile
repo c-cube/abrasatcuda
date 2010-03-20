@@ -6,7 +6,8 @@ include config
 
 #path to the cuda compiler
 # TODO : complete this accroding to the computer's configuration
-CUDAPATH=
+CUDAPATH=/usr/local
+CUDA_INCLUDES=-I /usr/local/cuda-2.3/include/
 
 
 # current compiler
@@ -131,7 +132,7 @@ ${DIST}/abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJEC
 	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_dpll
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
-	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(DBG) $(PROF) $(CUDA) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
+	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(DBG) $(PROF) $(CUDA) $(OBJECTS) $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
 
 
 # binary for testing
@@ -162,8 +163,8 @@ ${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/inte
 ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
-${BUILD}/cuda.o: ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c
-	$(NVCC) $(NVFLAGS) ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
+${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll.c
+	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
 
 
 
