@@ -15,10 +15,10 @@ PROFILE=no
 # single (no parallelism)
 # cuda (solve on cuda)
 #PARALLEL=single
-PARALLEL=pthread
-#PARALLEL=cuda
+#PARALLEL=pthread
+PARALLEL=cuda
 
 
 # for pthread, this var sets the number of threads launched
-THREAD_NUM=4
+THREAD_NUM=64
 

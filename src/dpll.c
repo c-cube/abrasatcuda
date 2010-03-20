@@ -617,9 +617,11 @@ failure_negative:
 
 
     // end:
+#ifndef CUDA
         print("what are you doing here ???\n");
         assert(0);
         return FAILURE; // never reached
+#endif
 }
 
 
@@ -640,7 +642,9 @@ solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_
     truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n );
 
 
+#ifndef CUDA
     value_print( vars, var_n );
+#endif
 
     return answer;
 

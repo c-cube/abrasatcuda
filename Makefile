@@ -20,7 +20,7 @@ BUILD=build
 DIST=dist
 
 # for cuda flags
-NVFLAGS=-Wall -Os
+NVFLAGS=-O2
 ifeq ($(EMUU),yes)
 NVFLAGS += -deviceemu
 endif
@@ -41,7 +41,7 @@ endif
 #for cuda compilation
 CUDA=
 ifeq ($(PARALLEL),cuda)
-	CUDA=-DCUDA=1
+	CUDA=-DCUDA=1 -DNDEBUG=1 
 endif
 
 PROF=
