@@ -75,13 +75,14 @@ __device__ truth_t * answers_d;
 __global__ void
 cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectations, int clause_n, int var_n, truth_t * answers, int thread_n)
 {
+    int block_id = blockIdx.x * blockDim.x;
     int id_in_block = threadIdx.x;
     // TODO : retrieve block idee. CRITICAL for retrieving affectations correctly
     extern __shared__ value_t * vars_in_global;
     // TODO : verify this affectation is correct
     for ( int i = 1; i <= var_n; ++i) 
     {
-      vars_in_global[id_in_block*(var_n+1) +i ] = vars_affectations[id*(var_n +1) +i];
+      vars_in_global[id_in_block*(var_n+1) +i ] = vars_affectations[(block_id+id_in_block)*(var_n +1) +i];
     }
     // now  we sync threads to ensure we're in a consistent state
     __syncthreads();
@@ -91,7 +92,7 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     truth_t result = solve_thread( formula, clause_index, vars, clause_n, var_n);
     // store our result
     // TODO : notify other threads if we found the formula to be satisfiable
-    answers[id] = result;
+    answers[block_id + id_in_block] = result;
     return;
 }
 
