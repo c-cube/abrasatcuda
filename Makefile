@@ -130,7 +130,7 @@ ${DIST}/abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_
 ${DIST}/abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) 
 	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_dpll
 
-abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
+${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
 	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(DBG) $(PROF) $(CUDA) $(OBJECTS)  $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
 
 
@@ -162,8 +162,8 @@ ${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/inte
 ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
-${BUILD}/cuda.o: ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c ${SRC}/dpll.h
-	$(NVCC) $(NVFLAGS) ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
+${BUILD}/cuda.o: ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c
+	$(NVCC) $(NVFLAGS) ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
 
 
 

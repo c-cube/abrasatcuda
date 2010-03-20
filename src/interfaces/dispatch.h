@@ -24,25 +24,6 @@
  * It relies on solve_thread (one or many instances) to do so.
  */
 
-#ifdef CUDA
-__global__ void cuda_solve( atom_t *formula, atom_t* clauses_index, value_t * vars_affectations, int clause_n, int var_n , truth_t * answers, int thread_n);
-#else
-// TODO : unifify solve declaration with that of abrasatcuda.h
-//int solve( atom_t *formula, atom_t* clauses_index, value_t ** vars_affectations, int clause_n, int var_n, truth_t * answers, int thread_n);
-#endif
-
-#ifdef CUDA
-/*
-* chooses immutable vars and sets them differently for each thread
-*/
-__host__ void
-prepare_presets( atom_t * formula, atom_t * clauses_index, value_t * vars, int clause_n, int var_n, int thread_n);
-
-/*
-* this functions makes sure the gpu memory is in a proper state
-*/
-prepare_gpu_memory( atom_t * formula, __device__ atom_t * formula_d, atom_t * clauses_index, __device__ atom_t clauses_index_d, value_t * vars_affectations, __device__ value_t * vars_affectations_d, int clause_n, int var_n, truth_t * answers, int thread_n);
-#endif
 
     // TODO : create CUDA threads, each with its own [vars] array,
     // and dispatch it in CUDA.
