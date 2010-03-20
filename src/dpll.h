@@ -14,6 +14,9 @@
 
 
 // only function exported by a solver module
+#ifdef CUDA
+__device__
+#endif
 success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n );
 
 
