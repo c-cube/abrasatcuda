@@ -4,14 +4,25 @@ include config
 # predefined vars, and real makefile vars
 #--------------------------------------------------------------
 
+#path to the cuda compiler
+# TODO : complete this accroding to the computer's configuration
+CUDAPATH=
+
 
 # current compiler
 CC=gcc
+NVCC=${CUDAPATH}/bin/nvcc
 
 # some vars
 SRC=src
 BUILD=build
 DIST=dist
+
+# for cuda flags
+NVFLAGS=-Wall -Os
+ifeq ($(EMUU),yes)
+NVFLAGS += -deviceemu
+endif
 
 CFLAGS=-Wall -pedantic -Os -std=gnu99 -DPARALLEL=$(PARALLEL) #-m32 -Werror
 #Variable contenant les options passées au compilateur
@@ -22,8 +33,15 @@ endif
 # NDEBUG disables all assert() statements, so it accelerates the program
 ifeq ($(DEBUG),prod)
 	DBG=-DNDEBUG=1 
+	NVFLAGS += --compiler-options -fno-strict-aliasing
 endif
 
+
+#for cuda compilation
+CUDA=
+ifeq ($(PARALLEL),cuda)
+	CUDA=-DCUDA=1
+endif
 
 PROF=
 ifeq ($(PROFILE),yes)
@@ -43,9 +61,9 @@ export LD_LIBRARY_PATH := .
 
 
 # lists of targets, headers, objets files...
-TARGETS=${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll 
+TARGETS=${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll ${DIST}/abrasatcuda_cuda
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
-MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
+MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o ${BUILD}/cuda.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
 
 # default dispatching method
@@ -62,6 +80,7 @@ ifeq ($(PARALLEL),pthread)
 endif
 ifeq ($(PARALLEL),cuda)
 	CC=nvcc
+	DISPATCH_OBJECT=${BUILD}/cuda.o
 	# TODO
 endif
 
@@ -111,6 +130,8 @@ ${DIST}/abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_
 ${DIST}/abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) 
 	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_dpll
 
+abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
+	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(DBG) $(PROF) $(CUDA) $(OBJECTS)  $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
 
 
 # binary for testing
@@ -141,6 +162,8 @@ ${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/inte
 ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
+${BUILD}/cuda.o: ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.c ${SRC}/dpll.h
+	$(NVCC) $(NVFLAGS) ${SRC}/interfaces/dispatch.h ${SRC}/interfaces/solve.h ${SRC}/solve.cu ${SRC}/dpll.h ${SRC}/dpll.c $(DBG) $(PROF) $(CUDA) -o ${BUILD}/cuda.o
 
 
 
