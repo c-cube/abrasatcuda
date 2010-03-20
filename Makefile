@@ -79,7 +79,7 @@ ifeq ($(PARALLEL),pthread)
 	DISPATCH_OBJECT=${BUILD}/multi_thread.o
 endif
 ifeq ($(PARALLEL),cuda)
-	CC=nvcc
+	#CC=nvcc
 	DISPATCH_OBJECT=${BUILD}/cuda.o
 	# TODO
 endif
