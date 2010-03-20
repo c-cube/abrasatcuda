@@ -403,7 +403,7 @@ find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
  *
  */
 #ifdef CUDA
-__device__
+__device__ static inline
 #endif
 success_t 
 dpll(
@@ -629,7 +629,7 @@ failure_negative:
  * according to the solve.h interface
  */
 #ifdef CUDA
-__device__
+__device__ static inline
 #endif
 success_t 
 solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
