@@ -85,7 +85,7 @@ static inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n
  * brute force over others vars.
  */
 #ifdef CUDA
-__device__
+__device__ static inline
 #endif
 success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, 
     int clause_n, int var_n );
