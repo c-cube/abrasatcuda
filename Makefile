@@ -18,6 +18,7 @@ NVCC=${CUDAPATH}/bin/nvcc
 SRC=src
 BUILD=build
 DIST=dist
+LIB=lib
 
 # for cuda flags
 NVFLAGS=-O2
@@ -25,7 +26,7 @@ ifeq ($(EMUU),yes)
 NVFLAGS += -deviceemu
 endif
 
-CFLAGS=-Wall -pedantic -Os -std=gnu99 -DPARALLEL=$(PARALLEL) #-m32 -Werror
+CFLAGS=-Wall -pedantic -Os -std=gnu99 -DPARALLEL=$(PARALLEL) -fPIC #-m32 -Werror
 #Variable contenant les options passées au compilateur
 DBG=-g
 ifeq ($(DEBUG),yes)
@@ -65,9 +66,9 @@ endif
 
 
 # lists of targets, headers, objets files...
-TARGETS=${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll_single.so ${DIST}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda ${DIST}/abrasatcuda_cuda
+TARGETS=${DIST}/abrasatcuda_bf ${LIB}/abrasatcuda_dpll_single.so ${LIB}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda #${DIST}/abrasatcuda_cuda
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
-MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o ${BUILD}/cuda.o
+MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o #${BUILD}/cuda.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
 
 # default dispatching method
@@ -89,7 +90,7 @@ ifeq ($(PARALLEL),cuda)
 endif
 
 # flags for dynamic libs
-DYNFLAGS=-fpic -shared
+DYNFLAGS=-shared
 
 #--------------------------------------------------------------
 # targets
@@ -103,7 +104,7 @@ all: $(TARGETS) $(MODULES)
 test: ${DIST}/test_all
 	./${DIST}/test_all
 
-main: ${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll
+main: ${TARGETS}
 	@echo -e "\n\e[45;4mexample.cnf :\e[m"
 	@./abrasatcuda tests/example.cnf
 	@echo -e "\n\e[45;4mtrivial.cnf :\e[m"
@@ -128,17 +129,14 @@ count:
 
 
 # This targets compiles the main binary
-${DIST}/abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT)	
-	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_bf
-
 ${DIST}/abrasatcuda: ${SRC}/abrasatcuda.c ${BUILD}/parser.o ${BUILD}/clause.o
 	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
 
-${DIST}/abrasatcuda_dpll_single.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${DIST}/abrasatcuda_dpll_single.so
+${LIB}/abrasatcuda_dpll_single.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=single ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_single.so
 
-${DIST}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${DIST}/abrasatcuda_dpll_pthread.so
+${LIB}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
 	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(PROF) $(CUDA) $(OBJECTS) $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
