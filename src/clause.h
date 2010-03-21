@@ -177,7 +177,8 @@ static inline void formula_print(
     atom_t *clauses_index,
     int n )
 {
-    for (int i = 0; i<n; ++ i){
+    int i;
+    for (i = 0; i<n; ++ i){
         clause_print( 
             formula_item( formula, clauses_index, i ), 
             formula_item( formula, clauses_index, i+1 ) );

@@ -7,7 +7,7 @@ include config
 #path to the cuda compiler
 # TODO : complete this accroding to the computer's configuration
 CUDAPATH=/usr/local
-CUDA_INCLUDES=-I /usr/local/cuda-2.3/include/
+CUDA_INCLUDES=-I/usr/local/cuda-2.3/include/
 
 
 # current compiler
@@ -68,7 +68,11 @@ endif
 # lists of targets, headers, objets files...
 TARGETS=${DIST}/abrasatcuda_bf ${LIB}/abrasatcuda_dpll_single.so ${LIB}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda #${DIST}/abrasatcuda_cuda
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
+<<<<<<< .mine
+MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o
+=======
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o #${BUILD}/cuda.o
+>>>>>>> .r159
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
 
 # default dispatching method
@@ -82,11 +86,6 @@ ifeq ($(PARALLEL),pthread)
 	LDFLAGS=-lpthread -lm -ldl
 	DISPATCH_HEADER=${SRC}/multi_thread.h
 	DISPATCH_OBJECT=${BUILD}/multi_thread.o
-endif
-ifeq ($(PARALLEL),cuda)
-	#CC=nvcc
-	DISPATCH_OBJECT=${BUILD}/cuda.o
-	# TODO
 endif
 
 # flags for dynamic libs
@@ -139,7 +138,7 @@ ${LIB}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUIL
 	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
-	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(PROF) $(CUDA) $(OBJECTS) $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
+	$(CC) $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o abrasatcuda_cuda -lcudart
 
 
 # binary for testing
@@ -170,8 +169,8 @@ ${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/inte
 ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
-${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll.c
-	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -o ${BUILD}/cuda.o
+${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll_while.c
+	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
 
 
 

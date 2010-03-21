@@ -169,7 +169,6 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
 
         int num_atom = 0; // number of non-affected atoms in this clause
         atom_t *unit_atom = NULL; // the unit atom (if existing)
-
         for ( atom_t *atom = clause; atom < clause_end; ++atom ){
             // we have an unaffected atom here
             if ( ! (  IS_AFFECTED(vars[VARIABLE_NAME(*atom)]) 
@@ -473,6 +472,9 @@ dpll(
     unsigned int stack_depth = 1;
     unsigned int stack_depth_plus = stack_depth + 1; // always stack_depth_plus = stack_depth + 1
 
+    //initialize before goto
+    truth_t is_still_satisfiable;
+
     // initializes satisfied_clauses
     satisfied_t satisfied_clauses[clause_n];
     for (int i = 0; i < clause_n; ++i )
@@ -524,7 +526,7 @@ start:
         }
 
         // try to propagate unit clauses.
-        truth_t is_still_satisfiable = unit_propagation( formula, clauses_index, 
+        is_still_satisfiable = unit_propagation( formula, clauses_index, 
             vars, satisfied_clauses, stack_depth_plus, clause_n, var_n );
 
 
