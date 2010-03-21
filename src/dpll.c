@@ -29,11 +29,7 @@
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-truth_t 
-#else
 static inline truth_t 
-#endif
 formula_is_satisfiable(  
     atom_t* formula, 
     atom_t* clauses_index,  
@@ -82,7 +78,7 @@ formula_is_satisfiable(
                     // clause satisfied
                     if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
 #if DEBUG > 1
-                        //print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                        print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                         SET_SATISFIED(satisfied_clauses[i]);
                         SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -93,7 +89,7 @@ formula_is_satisfiable(
                     // clause satisfied
                     if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
 #if DEBUG > 1
-                        //print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
+                        print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
                         SET_SATISFIED(satisfied_clauses[i]);
                         SET_STACK_DEPTH(satisfied_clauses[i], stack_depth);
@@ -125,11 +121,7 @@ formula_is_satisfiable(
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-truth_t
-#else
 static inline truth_t 
-#endif
 all_clauses_are_satisfied( 
     satisfied_t *satisfied_clauses,
     int clause_n)
@@ -155,11 +147,7 @@ all_clauses_are_satisfied(
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-truth_t
-#else
 static inline truth_t 
-#endif
 unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
 {
 
@@ -248,11 +236,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-void
-#else
 static inline void 
-#endif
 initialize_values( truth_t* vars, int var_n )
 {
     for (int i=1; i <= var_n; ++ i){
@@ -268,11 +252,7 @@ initialize_values( truth_t* vars, int var_n )
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-void
-#else
 static inline void 
-#endif
 initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
 {
     for (int i = 1; i <= var_n; ++i){ 
@@ -289,11 +269,7 @@ initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-void
-#else
 static inline void 
-#endif
 unroll( value_t *vars, satisfied_t *satisfied_clauses, 
     unsigned int stack_depth, int clause_n, int var_n )
 {
@@ -326,11 +302,7 @@ unroll( value_t *vars, satisfied_t *satisfied_clauses,
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-int
-#else
 static inline int 
-#endif
 heuristic( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clauses, value_t *vars, int clause_n, int var_n)
 {
     // iterate on vars
@@ -356,11 +328,7 @@ heuristic( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clause
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-int
-#else
 static inline int 
-#endif
 heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clauses, value_t *vars, int clause_n, int var_n)
 {
     // since we cannot afford an arbitrary amount of memory on the stack, 
@@ -436,11 +404,7 @@ heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_c
 #ifdef CUDA
 __device__
 #endif
-#ifdef PROF
-atom_t
-#else
 static inline atom_t 
-#endif
 find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
 {
     atom_t answer = -1;
@@ -459,11 +423,14 @@ find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
 
 
 
-
+#if DEBUG > 1
 #define INVARIANT_STACK {                               \
         assert( stack_depth_plus % 2 == 0);             \
         assert( stack_depth % 2 == 1);                  \
         assert( stack_depth_plus == stack_depth + 1); }
+#else
+#define INVARIANT_STACK ;
+#endif
 
 /*
  * tries to solve the problem with the DPLL algorithm
@@ -591,7 +558,6 @@ branch:
                 print("all vars affected, but not all clauses satisfied ?!\n");
 #endif
 
-                // stack_depth -= 2; // TWO levels down FIXME : pertinent ?
                 goto epic_fail;
             }
         }
@@ -723,7 +689,9 @@ solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_
 
 
 #ifndef CUDA
+#ifdef DEBUG
     value_print( vars, var_n );
+#endif
 #endif
 
     return answer;
