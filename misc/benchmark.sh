@@ -5,7 +5,7 @@
 
 # It does *not* check if the answers given by programs are good or not.
 
-if [ $# -le 1 ]; then
+if [ $# -lt 1 ]; then
     echo "usage : ./misc/benchmark.sh program_1 program_2 ... program_n
     To be executed in the root of the project, with tests files in ./tests/"
     exit -1

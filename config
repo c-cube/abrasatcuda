@@ -4,7 +4,7 @@
 # this file has a Makefile syntax
 
 
-# switch debug on/off (yes,no,prod)
+# switch debug on/off (yes,no,prod,all)
 DEBUG=no
 # switch profiling on/off (yes,no)
 PROFILE=no
@@ -21,4 +21,3 @@ PARALLEL=cuda
 
 # for pthread, this var sets the number of threads launched
 THREAD_NUM=64
-

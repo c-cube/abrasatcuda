@@ -36,6 +36,9 @@ ifeq ($(DEBUG),prod)
 	DBG=-DNDEBUG=1 
 	NVFLAGS += --compiler-options -fno-strict-aliasing
 endif
+ifeq ($(DEBUG),all)
+	DBG=-g -DDEBUG=2
+endif
 
 
 #for cuda compilation
@@ -109,7 +112,7 @@ main: ${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll
 	@echo -e "\n\e[45;4mquinn.cnf :\e[m"
 	@./abrasatcuda tests/quinn.cnf
 	@echo -e "\n\e[45;4maim-50.cnf :\e[m"
-	time ./abrasatcuda tests/aim-50-1_6-yes1-4.cnf
+	@./abrasatcuda tests/aim-50-1_6-yes1-4.cnf
 
 
 prof:

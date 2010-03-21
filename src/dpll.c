@@ -276,10 +276,7 @@ static inline void
 initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
 {
     for (int i = 1; i <= var_n; ++i){ 
-        SET_NON_IMMUTABLE( satisfied_clauses[i]);
-        SET_NON_AFFECTED(satisfied_clauses[i]);
-        SET_FALSE(satisfied_clauses[i]);
-        SET_STACK_DEPTH(satisfied_clauses[i], 0);
+        satisfied_clauses[i] = 0;
     }       
 }
 
@@ -325,7 +322,7 @@ unroll( value_t *vars, satisfied_t *satisfied_clauses,
  */
 
 // a simple "heuristic" (just picks up the first non-affected var it finds)
-// TODO : find a better heuristic
+// @DEPRECATED@
 #ifdef CUDA
 __device__
 #endif
@@ -334,7 +331,7 @@ int
 #else
 static inline int 
 #endif
-heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n)
+heuristic( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clauses, value_t *vars, int clause_n, int var_n)
 {
     // iterate on vars
     for (int i = 1; i <= var_n; ++i){
@@ -347,6 +344,88 @@ heuristic( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, 
 
     // no free var found !
     return -1; 
+}
+
+
+/*
+ * an heuristic based on the one used for dispatching immutable truth values
+ * to threads, but dynamic. It ignores satisfied clauses, and looks for
+ * the unaffected var that appear in as many clauses as possible, in
+ * a as symmetric way as possible.
+ */
+#ifdef CUDA
+__device__
+#endif
+#ifdef PROF
+int
+#else
+static inline int 
+#endif
+heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clauses, value_t *vars, int clause_n, int var_n)
+{
+    // since we cannot afford an arbitrary amount of memory on the stack, 
+    // the choice will be done only between the three first free vars.
+    int var1, var2, var3; // var names
+    int var1_n, var2_n, var3_n; // var marks
+
+    var1 = var2 = var3 = 0;
+    var1_n = var2_n = var3_n = 0;
+
+    
+    // iterate over clauses
+    for ( int i = 0; i < clause_n; ++i ){
+        
+        // satisfied clauses do not interest us
+        if ( SATISFIED(satisfied_clauses[i]) == TRUE )
+            continue;
+
+        atom_t *clause = formula + (clauses_index[i]);
+        atom_t *clause_end = formula + (clauses_index[i+1]);
+
+        // for each atom in the clause
+        for ( atom_t *cur_atom = clause; cur_atom < clause_end; ++cur_atom ){
+
+            int name = VARIABLE_NAME( *cur_atom );
+
+            // drop affected or immutable atoms
+            if ( IS_IMMUTABLE(vars[name]) || IS_AFFECTED(vars[name]) )
+                continue;
+
+            // if a var is empty, fill it with this var name 
+            if ( var1 == 0 ){
+                var1 = name;
+                goto give_mark;
+            }
+            if ( var1 != name && var2 == 0 ){
+                var2 = name;
+                goto give_mark;
+            }
+            if ( var1 != name && var2 != name && var3 == 0 ){
+                var3 = name;
+                goto give_mark;
+            }
+
+            // update marks
+          give_mark:
+            if ( name == var1 )
+                var1_n ++;
+            if ( name == var2 )
+                var2_n ++;
+            if ( name == var3 )
+                var3_n ++;
+                
+        }
+    }
+
+    if ( var1 == 0 )
+        return -1; // no free var
+
+    // finds the best var
+    if ( var1_n >= var2_n && var1_n >= var3_n )
+        return var1;
+    if ( var2_n >= var3_n )
+        return var2;
+    return var3;
 }
 
 
@@ -500,7 +579,8 @@ branch:
 #if DEBUG > 1
         print("\033[31m->\033[m @branch\n");
 #endif
-        next_var = heuristic( formula, clauses_index, vars, clause_n, var_n );
+        next_var = heuristic_good( formula, clauses_index, satisfied_clauses, vars, clause_n, var_n );
+        //next_var = heuristic( formula, clauses_index, satisfied_clauses, vars, clause_n, var_n );
 
         // assert( next_var != -1 ); // all vars affected but formula not satisfiable ??
         if ( next_var == -1 ){
