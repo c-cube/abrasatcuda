@@ -9,7 +9,7 @@
 // gets the number of threads at compile time
 #ifndef THREAD_NUM
 #define THREAD_NUM 2
-#warning should define THREAD_NUM !
+#warning should define THREAD_NUM ! (set to 2)
 #endif
 
 // struct used to pass several args through pthread_create

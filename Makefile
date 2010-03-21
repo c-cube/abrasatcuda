@@ -61,11 +61,11 @@ endif
 #L'option -c indique que le compilateur doit se contenter de la génération d'un fichier objet. La création d'un exécutable se fera si nécessaire dans un second temps.
 
 # in case you prefer compile the program as a dynamic lib, this allows to use local .so files
-export LD_LIBRARY_PATH := .
+# TODO[find sth better] : export LD_LIBRARY_PATH := .
 
 
 # lists of targets, headers, objets files...
-TARGETS=${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll ${DIST}/abrasatcuda_cuda
+TARGETS=${DIST}/abrasatcuda_bf ${DIST}/abrasatcuda_dpll_single.so ${DIST}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda ${DIST}/abrasatcuda_cuda
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o ${BUILD}/cuda.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
@@ -75,10 +75,10 @@ DISPATCH_HEADER=${SRC}/single_thread.h
 DISPATCH_OBJECT=${BUILD}/single_thread.o
 
 # var containing parameters to be passed to the linker, for creating the final executable
-# default : linked against math
-LDFLAGS=-lm
+# default : linked against math and ld
+LDFLAGS=-lm -ldl
 ifeq ($(PARALLEL),pthread)
-	LDFLAGS=-lpthread -lm
+	LDFLAGS=-lpthread -lm -ldl
 	DISPATCH_HEADER=${SRC}/multi_thread.h
 	DISPATCH_OBJECT=${BUILD}/multi_thread.o
 endif
@@ -130,9 +130,14 @@ count:
 ${DIST}/abrasatcuda_bf: $(OBJECTS) $(HEADERS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT)	
 	$(CC) $(LDFLAGS) $(CFLAGS) $(OBJECTS) ${BUILD}/brute_force.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_bf
 
+${DIST}/abrasatcuda: ${SRC}/abrasatcuda.c ${BUILD}/parser.o ${BUILD}/clause.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
 
-${DIST}/abrasatcuda_dpll: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) 
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda_dpll
+${DIST}/abrasatcuda_dpll_single.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c -shared -o ${DIST}/abrasatcuda_dpll_single.so
+
+${DIST}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c -shared -o ${DIST}/abrasatcuda_dpll_pthread.so
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT)
 	$(NVCC) $(LDFLAGS) $(NVFLAGS) $(PROF) $(CUDA) $(OBJECTS) $(DISPATCH_OBJECT) ${SRC}/abrasatcuda.c -o abrasatcuda_cuda
@@ -175,7 +180,7 @@ ${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll.c
 clean:
 	@rm -f ${BUILD}/*~ ${BUILD}/a.out ${BUILD}/core
 	@rm -f ${BUILD}/*.o
-	@rm -f test_all abrasatcuda_bf abrasatcuda_dpll
+	@rm -f test_all 
 
 #Cette cible effectue un nettoyage complet de tout fichier généré. Elle efface notamment les exécutables.
 distclean: clean
