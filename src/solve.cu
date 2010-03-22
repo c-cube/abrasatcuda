@@ -2,6 +2,7 @@
 #include "heuristic.h"
 #include "heuristic.c"
 #include "dpll_while.c"
+//#include "solve.h"
 
 
 // sets the number of threads
@@ -133,7 +134,7 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
   cudaFree(clauses_index_d);
   cudaFree(vars_affectations_d);
   cudaFree(answers_d);
-  free(vars_affectations);
+  //free(vars_affectations);
   // find out wether one thread found the formula to be satisfiable
   for ( int i = 0; i < THREAD_NUM; ++i)
     answer = answer || answers[i];

@@ -125,16 +125,16 @@ count:
 
 # This targets compiles the main binary
 ${DIST}/abrasatcuda: ${SRC}/abrasatcuda.c ${BUILD}/parser.o ${BUILD}/clause.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
+#	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
 
 ${LIB}/abrasatcuda_dpll_single.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=single ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_single.so
+#	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=single ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_single.so
 
 ${LIB}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
+#	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
 
 ${LIB}/abrasatcuda_cuda.so: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o
-	$(CC) $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o $(LIB)/abrasatcuda_cuda.so -lcudart
+	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o $(LIB)/abrasatcuda_cuda.so -lcudart
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o
 	$(CC) $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c  -lcudart -o $(DIST)/abrasatcuda_cuda
@@ -168,7 +168,7 @@ ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
 ${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll_while.c $(SRC)/heuristic.c $(SRC)/solve.h
-	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(SRC)/solve.h $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
+	$(NVCC) $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
 
 
 

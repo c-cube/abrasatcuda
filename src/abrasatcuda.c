@@ -6,9 +6,11 @@
 #include "abrasatcuda.h"
 #endif
 #include "consts.h"
+#ifdef CUDA
 #include "solve.h"
+#endif
 
-//#include "interfaces/dispatch.h" // solve
+#include "interfaces/dispatch.h" 
 
 
 
