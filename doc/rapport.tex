@@ -138,18 +138,23 @@ Les tests montrent que sur un \textsc{CPU}, l'algorithme tient dans un espace m�
 
 \subsection{Implémentation avec des threads \textsc{POSIX}}
 %{{{
-    Rencontrant des difficultés avec la compilation en \cuda, et désireux de développer le code permettant de choisir et d'affecter les variables \og cruciales \fg pour chaque thread, nous avons implémenté une version de l'algorithme basée sur les \emph{pthread}. On peut donc lancer $2^{n}$ threads avec les affectations décrites plus haut\footnote{un nombre de threads qui n'est pas une puissance de 2 n'est pas genant, car les threads "en surplus" se voient donner des affectations plus complètes (par exemple, pour 6 threads, les 4 premiers ont 2 variables affectées, et les 2 derniers en ont 3)}.Si un thread renvoie une réponse positive, le thread principal va alors stopper les autres threads avant de retourner.
+Rencontrant des difficultés avec la compilation en \cuda, et désireux de développer le code permettant de choisir et d'affecter les variables \og cruciales \fg pour chaque thread, nous avons implémenté une version de l'algorithme basée sur les \emph{pthread}. On peut donc lancer $2^{n}$ threads avec les affectations décrites plus haut\footnote{un nombre de threads qui n'est pas une puissance de 2 n'est pas genant, car les threads "en surplus" se voient donner des affectations plus complètes (par exemple, pour 6 threads, les 4 premiers ont 2 variables affectées, et les 2 derniers en ont 3)}. Si un thread renvoie une réponse positive, le thread principal va alors stopper les autres threads avant de retourner.
 
-    La synchronisation entre les threads utilisés pour la résolution du problème et le thread principal se fait \emph{via} un \keyword{mutex} et une \keyword{condition}. Ces deux objets, standards de \emph{pthread}, servent respectivement de verrou binaire et de notification (à l'image des primitives \code{wait} et \code{notifiy} de Java). Le thread principal attend donc qu'on le notifie via la \emph{condition}, et récupère la réponse associée dans une variable commune protégée par le \emph{mutex}. 
+La synchronisation entre les threads utilisés pour la résolution du problème et le thread principal se fait \emph{via} un \keyword{mutex} et une \keyword{condition}. Ces deux objets, standards de \emph{pthread}, servent respectivement de verrou binaire et de notification (à l'image des primitives \code{wait} et \code{notifiy} de Java). Le thread principal attend donc qu'on le notifie via la \emph{condition}, et récupère la réponse associée dans une variable commune protégée par le \emph{mutex}. 
 
-    Ceci garantit la pérénnité des variables partagées face aux accès concurrents des threads qui ont fini leur travail. Il existe trois variables partagées :
-    \begin{itemize}
+Ceci garantit la pérénnité des variables partagées face aux accès concurrents des threads qui ont fini leur travail. Il existe trois variables partagées :
+\begin{itemize}
       \item une variable qui contient une réponse booléenne (succès ou échec)
       \item une variable qui contient un pointeur vers le tableau \code{vars} contenant les affectations de variables menant au succès, si succès il y a
       \item une variable qui contient le nombre de threads ayant terminé leur travail, mise à jour par chaque thread qui termine. Si cette variable atteint le nombre de threads lancés au départ, on peut conclure à la non-satisfiabilité du problème.
+\end{itemize}
 %}}}
 
 
+\subsection{Implémentation en \cuda}
+%{{{
+    %TODO
+%}}}
 
 
 %}}}
@@ -166,7 +171,11 @@ Les tests montrent que sur un \textsc{CPU}, l'algorithme tient dans un espace m�
 % problèmes divers
 \section{Difficultés rencontrées}
 %{{{
-    L'algorithme principal est assez simple, cependant une implémentation sans récursivité se montre plus difficile. En effet, le contrôle de l'exécution doit se faire à la main, de manière assez peu intuitive, et le fait que le langage soit très bas niveau rend la détection et la traque des erreurs\footnote{notamment les fameuses \emph{segfaults}} assez difficiles.
+\begin{itemize}
+    \item L'algorithme principal est assez simple, cependant une implémentation sans récursivité se montre plus difficile. En effet, le contrôle de l'exécution doit se faire à la main, de manière assez peu intuitive, et le fait que le langage soit très bas niveau rend la détection et la traque des erreurs\footnote{notamment les fameuses \emph{segfaults}} assez difficiles.
+    \item La synchronisation entre les threads de calcul et le thread principal n'est pas facile.
+    \item Les limitations de \cuda sont très restrictives. Non seulement elles empêchent d'implémenter l'algorithme sous forme récursive -- tout appel de fonction étant proscrit -- mais, de plus, le compilateur semble instable et capricieux. Par exemple, l'implémentation de départ, avec les \keyword{goto}, ne compilait pas, le remplacement de ceux-ci par une boucle \keyword{while} a résolu le problème. Il est même arrivé que le compilateur lui-même fasse une violation d'accès mémoire (\emph{segfault}).
+\end{itemize}
 %}}}
 
 % rôle de chacun
