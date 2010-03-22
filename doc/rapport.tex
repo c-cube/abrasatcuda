@@ -69,9 +69,9 @@ frame=single
 \section{Introduction}
 Ce projet vise à implémenter de manière efficace un \textsc{SAT}-solver de manière parallèle, plus particulièrement à l'aide de l'\textsc{API} \cuda de NVidia. Il est basé sur une méthode complète, c'est-à-dire parcourant exhaustivement l'arbre des possibilités d'affectations des variables, mais guidé par des heuristiques pour plus d'efficacité.
 
-\section{Algorithme et implémentation efficace}
 % description de l'algo et de son implémentation
-% {{{
+\section{Algorithme et implémentation efficace}
+%{{{
 \subsection{Algorithme}
 %{{{
 Nous nous sommes basés sur l'algorithme nommé \textsc{DPLL}, du nom de ses créateurs. Il s'agit d'un algorithme de \emph{backtracking} guidé par une heuristique dans le choix de la prochaine variable sur laquelle brancher. Malgré son grand âge, cette méthode reste très prisée grâce à la technique dite \emph{unit propagation}, qui, dans le cas de clauses de petites taille (ce qui est presque toujours le cas dans les instances difficiles), propage les nouvelles contraintes induites par une affectation de variable de manière très efficace. Ainsi, on se rend compte très rapidement si l'on se trouve dans une branche non satisfiable de l'arbre.\par
@@ -121,31 +121,64 @@ Les tests montrent que sur un \textsc{CPU}, l'algorithme tient dans un espace m�
 
 %}}}
 
+\subsection{Parallélisation}
+%{{{
+    Pour paralléliser cet algorithme, nous avons décidé que chaque thread aurait un certain nombre de variables -- nombre dépendant du nombre de threads -- déjà affectées. Ces variables sont supposées bien choisies\footnote{idéalement, les variables les plus \og influentes \fg du problème, c'est-à-dire qui apparaissent dans de nombreuses clauses et qui ne favorisent ni le signe positif ni le signe négatif}. Ainsi, pour $2^{k}$ threads, on peut affecter $k$ variables, chaque thread récupérant une combinaison unique des affectations de ces variables.
 
+    Le premier thread à trouver une réponse positive peut avertir le thread principal, qui va ensuite stopper les autres threads et renvoyer la réponse à l'utilisateur; si tous les threads renvoient une réponse négative, le thread principal peut avertir l'utilisateur que l'instance n'est pas satisfiable.
+%}}}
 
 %}}}
 
-
-\section{Implémentations parallèles}
 % les différents parallélismes explorés et leur implémentation
+\section{Implémentations parallèles}
 %{{{
+\subsection{Implémentation non concurrente}
+    Nous avons commencé par implémenter l'algorithme sur un seul thread, car cela facilitait les tests et la programmation (notamment au niveau du \emph{debug}) de l'algorithme ainsi que de toute l'infrastructure nécessaire (lecture du fichier et construction des structures de données notamment). 
+
+\subsection{Implémentation avec des threads \textsc{POSIX}}
+%{{{
+    Rencontrant des difficultés avec la compilation en \cuda, et désireux de développer le code permettant de choisir et d'affecter les variables \og cruciales \fg pour chaque thread, nous avons implémenté une version de l'algorithme basée sur les \emph{pthread}. On peut donc lancer $2^{n}$ threads avec les affectations décrites plus haut\footnote{un nombre de threads qui n'est pas une puissance de 2 n'est pas genant, car les threads "en surplus" se voient donner des affectations plus complètes (par exemple, pour 6 threads, les 4 premiers ont 2 variables affectées, et les 2 derniers en ont 3)}.Si un thread renvoie une réponse positive, le thread principal va alors stopper les autres threads avant de retourner.
+
+    La synchronisation entre les threads utilisés pour la résolution du problème et le thread principal se fait \emph{via} un \keyword{mutex} et une \keyword{condition}. Ces deux objets, standards de \emph{pthread}, servent respectivement de verrou binaire et de notification (à l'image des primitives \code{wait} et \code{notifiy} de Java). Le thread principal attend donc qu'on le notifie via la \emph{condition}, et récupère la réponse associée dans une variable commune protégée par le \emph{mutex}. 
+
+    Ceci garantit la pérénnité des variables partagées face aux accès concurrents des threads qui ont fini leur travail. Il existe trois variables partagées :
+    \begin{itemize}
+      \item une variable qui contient une réponse booléenne (succès ou échec)
+      \item une variable qui contient un pointeur vers le tableau \code{vars} contenant les affectations de variables menant au succès, si succès il y a
+      \item une variable qui contient le nombre de threads ayant terminé leur travail, mise à jour par chaque thread qui termine. Si cette variable atteint le nombre de threads lancés au départ, on peut conclure à la non-satisfiabilité du problème.
+%}}}
+
+
+
 
 %}}}
 
-\section{Performances comparées}
 % benchmarking.
+\section{Performances comparées}
 %{{{
+    % TODO : faire un beau tableau de temps comparés.
 
+
+    On constate, lors des tests, que la version \emph{pthread} est au moins aussi rapide que la version non-concurrente sur la plupart des cas. En effet, sur une instance satisfiable, la version threadée fait moins de retours en arrière, et chaque thread a moins de travail à effectuer. Sur une machine possédant plusieurs cœurs ou processeurs, le temps est clairement inférieur, car la branche dans laquelle se trouve la réponse positive est nécessairement explorée plus rapidement qu'avec un seul thread. Sur des instances non satisfiables, le temps total est divisé par le nombre de cœurs avec une assez bonne précision.
 %}}}
 
-\section{Difficultés rencontrées}
 % problèmes divers
+\section{Difficultés rencontrées}
 %{{{
+    L'algorithme principal est assez simple, cependant une implémentation sans récursivité se montre plus difficile. En effet, le contrôle de l'exécution doit se faire à la main, de manière assez peu intuitive, et le fait que le langage soit très bas niveau rend la détection et la traque des erreurs\footnote{notamment les fameuses \emph{segfaults}} assez difficiles.
 %}}}
 
-\section{Répartition du travail}
 % rôle de chacun
+\section{Répartition du travail}
 %{{{
+\begin{description}
+    \item[Conception :] La conception des structures de données et de l'architecture globale du programme a été faite à deux. La réflexion sur la manière d'implémenter l'algorithme parallèlement et efficacement a nécessité de longues discussions.
+    \item[Écriture du cœur de l'algorithme :] La fonction \code{dpll} a été écrite principalement par Simon.
+    \item[Parallélisation \cuda :] Faite par Vincent.
+    \item[Parallélisation en \emph{pthreads} :] Faite par Simon.
+    \item[Divers :] Le débuggage, l'écriture du Makefile ou du code utilitaire (\emph{parsage} du fichier d'entrée, code de répartition des variables, etc.) ont été fait en commun de manière incrémental (en utilisant un gestionnaire de version).
+\end{description}
 %}}}
 
 
