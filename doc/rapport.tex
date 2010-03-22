@@ -45,7 +45,8 @@ frame=single
 \newcommand{\alert}[1]{\fbox{\textbf{#1}}}
 
 \newcommand{\keyword}[1]{\textbf{\textcolor{blue}{#1}}}
-\newcommand{\code}[1]{\texttt{\textcolor{green}{#1}}}
+%\newcommand{\code}[1]{\texttt{\textcolor{green}{#1}}}
+\newcommand{\code}[1]{\texttt{{#1}}}
 \newcommand{\cuda}{\textsc{CUDA}}
 
 
@@ -71,6 +72,8 @@ Ce projet vise à implémenter de manière efficace un \textsc{SAT}-solver de ma
 \section{Algorithme et implémentation efficace}
 % description de l'algo et de son implémentation
 % {{{
+\subsection{Algorithme}
+%{{{
 Nous nous sommes basés sur l'algorithme nommé \textsc{DPLL}, du nom de ses créateurs. Il s'agit d'un algorithme de \emph{backtracking} guidé par une heuristique dans le choix de la prochaine variable sur laquelle brancher. Malgré son grand âge, cette méthode reste très prisée grâce à la technique dite \emph{unit propagation}, qui, dans le cas de clauses de petites taille (ce qui est presque toujours le cas dans les instances difficiles), propage les nouvelles contraintes induites par une affectation de variable de manière très efficace. Ainsi, on se rend compte très rapidement si l'on se trouve dans une branche non satisfiable de l'arbre.\par
 
 % algorithme de DPLL
@@ -98,6 +101,26 @@ Nous nous sommes basés sur l'algorithme nommé \textsc{DPLL}, du nom de ses cr�
 \ENDWHILE
 \end{algorithmic}
 \end{algorithm}
+%}}}
+
+\subsection{Implémentation}
+% {{{
+Étant donné les restrictions imposées par le compilateur \cuda, nous avons décidé d'implémenter l'algorithme sans récursivité. Les structures de données ont été choisies pour une compacité maximale. Voici une liste des principales structures de données dont dispose chaque thread exécutant \textsc{DPLL}.
+\begin{description}
+    \item[\code{formula} :] La formule logique, représentée sous forme d'un tableau de littéraux (chacun faisant la taille d'un \keyword{short int}.
+    \item[\code{clauses\_index} :] La $i^{\textrm{ème}}$ clause commence à l'index \code{clauses\_index[$i$]}. On délimite ainsi, au sein de la formule, une clause par son index de début et son index de fin (qui est l'index de début de la clause suivante).
+    \item[\code{satisfied\_clauses} :] Un tableau de booléens, propre à chaque thread, permettant d'ignorer les clauses déjà satisfaites. Cela accélère les recherches de variables libres, de clauses non satisfaites, etc.
+    \item[\code{vars} :] Un tableau d'affectations de valeurs, pour chaque variable. Cette structure est également propre à chaque thread. Elle permet de réaliser facilement les affectations de variables, et également de revenir en arrière très rapidement.
+\end{description}
+
+L'absence de récursivité se fait à l'aide des bits non utilisés dans les deux dernières structures de données : pour indiquer qu'une clause est satisfaite, ou une variable affectée, on a besoin au pire de 3 bits\footnote{les variables peuvent être \emph{immutable}, \emph{affected} ou \emph{non affected}, ce qui demande 2 bits, en plus de la valeur de vérité}. Les tableaux étant des tableaux de \keyword{short int}, il reste 12 bits de libre pour indiquer à quelle étage de la pile une opération a été effectuée.
+
+Le code C se base sur ces informations de profondeur de pile pour le \emph{backtracking} : en gardant en mémoire la profondeur actuelle, il peut simuler un appel récursif ou un retour d'appel récursif en augmentant ou diminuant cette profondeur -- pour un retour d'appel, il peut alors éliminer les informations ajoutées à une profondeur plus grande que la profondeur actuelle. L'algorithme tout entier tient donc dans une unique fonction (plus des fonctions secondaires \emph{inlinées} pour plus de lisibilité), le contrôle de l'algorithme se basant sur l'instruction \keyword{goto} du C.
+
+Les tests montrent que sur un \textsc{CPU}, l'algorithme tient dans un espace mémoire très réduit et constant.
+
+%}}}
+
 
 
 %}}}
