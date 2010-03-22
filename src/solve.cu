@@ -1,5 +1,6 @@
 #include "interfaces/dispatch.h"
 #include "heuristic.h"
+#include "heuristic.c"
 #include "dpll_while.c"
 
 
