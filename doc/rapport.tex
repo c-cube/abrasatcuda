@@ -1,6 +1,5 @@
 \documentclass{article}
 
-
 \usepackage{listings}
 \usepackage[french]{babel}
 \usepackage[pdftex]{color}
@@ -10,6 +9,7 @@
 \usepackage{verbatim}
 \usepackage{lmodern}
 \usepackage{hyperref}   % pour les urls
+
 
 \lstset{
 language=C,
@@ -32,7 +32,7 @@ extendedchars=true,
 frame=single
 }
 
-
+% quelques commandes pratiques...
 \newcommand{\commande}[1]{\fbox{\texttt{\$ #1}}}			% boite
 \newcommand{\nbcommande}[1]{\texttt{\$ #1}}					% pas de boite
 \newcommand{\multicommande}[1]{
@@ -42,6 +42,7 @@ frame=single
 
 \newcommand{\keyword}[1]{\textbf{\textcolor{blue}{#1}}}
 \newcommand{\code}[1]{\texttt{\textcolor{green}{#1}}}
+\newcommand{\cuda}{\textsc{CUDA}}
 
 
 %-----------------------------------------------------
@@ -50,15 +51,46 @@ frame=single
 
 
 
-\author{Simon Cruanes}
-\title{Devoir Maison D'informatique}
+\author{Vincent Barrielle et Simon Cruanes}
+\title{Rapport de projet : \textsc{SAT}-solver en \cuda}
 
 
 \begin{document}
 
 \maketitle
 \tableofcontents%[pausesections] 
+\newpage
 
+\section{Introduction}
+Ce projet vise à implémenter de manière efficace un \textsc{SAT}-solver de manière parallèle, plus particulièrement à l'aide de l'\textsc{API} \cuda de NVidia. Il est basé sur une méthode complète, c'est-à-dire parcourant exhaustivement l'arbre des possibilités d'affectations des variables, mais guidé par des heuristiques pour plus d'efficacité.
+
+\section{Algorithme et implémentation efficace}
+% description de l'algo et de son implémentation
+% {{{
+
+%}}}
+
+
+\section{Implémentations parallèles}
+% les différents parallélismes explorés et leur implémentation
+%{{{
+
+%}}}
+
+\section{Performances comparées}
+% benchmarking.
+%{{{
+
+%}}}
+
+
+\section{Répartition du travail}
+% rôle de chacun
+%{{{
+%}}}
+
+
+\section{Conclusion}
 
 \end{document}
 
