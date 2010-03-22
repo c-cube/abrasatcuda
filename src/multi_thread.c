@@ -196,6 +196,8 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     for (int i=0; i < THREAD_NUM; ++i)
         pthread_cancel( threads[i] );
 
+    free( all_vars );
+
     return answer;
 
 }
