@@ -125,13 +125,13 @@ count:
 
 # This targets compiles the main binary
 ${DIST}/abrasatcuda: ${SRC}/abrasatcuda.c ${BUILD}/parser.o ${BUILD}/clause.o
-#	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF)-DTHREAD_NUM=${THREAD_NUM} ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
 
 ${LIB}/abrasatcuda_dpll_single.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o
-#	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=single ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_single.so
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=single ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_single.so
 
 ${LIB}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  
-#	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
 
 ${LIB}/abrasatcuda_cuda.so: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o
 	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o $(LIB)/abrasatcuda_cuda.so -lcudart
@@ -162,7 +162,7 @@ ${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/i
 	$(CC) $(CFLAGS) ${SRC}/single_thread.c $(DBG) $(PROF) -c -o ${BUILD}/single_thread.o
 
 ${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) -DTHREAD_NUM=${THREAD_NUM} ${SRC}/multi_thread.c $(DBG) $(PROF) -c -o ${BUILD}/multi_thread.o
+	$(CC) $(CFLAGS)  ${SRC}/multi_thread.c $(DBG) $(PROF) -c -o ${BUILD}/multi_thread.o
 
 ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
