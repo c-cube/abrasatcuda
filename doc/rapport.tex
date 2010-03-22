@@ -1,0 +1,65 @@
+\documentclass{article}
+
+
+\usepackage{listings}
+\usepackage[french]{babel}
+\usepackage[pdftex]{color}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{fancybox}
+\usepackage{verbatim}
+\usepackage{lmodern}
+\usepackage{hyperref}   % pour les urls
+
+\lstset{
+language=C,
+keywordstyle=\bfseries\color[rgb]{0,0,1},
+identifierstyle=\ttfamily,
+commentstyle=\ttfamily\color[rgb]{0.133,0.545,0.133},
+stringstyle=\ttfamily\color[rgb]{0.627,0.126,0.941},
+showstringspaces=false,
+basicstyle=\footnotesize,
+numberstyle=\bfseries\footnotesize,
+numbers=left,
+stepnumber=0,
+%numbersep=10pt,
+tabsize=4,
+breaklines=true,
+breakatwhitespace=false,
+%aboveskip={1.5\baselineskip},
+columns=fixed,
+extendedchars=true,
+frame=single
+}
+
+
+\newcommand{\commande}[1]{\fbox{\texttt{\$ #1}}}			% boite
+\newcommand{\nbcommande}[1]{\texttt{\$ #1}}					% pas de boite
+\newcommand{\multicommande}[1]{
+	\framebox[\width]{
+	\parbox{\textwidth}{#1}}}
+\newcommand{\alert}[1]{\fbox{\textbf{#1}}}
+
+\newcommand{\keyword}[1]{\textbf{\textcolor{blue}{#1}}}
+\newcommand{\code}[1]{\texttt{\textcolor{green}{#1}}}
+
+
+%-----------------------------------------------------
+%----------------------------------------------------
+%---------------------------------------------------
+
+
+
+\author{Simon Cruanes}
+\title{Devoir Maison D'informatique}
+
+
+\begin{document}
+
+\maketitle
+\tableofcontents%[pausesections] 
+
+
+\end{document}
+
+
