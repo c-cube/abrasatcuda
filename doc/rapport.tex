@@ -1,6 +1,10 @@
 \documentclass{article}
 
 \usepackage{listings}
+\usepackage{algorithmic}
+\usepackage{algorithm}
+\usepackage{amssymb} % symboles mathématiques
+
 \usepackage[french]{babel}
 \usepackage[pdftex]{color}
 \usepackage[utf8]{inputenc}
@@ -67,6 +71,34 @@ Ce projet vise à implémenter de manière efficace un \textsc{SAT}-solver de ma
 \section{Algorithme et implémentation efficace}
 % description de l'algo et de son implémentation
 % {{{
+Nous nous sommes basés sur l'algorithme nommé \textsc{DPLL}, du nom de ses créateurs. Il s'agit d'un algorithme de \emph{backtracking} guidé par une heuristique dans le choix de la prochaine variable sur laquelle brancher. Malgré son grand âge, cette méthode reste très prisée grâce à la technique dite \emph{unit propagation}, qui, dans le cas de clauses de petites taille (ce qui est presque toujours le cas dans les instances difficiles), propage les nouvelles contraintes induites par une affectation de variable de manière très efficace. Ainsi, on se rend compte très rapidement si l'on se trouve dans une branche non satisfiable de l'arbre.\par
+
+% algorithme de DPLL
+\begin{algorithm}[h!]
+\caption{algorithme de \textsc{DPLL}}\label{alg:DPLL}
+\begin{algorithmic}
+\REQUIRE F : une formule sous forme normal conjonctive
+\ENSURE un booléen indiquant si la formule est satisfiable \\
+\medskip
+\textbf{function} DPLL( $F$ )
+  \IF{$F = \emptyset $} 
+    \RETURN "Satisfiable"
+  \ENDIF
+  \STATE $F \gets$ unitPropagation( $F$ )
+  \IF{$\square \in F$}  
+    \RETURN "not Satisfiable"
+  \ENDIF
+  \STATE $l \gets$ heuristic( $F$ ) \\
+  \RETURN DPLL( $F \cup\{l\}$ ) $\vee$ DPLL( $F \cup \{\lnot l\}$ ) \\
+\medskip
+\textbf{function} unitPropagation( $F$ )\\
+\WHILE{$\square \not\in F \land \exists $ unit clause $ l \in F$}
+  Satisfy $l$ and Simplify $F$ \\
+  \RETURN $F$
+\ENDWHILE
+\end{algorithmic}
+\end{algorithm}
+
 
 %}}}
 
@@ -83,6 +115,10 @@ Ce projet vise à implémenter de manière efficace un \textsc{SAT}-solver de ma
 
 %}}}
 
+\section{Difficultés rencontrées}
+% problèmes divers
+%{{{
+%}}}
 
 \section{Répartition du travail}
 % rôle de chacun
