@@ -6,7 +6,7 @@
 #include "clause.h"
 
 
-int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n );
+int solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thread_n );
 
 
 #endif

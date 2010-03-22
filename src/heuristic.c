@@ -8,6 +8,7 @@ static inline void to_base_two( int *, int);
 // holds the address of interest table
 static double *interest_ptr = NULL;
 
+#define MIN(a,b)  (((a) < (b)) ? (a) : (b))
 
 /*
  * This function tries to evaluate how important vars are
@@ -146,21 +147,30 @@ sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, int *
  * [sorted_vars] : array of size [var_n]+1 containing the names of vars 
  *      in decreasing order of interest.
  */
-void
+int
 set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_n)
 {
+  // the function is expected to return how many threads should be *really* run
+  int new_thread_n = thread_n; 
+
   // if there is only one thread, exit
   assert( thread_n > 0);
   if ( thread_n == 1)
-      return;
+      return new_thread_n;
   
+  // we cannot have more threads than 2^{num of vars}
+  new_thread_n = MIN(new_thread_n, 1 << var_n );
+#ifdef DEBUG
+  print("runs effectively %d threads\n", new_thread_n);
+#endif
+
   int base_two_decomp[32];
   int var_affected;
 
   // this holds the number of immutable value per thread
   int immutable_per_thread = 0;
-  int thread_num = thread_n >> 1;
-  // based on a rounded base 2 logarithm : round(log_2(thread_n)) == immutable_per_thread
+  int thread_num = new_thread_n >> 1;
+  // based on a rounded base 2 logarithm : round(log_2(new_thread_n)) == immutable_per_thread
   while ( thread_num > 0){
     immutable_per_thread++; 
     thread_num = thread_num >> 1;
@@ -171,11 +181,11 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
   int thread_correct_index = 1 << immutable_per_thread;
 
 #ifdef DEBUG
-  print("we affect %d immutable vars, optimum with %d threads\n", immutable_per_thread, thread_correct_index);
+  print("we affect %d immutable vars, optimum with %d threads (currently %d)\n", immutable_per_thread, thread_correct_index, new_thread_n);
 #endif
 
   // for each thread
-  for (int i = 0; i < thread_n; ++i)
+  for (int i = 0; i < new_thread_n; ++i)
   {
     // current vars array
     value_t *vars = all_vars + (i * (var_n+1) );
@@ -202,6 +212,8 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
       ++var_affected;
     }
   }
+
+  return new_thread_n;
 }
 
 // converts [input] into an array of bits, which is [base_2_array].

@@ -27,7 +27,7 @@ sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, int *
 /*
 * This function sets the immutable vars differently for each thread
 */
-void
+int
 set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_n);
 
 

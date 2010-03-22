@@ -6,11 +6,6 @@
 #include <pthread.h> // pthread stuff
 
 
-// gets the number of threads at compile time
-#ifndef THREAD_NUM
-#define THREAD_NUM 2
-#warning should define THREAD_NUM ! (set to 2)
-#endif
 
 // struct used to pass several args through pthread_create
 struct solve_args
@@ -111,13 +106,13 @@ launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause
  * this solves the problem on several thread
  */
 success_t 
-solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
+solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thread_n )
 {
 
-    print("uses %d threads\n", THREAD_NUM);
+    print("uses %d threads\n", thread_n);
     
     // create structure to hold pthread_t
-    pthread_t threads[THREAD_NUM];
+    pthread_t threads[thread_n];
     
     // create a mutex and a cond to synchronize threads with main thread
     pthread_mutex_t mutex_answer = PTHREAD_MUTEX_INITIALIZER;
@@ -129,7 +124,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 
     // allocate space to hold private thread vars data
     // everything is initialized at 0
-    value_t *all_vars = calloc(THREAD_NUM * (var_n+1), sizeof(value_t));
+    value_t *all_vars = calloc(thread_n * (var_n+1), sizeof(value_t));
 
     // determine how to choose immutable vars
 #ifdef DEBUG
@@ -142,18 +137,19 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 #ifdef DEBUG
     print("chooses immutable vars and sets them\n");
 #endif
-    set_immutable_vars( all_vars, sorted_vars, var_n, THREAD_NUM );
+    // set_immutable_vars returns the max number of threads we can effectively run
+    thread_n = set_immutable_vars( all_vars, sorted_vars, var_n, thread_n );
 
     
 #ifdef DEBUG
-    for (int i = 0; i < THREAD_NUM; ++i ){
+    for (int i = 0; i < thread_n; ++i ){
         value_t *cur_vars = all_vars + (i * (var_n+1));
         print("launches thread %d with vars ", i); value_print( cur_vars, var_n); 
     }
 #endif
     
-    // starts THREAD_NUM threads
-    for (int i = 0; i < THREAD_NUM; ++i ){
+    // starts thread_n threads
+    for (int i = 0; i < thread_n; ++i ){
         value_t *cur_vars = all_vars + (i * (var_n+1));
         // really launches this thread
         launch_thread( formula, clauses_index, cur_vars, clause_n, var_n, 
@@ -183,7 +179,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
             print("%d threads have died without success\n", thread_terminated );
 #endif
             // all threads have died without success
-            if ( thread_terminated >= THREAD_NUM ){
+            if ( thread_terminated >= thread_n ){
                 answer = FAILURE;
                 break;
             }
@@ -193,7 +189,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
     }
 
     // stop al threads
-    for (int i=0; i < THREAD_NUM; ++i)
+    for (int i=0; i < thread_n; ++i)
         pthread_cancel( threads[i] );
 
     free( all_vars );

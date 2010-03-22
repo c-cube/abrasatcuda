@@ -101,15 +101,15 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
 
 extern "C"
 success_t
-solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
+solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thread_n )
 {
 #ifdef DEBUG
-  printf("uses %d threads on cuda\n", THREAD_NUM);
+  printf("uses %d threads on cuda\n", thread_n);
 #endif
 
   value_t * vars_affectations;
-  // we select and preset k variablees, where 2^k = THREAD_NUM
-  prepare_presets( formula, clauses_index, clause_n, var_n, THREAD_NUM, vars_affectations);
+  // we select and preset k variablees, where 2^k = thread_n
+  prepare_presets( formula, clauses_index, clause_n, var_n, thread_n, vars_affectations);
   
   truth_t * answer;
   *answer = FALSE;
@@ -120,10 +120,10 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
   // so no more than 128 variables...
 
   // transfering all data to the gpu global memory
-  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answer, answer_d, THREAD_NUM);
+  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answers, answers_d, thread_n);
 
   // now we call the cuda kernel to solve each instance
-  cuda_solve<<<8,THREAD_NUM/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answer_d, THREAD_NUM);
+  cuda_solve<<<8,thread_n/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answers_d, thread_n);
 
   cudaThreadSynchronize();
 
