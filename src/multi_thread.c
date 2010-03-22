@@ -62,13 +62,15 @@ thread_func( void *void_args )
 #ifdef DEBUG
         print("currently, %d threads have finished\n", *(args->thread_terminated) );
 #endif
-        // give the good combination back
+        // give the good combination back, if it is a success
         if ( result == SUCCESS ){
+            *(args->success_answer) = result;  
             *(args->vars_answer) = vars;
         }
-        *(args->success_answer) = result;
-        // signal the main thread that this has changed
+        // on failure, we do not have to do anything but telling the main thread to check for terminaison
         pthread_cond_signal( args->cond_answer );
+
+        // signal the main thread that this has changed
     pthread_mutex_unlock( args->mutex_answer );
 
     free( void_args );
@@ -159,6 +161,7 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
             &thread_terminated, &success_answer, &vars_answer ); 
     }
 
+    success_t answer;
     // wait until all threads notify they have finished, or one said 'success'
     while (1){
         // lock the mutex
@@ -173,18 +176,27 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
             print("global success ! ");
 #endif
             value_print( vars_answer, var_n );
-            return SUCCESS;
+            answer = SUCCESS;
+            break;
         } else {
 #ifdef DEBUG
             print("%d threads have died without success\n", thread_terminated );
 #endif
             // all threads have died without success
-            if ( thread_terminated >= THREAD_NUM )
-                return FAILURE;
+            if ( thread_terminated >= THREAD_NUM ){
+                answer = FAILURE;
+                break;
+            }
         }
 
         pthread_mutex_unlock( &mutex_answer );
     }
+
+    // stop al threads
+    for (int i=0; i < THREAD_NUM; ++i)
+        pthread_cancel( threads[i] );
+
+    return answer;
 
 }
 

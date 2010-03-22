@@ -81,6 +81,13 @@ int main( int argc, char ** argv )
     free(formula);
     free(clauses_index);
 
+
+    // unload library *completely*
+    if ( dlclose( lib_handle ) != 0 ){
+        print("error on dlclose() : %s\n", dlerror());
+
+    }
+
     return 0;
 }
 
