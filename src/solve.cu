@@ -97,6 +97,7 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     return;
 }
 
+extern "C"
 success_t
 solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n )
 {

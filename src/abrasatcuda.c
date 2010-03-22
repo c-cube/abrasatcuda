@@ -2,8 +2,11 @@
 #include <dlfcn.h>
 
 #include "parser.h" // parse
+#ifndef CUDA
 #include "abrasatcuda.h"
+#endif
 #include "consts.h"
+#include "solve.h"
 
 //#include "interfaces/dispatch.h" // solve
 
