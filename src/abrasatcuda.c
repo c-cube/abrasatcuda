@@ -11,6 +11,10 @@
 #endif
 
 #include "interfaces/dispatch.h" 
+#ifdef CUDA
+#include "solve.h"
+#endif
+
 
 
 
