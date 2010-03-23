@@ -66,7 +66,7 @@ endif
 
 
 # lists of targets, headers, objets files...
-TARGETS=${LIB}/abrasatcuda_dpll_single.so ${LIB}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda ${LIB}/abrasatcuda_cuda.so 
+TARGETS=${LIB}/abrasatcuda_dpll_single.so ${LIB}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda ${LIB}/abrasatcuda_cuda.so  $(DIST)/abrasatcuda_cuda
 OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
 MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o #${BUILD}/cuda.o
 HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
@@ -136,7 +136,7 @@ ${LIB}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUIL
 ${LIB}/abrasatcuda_cuda.so: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o
 	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o $(LIB)/abrasatcuda_cuda.so -lcudart
 
-${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o
+${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o $(SRC)/abrasatcuda.c
 	$(CC) -g $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c  -lcudart -o $(DIST)/abrasatcuda_cuda
 
 # binary for testing

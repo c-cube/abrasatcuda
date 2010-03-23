@@ -35,6 +35,8 @@ int main( int argc, char ** argv )
         return 1;
     }
 
+    printf( "coucou\n");
+
     // TODO use getopt ?
     char* lib_path = argv[1];
     char* file_path = argv[2];
@@ -44,6 +46,8 @@ int main( int argc, char ** argv )
         thread_n = atoi(argv[3]);
     else
         thread_n = THREAD_NUM;
+
+    printf("chosen number of threads : %d\n", thread_n);
 
     atom_t *formula = NULL;
     atom_t *clauses_index = NULL;
