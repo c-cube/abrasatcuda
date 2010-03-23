@@ -2,6 +2,8 @@
 #include "heuristic.h"
 #include "heuristic.c"
 #include "dpll_while.c"
+#include <stdlib.h>
+#include <errno.h>
 
 
 // sets the number of threads
@@ -114,8 +116,23 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   value_t * vars_affectations;
   satisfied_t * satisfied_clauses;
   // we select and preset k variablees, where 2^k = thread_n
-  vars_affectations = (value_t *) calloc(thread_n * (var_n+1), sizeof(value_t));
-  satisfied_clauses = (satisfied_t *) calloc( thread_n * clause_n, sizeof(satisfied_t));
+  //vars_affectations = (value_t *) calloc(thread_n * (var_n+1), sizeof(value_t));
+  vars_affectations = (value_t *) malloc(thread_n * (var_n+1) * sizeof(value_t));
+  if ( vars_affectations == NULL)
+  {
+    perror(" malloc failed");
+    exit(-1);
+  }
+  for ( int i = 0; i < thread_n * (var_n+1) * sizeof(value_t); ++i)
+    vars_affectations[i] = 0;
+  satisfied_clauses = (satisfied_t *) malloc( thread_n * clause_n * sizeof(satisfied_t));
+  if ( satisfied_clauses == NULL)
+  {
+    perror("malloc failed");
+    exit(-1);
+  }
+  for (int i = 0; i < thread_n * clause_n * sizeof(satisfied_t); ++i)
+    satisfied_clauses[i] = 0;
   prepare_presets( formula, clauses_index, clause_n, var_n, thread_n, vars_affectations);
   
   truth_t * answer;

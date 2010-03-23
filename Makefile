@@ -168,7 +168,7 @@ ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
 ${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll_while.c $(SRC)/heuristic.c $(SRC)/solve.h
-	$(NVCC)  $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
+	$(NVCC) -deviceemu  -g -G $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
 
 
 
