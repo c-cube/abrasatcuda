@@ -5,7 +5,7 @@
 
 
 # switch debug on/off (yes,no,prod,all)
-DEBUG=no
+DEBUG=yes
 # switch profiling on/off (yes,no)
 PROFILE=no
 

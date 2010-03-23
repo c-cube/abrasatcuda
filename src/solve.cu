@@ -45,7 +45,7 @@ prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var
 #ifdef DEBUG
   printf("chooses immutable vars and sets them\n");
 #endif
-  set_immutable_vars( all_vars, sorted_vars, var_n, THREAD_NUM );
+  set_immutable_vars( all_vars, sorted_vars, var_n, thread_n);
 }
 
 /*
@@ -101,7 +101,9 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     // now  we sync threads to ensure we're in a consistent state
     __syncthreads();
     // TODO : verify this affectation is correct
-    value_t * vars = vars_affectations_d + ((8*block_id + id_in_block) * (var_n + 1));
+    value_t * vars = vars_affectations_d + ((block_id + id_in_block) * (var_n + 1));
+    if (  (block_id + id_in_block ) >= thread_n)
+      exit(-2);
     // now call the solver
     success_t result = solve_thread( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, threads_satisfied_clauses);
     // store our result
@@ -123,29 +125,25 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   satisfied_t * satisfied_clauses;
   // we select and preset k variablees, where 2^k = thread_n
   //vars_affectations = (value_t *) calloc(thread_n * (var_n+1), sizeof(value_t));
-  vars_affectations = (value_t *) malloc(thread_n * (var_n+1) * sizeof(value_t));
+  vars_affectations = (value_t *) calloc(thread_n * (var_n+1) , sizeof(value_t));
   if ( vars_affectations == NULL)
   {
-    perror(" malloc failed");
+    perror(" calloc failed");
     exit(-1);
   }
-  for ( int i = 0; i < thread_n * (var_n+1) * sizeof(value_t); ++i)
-    vars_affectations[i] = 0;
-  satisfied_clauses = (satisfied_t *) malloc( thread_n * clause_n * sizeof(satisfied_t));
+  satisfied_clauses = (satisfied_t *) calloc( thread_n * clause_n , sizeof(satisfied_t));
   if ( satisfied_clauses == NULL)
   {
-    perror("malloc failed");
+    perror("calloc failed");
     exit(-1);
   }
-  for (int i = 0; i < thread_n * clause_n * sizeof(satisfied_t); ++i)
-    satisfied_clauses[i] = 0;
   prepare_presets( formula, clauses_index, clause_n, var_n, thread_n, vars_affectations);
   
   truth_t * answer = (truth_t *) malloc(sizeof(truth_t));
   *answer = FALSE;
 
   // apparently, can't decide this size at execution..
-  size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
+  //size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
   //size_t shared_mem_size = 8 * 128 * sizeof( value_t);
   // so no more than 128 variables...
 
@@ -153,7 +151,9 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answer, answer_d, thread_n, satisfied_clauses, satisfied_clauses_d);
 
   // now we call the cuda kernel to solve each instance
-  cuda_solve<<<8,thread_n/8, shared_mem_size>>> ( formula, clauses_index, vars_affectations, clause_n, var_n, answer, thread_n, satisfied_clauses);
+  dim3 dimGrid(thread_n/8);
+  dim3 dimBlock(8);
+  cuda_solve<<<dimGrid, dimBlock>>> ( formula, clauses_index, vars_affectations, clause_n, var_n, answer, thread_n, satisfied_clauses);
 
   cudaThreadSynchronize();
 
