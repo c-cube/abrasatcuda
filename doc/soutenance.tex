@@ -20,6 +20,8 @@
 \usepackage[utf8]{inputenc}
 \usepackage{fancybox}
 
+\usepackage{graphicx} % images
+
 \usepackage{pgfpages}			% obsolete ?
 
 
@@ -87,25 +89,21 @@
 \begin{block}{Concept}
 \begin{itemize}
     \item Recherche exhaustive classique guidée par une heuristique
-    \pause
     \item \emph{Propagation des clauses unitaires}
 \end{itemize}
+    \pause
 \end{block}
 
-\begin{block}{}
+\begin{block}{Remarque}
     Algorithme typiquement récursif $\rightarrow$ non implémentable directement en \cuda.
 \end{block}
 \end{frame}
 
 
-\frametitle{Algorithme}
+\medskip
 
 \begin{algorithm}[h!]
-\caption{algorithme de \textsc{DPLL}}\label{alg:DPLL}
 \begin{algorithmic}
-\REQUIRE F : une formule sous forme normal conjonctive
-\ENSURE un booléen indiquant si la formule est satisfiable \\
-\medskip
 \textbf{function} DPLL( $F$ )
   \IF{$F = \emptyset $} 
     \RETURN "Satisfiable"
@@ -117,584 +115,134 @@
   \STATE $l \gets$ heuristic( $F$ ) \\
   \RETURN DPLL( $F \cup\{l\}$ ) $\vee$ DPLL( $F \cup \{\lnot l\}$ ) \\
 
-\medskip
 \textbf{function} unitPropagation( $F$ )\\
 \WHILE{$\square \not\in F \land \exists $ unit clause $ l \in F$}
   Satisfy $l$ and Simplify $F$ \\
   \RETURN $F$
 \ENDWHILE
-
 \end{algorithmic}
 \end{algorithm}
 
+\begin{frame}
+\frametitle{Implémentation non récursive}
 
+\begin{itemize}
+    \item Implémentation basée sur les \keyword{goto} du C
+    \item gestion de la pile "à la main"
+    \item structures de données optimisées en taille
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{Graphe de flot de contrôle}
+
+\begin{figure}[h]
+\includegraphics[width = 0.60\textwidth]{control_flow.png}
+  \caption[Graphe de flot de controle]{Graphe de flot de contrôle}
+\end{figure}
+
+\end{frame}
 
 %}}}
 
 
 \section{Implémentations parallèles}
 %{{{
+\begin{frame}
+\frametitle{Quelles implémentations ?}
+
+\begin{itemize}
+    \item Implémentation mono-threadée, utile pour débugguer et servir de référence
+    \pause
+    \item Implémentation basée sur \emph{pthreads}
+    \pause
+    \item Implémentation basée sur \cuda
+\end{itemize}
+\end{frame}
+
+\begin{frame}
+\frametitle{\emph{pthreads}}
+
+\begin{block}{\emph{pthreads}}
+\begin{itemize}
+    \item threads \textsc{POSIX} de bas niveau
+    \item primitives de synchronisation classiques (mutexes, conditions)
+\end{itemize}
+\end{block}
+\pause
+
+\begin{block}{fonctionnement}
+\begin{itemize}
+    \item lancement avec un nombre quelconque de threads
+    \item synchronisation \emph{via} le thread principal
+\end{itemize}
+\end{block}
+\end{frame}
+
+
+
+\begin{frame}
+\frametitle{\cuda}
+
+\begin{block}{\cuda}
+\begin{itemize}
+    \item librairie de parallélisme sur cartes graphiques NVidia (GPGPU)
+    \item fortes contraintes sur le code (\emph{subset} du C)
+\end{itemize}
+\end{block}
+\pause
+\begin{block}{fonctionnement}
+\begin{itemize}
+    \item lancement de nombreux threads avec des affectations partielles différentes
+    \item différence avec les \emph{pthreads} : nombre de coeurs, mais aussi espace mémoire
+\end{itemize}
+\end{block}
+\end{frame}
+
 %}}}
 
 \section{Performances}
 %{{{
+\begin{block}{remarques générales}
+\begin{itemize}
+    \item Très faible taille du code $\rightarrow$ tout dans le cache
+    \item 0\% de \emph{cache miss} sur les exemples
+    \item Grande efficacité de l'implémentation sans récursivité
+    \item Mais, pas d'heuristiques très complexes ni de mécanismes complexes
+\end{itemize}
+\end{block}
+\pause
+
+\begin{block}{pthreads}
+\begin{itemize}
+    \item La version \emph{pthreads} est plus rapide sur les instances satisfiables que la version non concurrente.
+    \item Sur les instances non satisfiables, accélération d'un facteur nombre de cœurs.
+\end{itemize}
+\end{block}
+
+\end{frame}
+% TODO : demo
+   
 %}}}
 
 \section{Difficultés}
 %{{{
-    % \cuda
+    
+\begin{frame}
+\frametitle{difficultés d'implémentations}
+\begin{block}{algorithme}
+\begin{itemize}
+    \item Pas de récursivité ni d'appels de fonction (ni de malloc)
+    \item Choix des structures de données
+\end{itemize}
+\end{block}
+
+\begin{block}{\cuda}
+    Mauvaise qualité du compilateur \cuda{}\ldots{}
+\end{block}
+
+\end{frame}
 %}}}
 
+
 \end{document}
-
-
-
-\begin{frame}
-\frametitle{Philosophie UNIX}
-
-\begin{block}{}
-\begin{itemize}
-	\item écrire un programme pour chaque tâche, mais qui la fasse bien.
-\pause
-	\item écrire des programmes qui coopèrent.
-\pause
-	\item écrire des programmes travaillant sur des flux de texte, car c'est une interface universelle.
-\end{itemize}
-\pause
-Pour relier ces programmes, on utilise le \emph{shell}. Il permet de combiner chaque programme pour atteindre son but.
-\end{block}
-\end{frame}
-
-%------------------------------------------------
-%------------------------------------------------
-
-\begin{frame}[fragile]
-\frametitle{Un premier exemple}
-
-\begin{block}{}
-\fbox{\$ \texttt{ps -e |grep sh}    \# un exemple} \\
-\begin{verbatim} 
-4971 pts/1    00:00:00 bash
-5013 pts/1    00:00:00 tcsh
-\end{verbatim}
-\ldots
-\end{block}
-\pause
-
-\textbf{ps} donne la liste des processus et \textbf{grep} permet de filtrer ceux-ci selon une \emph{expression régulière}.
-\textbf{\#} indique un commentaire qui ne sera pas pris en compte par le shell.
-\end{frame}
-
-%------------------------------------------------
-%------------------------------------------------
-
-\section{Programmes, arguments}
-
-\begin{frame}
-\frametitle{programmes et arguments}
-\begin{itemize}
-\begin{block}{}
-\item Syntaxe pour appeler un programme avec des arguments:
-
-\fbox{\$ \texttt{programme arg1 arg2 arg3 \ldots}}
-
-\pause
-
-	\item Certains arguments sont en fait des options, ils modifient le comportement du programme. Deux types d'options sont possibles \textbf{en général} : 
-\pause
-	\begin{enumerate}
-		\item Options courtes (une lettre par option, en g\'en\'eral pr\'efix\'ee par un tiret simple~-)
-\pause
-		\item Options longues (plusieurs lettres pour une option, en g\'en\'eral pr\'efix\'ee par un tiret double -\,-)
-	\end{enumerate}
-\end{block}
-\end{itemize}
-\end{frame}
-
-\begin{frame}[fragile]
-\frametitle{exemple}
-
-\begin{block}{}
-	%\framebox[\width]{
-	%\parbox{\textwidth}{
-	\multicommande{
-	\$ \texttt{mkdir source} \\
-	\$ \texttt{mkdir dest} \\
-	\$ \texttt{touch source/a} \\
-	\$ \texttt{touch b} \\
-	\$ \texttt{cp -r -\,-verbose source/ b dest/}}
-\begin{verbatim} 
-`source/' -> `dest/source'
-`source/a' -> `dest/source/a'
-`b' -> `dest/b'
-\end{verbatim}
-\end{block}
-
-\end{frame}
-
-
-
-%------------------------------------------------
-%------------------------------------------------
-\section{Quelques commandes basiques}
-\subsection{Navigation dans le système de fichiers}
-
-\begin{frame}[fragile]
-\frametitle{}
-\begin{block}{}
-	\begin{tabular}{l  p{8cm}}
-	\textbf{.} 		& désigne le répertoire courant \\
-	\textbf{..} 	& le répertoire parent \\
-	\textbf{/} 		& la racine \\
-	\textbf{a/b} 	& Un objet $b$ situé dans le répertoire $a$ (sous-r\'epertoire ou fichier) \\
-	\textbf{$\sim$} & $\sim$ est le r\'epertoire personnel de l'utilisateur (\mbox{/home/\emph{username}/} en g\'en\'eral) \\
-\end{tabular}
-\end{block}
-\pause
-\begin{block}{\textsc{\alert{Survie}}}
-	\begin{tabular}{p{5cm} p{5cm}}
-	%\begin{tabular}{p{8cm} p{8cm}}
-	 	\commande{man programme}         & Manuel de \emph{programme}. Indispensable.\\
-		\hline
-		\commande{programme -\,-help} \mbox{(ou \texttt{-h})}  & fournit généralement l'aide de \emph{programme}. Préférer \textbf{man}. \\
-		\hline
-		\verb!<ctrl-c>!         	         &  permet de stopper un programme en train de s'exécuter. \\
-	\end{tabular}
-\end{block}
-\end{frame}
-
-
-
-\begin{frame}
-\frametitle{}
-\begin{block}{}
-	\begin{tabular}{p{0.5\textwidth} p{0.4\textwidth}}
-		\nbcommande{cd dest}         			& changer de répertoire courant \\
-		\hline
-		\nbcommande{ls [dir]}        	& lister les fichiers dans \emph{dir} (par défaut, \textbf{.}) \\
-		\hline
-		\nbcommande{mv Source [ Source$_2$ \ldots Source$_n$ ] Dest}    & déplacer des fichiers ou répertoires \\
-		\hline
-		\nbcommande{cp Source [ Source$_2$ \ldots Source$_n$ ] Dest}    & copier des fichiers ou répertoires \\
-		\hline
-		\nbcommande{rm fichier [ fichier$_2$ \ldots fichier$_n$ ]}      & supprimer un ou des fichiers (\textcolor{red}{\textsc{Attention}}, pas de corbeille) \\
-		\hline
-		\nbcommande{mkdir nom}                                 & crée un répertoire \\ 
-		\hline
-		\nbcommande{pwd}                                       & donne le répertoire courant \\
-	\end{tabular}
-\end{block}
-\pause
-
-\fbox{pour référence, cf aussi \textbf{find, locate, rename, chmod, chown}\ldots}
-
-\end{frame}
-
-%------------------------------------------------
-%------------------------------------------------
-
-\subsection{Manipulations generique de texte}
-
-\begin{frame}[fragile]
-	\frametitle{}
-\begin{block}{}
-\begin{tabular}{p{0.5\textwidth}| p{0.4\textwidth}}
-	\nbcommande{echo arg1 [arg$_2$... arg$_n$]}                		& affiche ses arguments \\
-	\hline
-	\nbcommande{cat  fichier$_1$ [fichier$_2$ ... fichier$_n$]}     	& affiche le contenu d'un ou plusieurs fichier(s) \\
-	\hline	
-	\nbcommande{grep expression [fichier]}                  		& affiche les lignes qui contiennent \emph{expression}\footnote{grep est en fait beaucoup plus puissant puisqu'il accepte les expressions régulières ainsi que nombre d'options très pratiques (RTFM !)} \\
-\end{tabular}
-\end{block}
-
-\pause
-\fbox{pour référence, cf aussi \textbf{sed, awk, cut, tr}\ldots} \\
-\pause
-\begin{block}{Quelques éditeurs de texte (pour information)} 
-\begin{description}
-	\item[vi(m)] \'editeur puissant bas\'e sur des \emph{modes}
-	\item[emacs] \'editeur puissant très configurable\footnote{la concurrence entre emacs et vim reste d'ailleurs l'un des plus grands sujets de \emph{trolls} du monde du logiciel libre\ldots}
-	\item[nano] \'editeur simple et facile à utiliser
-\end{description}
-\end{block}
-\end{frame}
-
-
-%------------------------------------------------
-%------------------------------------------------
-\lstset{% general command to set parameter(s)
-    basicstyle=\small,          % print whole listing small
-    keywordstyle=\color{blue}\bfseries,
-                                % underlined bold black keywords
-    commentstyle=\color{blue}, % white comments
-    stringstyle=\ttfamily,      % typewriter type for strings
-}    
-
-
-\section{Manipulation de flux}
-\subsection{flux standards}
-
-\begin{frame}[fragile]
-\frametitle{}
-\begin{block}{}
-	\begin{itemize}
-		\item Chaque programme dispose de 3 flux de base, ainsi que de ses arguments. En java, par exemple, \\ 
-%\begin{flushleft}
-\lstset{language=Java,showstringspaces=false}	
-% TODO: verifier que ça marche
-\begin{lstlisting}[frame=single]
-class Test{
-    public static void main(String[] args){     
-        System.out.println("kikoo");
-        System.err.println("Fatal error");
-    }
-}
-\end{lstlisting}
-%\end{flushleft}
-\lstset{language=bash,showstringspaces=false}	
-\pause
-
-		\item Les flux sont \emph{System.in}, \emph{System.out}, \emph{System.err}     (d'où, pour afficher une ligne, \emph{\mbox{System.out.println}}()). Les arguments sont passés au programme par l'argument \textbf{args} de la fonction \textbf{main}.
-	\end{itemize}
-\end{block}
-\end{frame}
-
-% pipe
-
-
-\subsection{Les pipe}
-
-\begin{frame}
-\frametitle{}
-\begin{itemize}
-\item Le shell permet de manipuler ces flux de texte entre programmes, pour les faire coopérer.
-\pause
-
-\item Le \textbf{pipe} redirige le flux de \textbf{sortie standard} d'un programme sur le flux d'entrée d'un autre. Le deuxième programme traite donc l'information retournée par le premier sur sa sortie standard.
-\pause
-
-\begin{block}{}
-\commande{ps -e | grep "sh"}
-\end{block}
-\texttt{ps -e} écrit la liste des processus sur sa sortie standard, qui est aussi l'entrée de \texttt{grep}.
-\pause
-
-\begin{block}{}
-\commande{ps -e | grep "sh" | grep -v "sshd"}
-\end{block}
-
-\texttt{grep -v "sshd"} supprime les lignes qui contiennent "sshd".
-
-\end{itemize}
-\end{frame}
-
-% chevrons
-\subsection{Les chevrons}
-
-\begin{frame}
-\frametitle{Chevrons}
-\begin{itemize}
-	\item Les \textbf{chevrons} servent à rediriger un flux vers ou depuis un fichier.
-\pause
-
-\begin{block}{}
-\commande{echo "coin" > toto.txt}
-\end{block}
-
-
-La sortie de \textbf{echo "coin"} est redirigée dans le fichier \textbf{toto.txt} (qui est créé s'il n'existait pas, et dont le contenu initial est écrasé dans le cas contraire). Avec \textbf{$>>$}  on ajoute la sortie à la fin du fichier au lieu d'écraser ce qu'il contenait précédemment.
-
-\end{itemize}
-\end{frame}
-\begin{frame}
-\frametitle{exemple}
-\begin{itemize}
-
-\begin{block}{}
-\multicommande{
-\nbcommande{echo "coin" > toto.txt} \\                   
-\nbcommande{echo "pan" \verb!>>! toto.txt}   \small\# ajoute une deuxième ligne à toto.txt\normalsize \\
-\nbcommande{while read i ; do echo \$i ; done  <  toto.txt}\\
- \small\# attention aux espaces\ldots\normalsize 
-}
-\end{block}
-\pause
-
-\item \textbf{read i} lit une ligne du fichier et la met dans la variable i.
-\item \textbf{\$i} désigne le contenu de la variable \textit{i}.
-\item \texttt{>} redirige la sortie, \texttt{<} l'entr\'ee, \texttt{n>} le n\ieme{} flux vers un fichier. 
-\item n=0 pour l'entr\'ee, 1 pour la sortie, 2 pour la sortie d'erreur. Cependant, certains programmes ouvrent d'autres \emph{descripteurs de fichiers} (des flux), par exemple pour lire ou écrire un fichier\footnote{aller dans /proc/\emph{pid-du-processus}/fd/ pour la liste des descripteurs de fichiers. Puis, par exemple, \nbcommande{ls -l}}<2>.
-
-\end{itemize}
-\end{frame}
-
-
-%------------------------------------------------
-%------------------------------------------------
-\section{Job control}  % plus difficile
-
-\begin{frame}
-\frametitle{}
-
-	\begin{itemize}
-		\item Le shell peut controller plusieurs \emph{\textbf{jobs}} à la fois (une commande crée au moins un processus). Un \emph{job} correspond à l'exécution d'une ligne de commande, et peut comprendre plusieurs processus. \par
-\pause
-\fbox{\alert{\textsc{Attention}} : ne pas confondre \emph{job} et \emph{processus} !}
-\pause
-
-\begin{block}{}
-\commande{ps -e | grep "sh" | grep -v "ssh"}
-
-Il y a 3 processus (3 programmes) dans un seul job.
-\end{block}
-\pause
-		\item On peut avoir un seul \emph{job} en ``avant plan'' (bloque le terminal jusqu'à ce que le \emph{job} termine). C'est ce qui arrive par défaut.
-\pause
-
-\begin{block}{}
-\commande{sleep 200} \\
-Ici, le terminal est bloqué jusqu'à ce que le \emph{job} se finisse. \verb!<!Ctrl-c\verb!>! pour tuer le \emph{job}. C'est également dans ce cas de figure qu'on peut envoyer manuellement des informations sur le flux d'entrée standard du \emph{job}.
-\end{block}
-% TODO: inserer une slide ici ?
-
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{esperluette, avant- et arrière-plan}
-\begin{itemize}
-\begin{block}{}
-\commande{sleep 200 \&} \newline
-Le job est lancé en  ``arrière plan'', le terminal se libère, on peut donc lancer d'autres commandes.
-\end{block}
-\pause
-
-		\item On peut stopper momentanément un \emph{job} en avant plan avec \verb!<!ctrl-z\verb!>!. L'accès à la liste des \emph{jobs} se fait par la commande \textbf{jobs}. Pour relancer un \emph{job}, deux commandes :
-\pause
-\begin{block}{}
-\begin{tabular}{p{3.5cm} p{6.5cm}}
-\textbf{fg}  (pour \emph{foreground})   & relance en avant-plan le premier \emph{job} \\
-\textbf{bg}  (pour \emph{background})   & relance en arrière plan le premier \emph{job} \\
-\end{tabular}
-\end{block}
-\pause
-
-		\item On peut se référer aux différents \emph{jobs} en cours par \textbf{\%n} où \textbf{n} est le numéro du \emph{job} dans la liste donnée par \textbf{jobs}\footnote{encore un peu de \emph{job} ? Vous ne l'avez pas assez entendu, allons...}<4>.
-
-	\end{itemize}
-
-
-
-\end{frame}
-\begin{frame}
-\frametitle{exemple}
-
-\begin{block}{}
-\multicommande{
-\nbcommande{\{~sleep 20; echo "hello" \verb!;! \} \&} \\
-\nbcommande{\{~sleep 20; echo "world" \verb!;! \} \&} \\
-\nbcommande{jobs} \\
-\verb![1]  - running    {; sleep 20; echo "hello"; }! \\
-\verb![2]  + running    {; sleep 20; echo "world"; }! \\
-\nbcommande{fg \%2} \\
-\verb![2]  - running    {; sleep 20; echo "world"; }! \\
-\verb!<!ctrl-z\verb!>! \\
-\verb!hello!\\
-\nbcommande{bg} \\
-\verb!world!\\
-}
-\end{block}
-
-\pause
-
-\fbox{pour référence, cf \textbf{disown} et \textbf{nohup}}
-
-\end{frame}
-
-
-
-%------------------------------------------------
-%------------------------------------------------
-\section{Variables, valeurs de retour et opérateurs logiques}
-\subsection{Variables}
-
-\begin{frame}
-\frametitle{}
-	\begin{itemize}
-
-	\item En shell, tout est chaîne de caractères. Le shell peut effectuer des opérations complexes sur ces chaînes.
-		\begin{description}
-			\item[Variable :] C'est un identifiant. On l'affecte par \textbf{identifiant=valeur}  (\textsc{\alert{Attention} :} pas d'espace de part et d'autre du signe $=$).
-			\item[Contenu :] On y accède par \textbf{\$identifiant}  (idem, pas d'espace après le \$ !)
-		\end{description}
-	\item Il existe des variables prédéfinies (\textsc{\$Pwd, \$Home, \$Random}\ldots)
-\pause
-
-\begin{block}{}
-\multicommande{
-\nbcommande{i=2} \\
-\nbcommande{echo \$i}\\
-\verb!2! \\
-\nbcommande{echo \$HOME}\\
-\verb!/home/simon/!\\
-\nbcommande{echo \$RANDOM}\\
-\verb!42!
-}
-\end{block}
-
-\end{itemize}
-\end{frame}
-
-\subsection{Valeurs de retour}
-\begin{frame}
-\frametitle{valeurs de retour}
-	\begin{itemize}
-
-
-		\item Valeurs de retour : tout programme qui s'exécute retourne un entier indiquant s'il s'est bien terminé. La terminaison correcte est normalement indiquée par 0\footnote{d'où le \emph{return 0;} familier aux programmeurs C et C++\ldots}. On peut connaitre cette valeur par le biais de la variable \textbf{\$?}.
-\pause
-
-\begin{block}{}
-\multicommande{
-\nbcommande{sleep 1} \\
-\nbcommande{echo \$?} \\
-\verb!0! \\
-%\end{block}
-%\begin{block}{}
-\nbcommande{sleep -1} \\
-\nbcommande{echo \$?} \\
-\verb!1! 
-}
-$\Rightarrow$ On voit que sleep ne retourne pas 0 quand il ne peut s'exécuter correctement.
-\end{block}
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{}
-	\begin{itemize}
-	\item On peut chaîner séquentiellement des commandes avec des opérateurs. Le plus simple est \textbf{;} qui permet d'exécuter deux commandes successivement. On a aussi \textbf{\&}, qui lance la première commande puis la seconde sans attendre que la première se termine.
-\pause
-
-\begin{block}{}
-	\commande{sleep 5 ; sleep 2000 \& echo "kikoo"}\footnote{on remarque que c'est \'equivalent à \nbcommande{sleep 5 ; \{ sleep 2000 \& echo kikoo\}}}
-\end{block}
-\pause
-
-	\item Il existe aussi  \&\& et \verb!||!\footnote{Cela correspond à un \&\& logique ou un \verb!||! logique entre valeurs de retour, de manière paresseuse.}.
-\begin{block}{op\'erateurs logiques}
-	\begin{tabular}{  l  p{8cm}} 
-		\item \commande{a \&\& b}  & exécute \emph{a} puis \emph{b} si \emph{a} s'est bien terminé. \\
-		\item \commande{a || b}  	& exécute a puis b si a ne s'est pas bien terminé. \\
-	\end{tabular}
-
-\end{block}
-\end{itemize}
-\end{frame}
-
-% TODO: meubler un peu la frame ?
-
-\begin{frame}
-\frametitle{exemple}
-\begin{block}{}
-\multicommande{
-\nbcommande{sleep 3 \&\& echo "kikoo"} \\
-\nbcommande{sleep 1 || echo "lol"} \\
-\nbcommande{sleep -1 || echo "lol"} \\
-}
-
-\end{block}
-\end{frame}
-
-%------------------------------------------------
-%------------------------------------------------
-\section{Quoting}
-
-\begin{frame}
-\frametitle{}
-\begin{itemize}
-	\item Si on veut que le shell n'interprète \textbf{pas} une chaîne de caractères, il suffit de mettre celle-ci entre \verb!''!.
-
-\begin{block}{single quote}
-\multicommande{
-\nbcommande{i=2} \\
-\nbcommande{echo \$i}\\
-\verb!2! \\
-\nbcommande{echo '\$i'}\\
-\$\verb!i!
-}
-\end{block}
-\pause
-
-	\item On peut néanmoins permettre au shell d'interpréter les variables dans une chaîne avec \textbf{""}.
-\begin{block}{double quote}
-\multicommande{
-\nbcommande{mkdir my\_dir} \\
-\nbcommande{echo "kikoo" > my\_dir/my\_file} \\
-\nbcommande{cat "\$PWD/my\_dir/my\_file"} \\
-\nbcommande{cat "\$\{PWD\}/my\_dir/my\_file"	\# syntaxe alternative} 
-}
-\end{block}
-\end{itemize}
-\end{frame}
-
-
-%------------------------------------------------
-%------------------------------------------------
-\section{Divers}
-\subsection{scripts}
-
-\begin{frame}
-\frametitle{}
-
-\begin{block}{}
-\begin{itemize}
-\item On peut aussi faire des scripts avec le shell . Un script shell est un fichier contenant une suite de commandes interpretees par un programme (/bin/sh ou /bin/bash (le standard) ou encore /bin/tcsh en salle info).
-\pause
-\item La première ligne du fichier doit être \# /bin/sh pour indiquer à l'OS avec quoi interpréter le script. Il faut aussi rendre exécutable le fichier, avec \\ 
-\commande{chmod a+x monfichier.sh} 
-\pause
-\item Si on utilise d'autres langages interprétés (\emph{awk, perl, ruby, python, lisp, (o)caml\ldots}) on peut rendre un fichier source exécutable de la même manière. Il suffit de remplacer /bin/bash par le chemin absolu de l'interpréteur.
-\end{itemize}
-\end{block}
-\pause
-
-\fbox{pour référence, cf \textbf{man bash} (ou \textbf{man sh})}
-
-\end{frame}
-
-\subsection{commandes en vrac}
-
-\begin{frame}
-\frametitle{}
-
-
-\small
-\begin{itemize}
-
-\item \textbf{less} pour rassembler tout le texte reçu sur l'entrée standard et l'afficher sur un page scrollable
-\item \textbf{ssh} (et \textbf{scp}) pour la connexion sécurisée à distance
-\item \textbf{clear} pour effacer le terminal
-\item \textbf{ln} pour les liens (y compris symboliques)
-\item \textbf{mount} pour monter des périphériques de stockage
-\item \textbf{df} pour voir l'espace occupé sur les disque
-\item \textbf{rsync} pour synchroniser des dossiers ou fichiers
-\item \textbf{top} (ou mieux, \textbf{htop}) pour un gestionnaire de processus interactif
-\item \textbf{aptitude, emerge}, etc. pour les gestionnaires de paquets
-\item \textbf{chown, chmod} pour les permissions de fichiers
-\item \textbf{su, sudo} pour changer d'utilisateur
-\item et bien plus encore\ldots%\footnote{c'est notre ami !}<2>
-
-
-\end{itemize}
-\end{frame}
-
-\begin{frame}
-\frametitle{Des questions ?}
-\pause
-Merci de votre attention !
-\end{frame}
-
-
-
-%\end{document}
