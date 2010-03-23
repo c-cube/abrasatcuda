@@ -16,6 +16,12 @@ success_t solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n
     for (int i=1; i <= var_n; ++i)
         vars[i] = 0;
 
-    return solve_thread( formula, clauses_index, vars, clause_n, var_n );
+    success_t answer = solve_thread( formula, clauses_index, vars, clause_n, var_n );
+    
+    if ( answer == SUCCESS )
+        value_print( vars, var_n );
+
+    
+    return answer;
 }
 
