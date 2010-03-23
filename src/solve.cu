@@ -76,7 +76,6 @@ prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_inde
     cudaMemcpy( vars_affectations_d, vars_affectations, vars_size, cudaMemcpyHostToDevice);
     cudaMemcpy( answer_d, answer, ans_size, cudaMemcpyHostToDevice);
     cudaMemcpy( satisfied_clauses_d, satisfied_clauses, satis_size, cudaMemcpyHostToDevice);
-
 }
 
 
@@ -89,6 +88,8 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
 {
     int block_id = blockIdx.x * blockDim.x;
     int id_in_block = threadIdx.x;
+    int id = block_id + id_in_block;
+    printf("%d\n", threadIdx.x);
     //extern __shared__ value_t vars_in_global[];
     // we now longer use this
     // TODO : verify this affectation is correct
@@ -97,13 +98,11 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     //  vars_in_global[id_in_block*(var_n+1) +i ] = vars_affectations[(8*block_id+id_in_block)*(var_n +1) +i];
     //}
     satisfied_t * threads_satisfied_clauses;
-    threads_satisfied_clauses = &satisfied_clauses_d[(block_id + id_in_block) * clause_n];
+    threads_satisfied_clauses = &satisfied_clauses_d[(id) * clause_n];
     // now  we sync threads to ensure we're in a consistent state
     __syncthreads();
     // TODO : verify this affectation is correct
-    value_t * vars = vars_affectations_d + ((block_id + id_in_block) * (var_n + 1));
-    if (  (block_id + id_in_block ) >= thread_n)
-      exit(-2);
+    value_t * vars = vars_affectations_d + (id * (var_n + 1));
     // now call the solver
     success_t result = solve_thread( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, threads_satisfied_clauses);
     // store our result
