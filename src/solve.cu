@@ -2,7 +2,6 @@
 #include "heuristic.h"
 #include "heuristic.c"
 #include "dpll_while.c"
-//#include "solve.h"
 
 
 // sets the number of threads
@@ -24,6 +23,7 @@ __device__ atom_t * formula_d;
 __device__ atom_t * clauses_index_d;
 __device__ value_t * vars_affectations_d;
 __device__ truth_t * answer_d;
+__device__ satisfied_t * satisfied_clauses_d;
 
 /*
 * chooses immutable vars and sets them differently for each thread
@@ -31,7 +31,6 @@ __device__ truth_t * answer_d;
 __host__ void
 prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var_n, int thread_n, value_t * all_vars)
 {
-  all_vars = (value_t *) calloc(thread_n * (var_n+1), sizeof(value_t));
 
 #ifdef DEBUG
   printf("sorts vars by value\n");
@@ -51,22 +50,25 @@ prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var
 * this function transfers the structures to the gpu global memory
 */
 __host__ void
-prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_index,  atom_t * clauses_index_d, value_t * vars_affectations,  value_t * vars_affectations_d, int clause_n, int var_n, truth_t * answer,  truth_t * answer_d, int thread_n)
+prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_index,  atom_t * clauses_index_d, value_t * vars_affectations,  value_t * vars_affectations_d, int clause_n, int var_n, truth_t * answer,  truth_t * answer_d, int thread_n, satisfied_t * satisfied_clauses, satisfied_t * satisfied_clauses_d)
 {
     // first, we allocate the meomry on the device
     size_t formula_size = (clauses_index[clause_n] - clauses_index[0]+ 1) * sizeof(atom_t);
     size_t clauses_index_size = clause_n * sizeof(atom_t);
     size_t vars_size = thread_n * (var_n + 1) * sizeof( value_t);
     size_t ans_size = sizeof( truth_t);
+    size_t satis_size = thread_n * clause_n * sizeof( satisfied_t);
     cudaMalloc( (void **) &formula_d, formula_size);
     cudaMalloc( (void **) &clauses_index_d, clauses_index_size);
     cudaMalloc( (void **) &vars_affectations_d, vars_size);
     cudaMalloc( (void **) &answer_d, ans_size);
+    cudaMalloc( (void **) &satisfied_clauses_d, satis_size);
     // now we transfer data to the device
     cudaMemcpy( formula_d, formula, formula_size, cudaMemcpyHostToDevice);
     cudaMemcpy( clauses_index_d, clauses_index, clauses_index_size, cudaMemcpyHostToDevice);
     cudaMemcpy( vars_affectations_d, vars_affectations, vars_size, cudaMemcpyHostToDevice);
     cudaMemcpy( answer_d, answer, ans_size, cudaMemcpyHostToDevice);
+    cudaMemcpy( satisfied_clauses_d, satisfied_clauses, satis_size, cudaMemcpyHostToDevice);
 
 }
 
@@ -76,7 +78,7 @@ prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_inde
 * it uses its thread id to recover which variables were chosen, and their affectations
 */
 __global__ void
-cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectations, int clause_n, int var_n, truth_t * answer, int thread_n)
+cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectations, int clause_n, int var_n, truth_t * answer, int thread_n, satisfied_t * satisfied_clauses)
 {
     int block_id = blockIdx.x * blockDim.x;
     int id_in_block = threadIdx.x;
@@ -91,7 +93,7 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     // TODO : verify this affectation is correct
     value_t * vars = &vars_in_global[ id_in_block * (var_n+1)];
     // now call the solver
-    success_t result = solve_thread( formula, clause_index, vars, clause_n, var_n);
+    success_t result = solve_thread( formula, clause_index, vars, clause_n, var_n, satisfied_clauses);
     // store our result
     // TODO : notify other threads if we found the formula to be satisfiable
     if (result == SUCCESS && *answer != TRUE) // no thread found the formula satisfiable before
@@ -108,22 +110,25 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
 #endif
 
   value_t * vars_affectations;
+  satisfied_t * satisfied_clauses;
   // we select and preset k variablees, where 2^k = thread_n
+  vars_affectations = (value_t *) calloc(thread_n * (var_n+1), sizeof(value_t));
+  satisfied_clauses = (satisfied_t *) calloc( thread_n * clause_n, sizeof(satisfied_t));
   prepare_presets( formula, clauses_index, clause_n, var_n, thread_n, vars_affectations);
   
   truth_t * answer;
   *answer = FALSE;
 
   // apparently, can't decide this size at execution..
-  //size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
-  size_t shared_mem_size = 8 * 128 * sizeof( value_t);
+  size_t shared_mem_size = 8 * (var_n +1) * sizeof( value_t);
+  //size_t shared_mem_size = 8 * 128 * sizeof( value_t);
   // so no more than 128 variables...
 
   // transfering all data to the gpu global memory
-  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answer, answer_d, thread_n);
+  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answer, answer_d, thread_n, satisfied_clauses, satisfied_clauses_d);
 
   // now we call the cuda kernel to solve each instance
-  cuda_solve<<<8,thread_n/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answer_d, thread_n);
+  cuda_solve<<<8,thread_n/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answer_d, thread_n, satisfied_clauses_d);
 
   cudaThreadSynchronize();
 

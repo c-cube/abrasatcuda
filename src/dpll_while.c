@@ -499,7 +499,8 @@ dpll(
     atom_t *clauses_index,
     value_t *vars,
     int clause_n,
-    int var_n)
+    int var_n,
+    satisfied_t * satisfied_clauses)
 {
     
 #if DEBUG > 1
@@ -519,9 +520,10 @@ dpll(
     truth_t is_still_satisfiable;
 
     // initializes satisfied_clauses
-    satisfied_t satisfied_clauses[clause_n];
-    for (int i = 0; i < clause_n; ++i )
-        satisfied_clauses[i] = 0;
+    // FIXME : no dynamic memory allocation !!!
+    //satisfied_t satisfied_clauses[clause_n];
+    //for (int i = 0; i < clause_n; ++i )
+    //    satisfied_clauses[i] = 0;
 
     int next_var = -1; 
     int last_pushed_var = -1;
@@ -567,15 +569,15 @@ dpll(
 
           INVARIANT_STACK
 
-            // updates info on clauses. New affectations are put on stack_depth_plus
-            if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
-                  stack_depth_plus, clause_n, var_n ) == FALSE )
-            {
-              assert( stack_depth > 0 );
-              //goto epic_fail;
-              status = EPIC_FAIL;
-              continue;
-            }
+          // updates info on clauses. New affectations are put on stack_depth_plus
+          if ( formula_is_satisfiable( formula, clauses_index, vars, satisfied_clauses,
+                stack_depth_plus, clause_n, var_n ) == FALSE )
+          {
+            assert( stack_depth > 0 );
+            //goto epic_fail;
+            status = EPIC_FAIL;
+            continue;
+          }
 
           // check if all clauses are satisfied
           if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
@@ -641,7 +643,7 @@ dpll(
           INVARIANT_STACK
 
 #if DEBUG > 1
-            print("chooses var %d at stack depth %d\n", next_var, stack_depth );
+          print("chooses var %d at stack depth %d\n", next_var, stack_depth );
 #endif
 
           /*
@@ -725,8 +727,8 @@ dpll(
 
           INVARIANT_STACK
 
-            // there has been an unroll, remember that this var is still affected
-            SET_AFFECTED(vars[last_pushed_var]);
+          // there has been an unroll, remember that this var is still affected
+          SET_AFFECTED(vars[last_pushed_var]);
           SET_STACK_DEPTH(vars[last_pushed_var], stack_depth);
           SET_FALSE(vars[last_pushed_var]);
 
@@ -750,9 +752,9 @@ dpll(
 
           INVARIANT_STACK
 
-            // there has been a failure, now we have to deal with it on previous recursive call.
-            //goto epic_fail;
-            status = EPIC_FAIL;
+          // there has been a failure, now we have to deal with it on previous recursive call.
+          //goto epic_fail;
+          status = EPIC_FAIL;
           break;
 
 
@@ -768,7 +770,7 @@ dpll(
           //return FAILURE; // never reached
       } 
     }
-    return return_value; // never reached
+    return return_value;
 }
 
 
@@ -781,12 +783,12 @@ dpll(
 __device__ static inline
 #endif
 success_t 
-solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
+solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n, satisfied_t * satisfied_clauses )
 {
     initialize_values( vars, var_n );
 
     // current default implementation 
-    truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n );
+    truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n, satisfied_clauses);
 
 
 #ifndef CUDA
