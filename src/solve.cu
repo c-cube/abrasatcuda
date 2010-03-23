@@ -88,6 +88,8 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     {
       vars_in_global[id_in_block*(var_n+1) +i ] = vars_affectations[(block_id+id_in_block)*(var_n +1) +i];
     }
+    satisfied_t * threads_satisfied_clauses;
+    threads_satisfied_clauses = &satisfied_clauses[(block_id + id_in_block) * clause_n];
     // now  we sync threads to ensure we're in a consistent state
     __syncthreads();
     // TODO : verify this affectation is correct
