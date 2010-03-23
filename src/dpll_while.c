@@ -536,9 +536,13 @@ dpll(
      *      the branch.
      */
     int status = START;
+    success_t return_value = 2;
 // start the recursive part here
-    while (0)
+#pragma unroll 1
+    while (1)
     {
+      if (return_value != 2)
+        break;
       switch(status)
       {
 //start:
@@ -551,9 +555,13 @@ dpll(
 
           INVARIANT_STACK
 
-            // exhausted all possibilities at root, loser !
-            if ( stack_depth <= 0 )
-              return FAILURE;
+          // exhausted all possibilities at root, loser !
+          if ( stack_depth <= 0 ) 
+          {
+            return_value = FAILURE;
+            continue;
+            //return FAILURE;
+          }
 
           stack_depth_plus = stack_depth + 1; // stack_depth_plus is the stack depth of propagated variables
 
@@ -574,7 +582,9 @@ dpll(
 #if DEBUG > 1
             print("all clauses satisfied !\n");
 #endif
-            return SUCCESS; // win !
+            return_value = SUCCESS;
+            continue;
+            //return SUCCESS; // win !
           }
 
           // try to propagate unit clauses.
@@ -609,8 +619,11 @@ dpll(
           // assert( next_var != -1 ); // all vars affected but formula not satisfiable ??
           if ( next_var == -1 ){
             if ( all_clauses_are_satisfied( satisfied_clauses, clause_n ) == TRUE ){
-              return SUCCESS;
-            } else {
+              return_value = SUCCESS;
+              continue;
+              //return SUCCESS;
+            }
+            else {
 #if DEBUG > 1
               print("all vars affected, but not all clauses satisfied ?!\n");
 #endif
@@ -656,8 +669,12 @@ dpll(
 #endif
 
           // exhausted all possibilities at root, loser !
-          if ( stack_depth <= 0 )
-            return FAILURE;
+          if ( stack_depth <= 0 ) 
+          {
+            return_value = FAILURE;
+            continue;
+            //return FAILURE;
+          }
 
 
           // what is the last pushed var ?
@@ -667,11 +684,13 @@ dpll(
           unroll( vars, satisfied_clauses, stack_depth, clause_n, var_n);
 
 
-          if ( last_pushed_var == -1 ){ // root of call stack
+          if ( last_pushed_var == -1 ) { // root of call stack
 #if DEBUG > 1
             print("epic_fail at stack depth %d, no last_pushed_var\n",stack_depth);
 #endif
-            return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
+            return_value = FAILURE;
+            continue;
+            //return FAILURE; // at root + unsatisfiable ==> definitely unsatisfiable
           }
 
           if ( TRUTH_VALUE( vars[last_pushed_var] ) == 1 ){
@@ -683,7 +702,8 @@ dpll(
             status = FAILURE_POSITIVE;
             continue;
 
-          } else {
+          }
+          else {
             // uh-oh, this var has been thoroughly tested without results, fail.
 
             //goto failure_negative;
@@ -743,10 +763,12 @@ dpll(
           assert(0);
 #endif
         default:
-          return FAILURE; // never reached
+          return_value = FAILURE;
+          continue;
+          //return FAILURE; // never reached
       } 
     }
-    return FAILURE; // never reached
+    return return_value; // never reached
 }
 
 

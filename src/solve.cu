@@ -51,7 +51,7 @@ prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var
 * this function transfers the structures to the gpu global memory
 */
 __host__ void
-prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_index,  atom_t * clauses_index_d, value_t * vars_affectations,  value_t * vars_affectations_d, int clause_n, int var_n, truth_t * answers,  truth_t * answer_d, int thread_n)
+prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_index,  atom_t * clauses_index_d, value_t * vars_affectations,  value_t * vars_affectations_d, int clause_n, int var_n, truth_t * answer,  truth_t * answer_d, int thread_n)
 {
     // first, we allocate the meomry on the device
     size_t formula_size = (clauses_index[clause_n] - clauses_index[0]+ 1) * sizeof(atom_t);
@@ -66,7 +66,7 @@ prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_inde
     cudaMemcpy( formula_d, formula, formula_size, cudaMemcpyHostToDevice);
     cudaMemcpy( clauses_index_d, clauses_index, clauses_index_size, cudaMemcpyHostToDevice);
     cudaMemcpy( vars_affectations_d, vars_affectations, vars_size, cudaMemcpyHostToDevice);
-    cudaMemcpy( answer_d, answers, ans_size, cudaMemcpyHostToDevice);
+    cudaMemcpy( answer_d, answer, ans_size, cudaMemcpyHostToDevice);
 
 }
 
@@ -120,10 +120,10 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   // so no more than 128 variables...
 
   // transfering all data to the gpu global memory
-  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answers, answers_d, thread_n);
+  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answer, answer_d, thread_n);
 
   // now we call the cuda kernel to solve each instance
-  cuda_solve<<<8,thread_n/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answers_d, thread_n);
+  cuda_solve<<<8,thread_n/8, shared_mem_size>>> ( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, answer_d, thread_n);
 
   cudaThreadSynchronize();
 
