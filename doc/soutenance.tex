@@ -25,6 +25,26 @@
 \usepackage{pgfpages}			% obsolete ?
 
 
+\lstset{
+language=C,
+keywordstyle=\bfseries\color[rgb]{0,0,1},
+identifierstyle=\ttfamily,
+commentstyle=\ttfamily\color[rgb]{0.133,0.545,0.133},
+stringstyle=\ttfamily\color[rgb]{0.627,0.126,0.941},
+showstringspaces=false,
+basicstyle=\footnotesize,
+numberstyle=\bfseries\footnotesize,
+numbers=left,
+stepnumber=0,
+%numbersep=10pt,
+tabsize=4,
+breaklines=true,
+breakatwhitespace=false,
+%aboveskip={1.5\baselineskip},
+columns=fixed,
+extendedchars=true,
+frame=single
+}
 
 
 \newcommand{\commande}[1]{\fbox{\texttt{\$ #1}}}	% boite
@@ -52,7 +72,6 @@
 %\usecolortheme{default}
 
 \author{Vincent Barrielle, Simon Cruanes}
-\lstset{language=C,showstringspaces=false}	
 \title{SAT-solver en \cuda}
 \subtitle{projet inf560}
 
@@ -203,16 +222,19 @@
 
 \section{Performances}
 %{{{
+
+\begin{frame}
+
+
 \begin{block}{remarques générales}
 \begin{itemize}
     \item Très faible taille du code $\rightarrow$ tout dans le cache
     \item 0\% de \emph{cache miss} sur les exemples
     \item Grande efficacité de l'implémentation sans récursivité
-    \item Mais, pas d'heuristiques très complexes ni de mécanismes complexes
+    \item Mais pas très complexes
 \end{itemize}
 \end{block}
 \pause
-
 \begin{block}{pthreads}
 \begin{itemize}
     \item La version \emph{pthreads} est plus rapide sur les instances satisfiables que la version non concurrente.
@@ -237,6 +259,8 @@
 \end{itemize}
 \end{block}
 
+\pause
+
 \begin{block}{\cuda}
     Mauvaise qualité du compilateur \cuda{}\ldots{}
 \end{block}
@@ -244,5 +268,33 @@
 \end{frame}
 %}}}
 
+
+\section*{question}
+%{{{
+
+\begin{frame}
+\frametitle{questions}
+\end{frame}
+
+Juste pour le plaisir\ldots{}  \\
+
+\begin{lstlisting}
+#ifdef CUDA
+__device__ static inline
+#endif
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, 
+    int clause_n, int var_n );
+\end{lstlisting}
+
+\begin{lstlisting}
+static inline void 
+launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, 
+    int clause_n, int var_n, pthread_t *thread,
+    pthread_mutex_t *mutex_answer, pthread_cond_t *cond_answer, 
+    int *thread_terminated, success_t *success_answer, 
+    value_t **vars_answer);
+\end{lstlisting}
+
+%}}}
 
 \end{document}
