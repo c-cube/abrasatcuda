@@ -137,7 +137,7 @@ ${LIB}/abrasatcuda_cuda.so: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cu
 	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o $(LIB)/abrasatcuda_cuda.so -lcudart
 
 ${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o $(SRC)/abrasatcuda.c
-	$(CC) -g $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c  -lcudart -o $(DIST)/abrasatcuda_cuda
+	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c  -lcudart -o $(DIST)/abrasatcuda_cuda
 
 # binary for testing
 # @deprecated@
@@ -168,7 +168,7 @@ ${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
 	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
 
 ${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll_while.c $(SRC)/heuristic.c $(SRC)/solve.h
-	$(NVCC) -deviceemu  -g -G $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
+	$(NVCC)  $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
 
 
 
