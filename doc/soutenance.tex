@@ -214,6 +214,7 @@ frame=single
 \begin{itemize}
     \item lancement de nombreux threads avec des affectations partielles différentes
     \item différence avec les \emph{pthreads} : nombre de coeurs, mais aussi espace mémoire
+    \item pas encore de synchronisation intra-threads
 \end{itemize}
 \end{block}
 \end{frame}
@@ -262,7 +263,10 @@ frame=single
 \pause
 
 \begin{block}{\cuda}
-    Mauvaise qualité du compilateur \cuda{}\ldots{}
+\begin{itemize}
+    \item Mauvaise qualité du compilateur \cuda{}\ldots{}
+    \item Certains paradigmes habituels ne sont plus valides en \cuda
+\end{itemize}
 \end{block}
 
 \end{frame}
