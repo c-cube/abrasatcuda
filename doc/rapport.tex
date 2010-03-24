@@ -136,10 +136,12 @@ Les tests montrent que sur un \textsc{CPU}, l'algorithme tient dans un espace m�
 % les différents parallélismes explorés et leur implémentation
 \section{Implémentations parallèles}
 %{{{
+%{{{
     L'architecture du programme permet une certaine modularité dans le choix de la parallélisation. En effet, il existe une interface \code{solve\_thread()} destinée à être exécutée sur un seul thread (avec un nombre positif ou nul de variables déjà affectées arbitrairements, et non mutables); cette interface est utilisée par le module implémentant \code{solve()} -- défini dans \texttt{interfaces/dispatch.h}. Les différentes implémentations sont compilées comme des librairies dynamiques exportant le symbole \code{"solve"}. L'exécutable principal se contente donc de parser le fichier d'entrée, d'importer la fonction \code{solve} depuis une librairie dynamique, et d'appeler cette fonction sur les structures de données lues depuis le fichier.
 
 \subsection{Implémentation non concurrente}
     Nous avons commencé par implémenter l'algorithme sur un seul thread, car cela facilitait les tests et la programmation (notamment au niveau du \emph{debug}) de l'algorithme ainsi que de toute l'infrastructure nécessaire (lecture du fichier et construction des structures de données notamment). 
+%}}}
 
 \subsection{Implémentation avec des threads \textsc{POSIX}}
 %{{{
@@ -160,7 +162,7 @@ Ceci garantit la pérénnité des variables partagées face aux accès concurren
 %{{{
     Nous avons tenté d'implémenter la parallélisation de l'algorithme en \cuda. Malheureusement, le compilateur nvcc et certaines limitations de CUDA se sont révélées plutôt contraignants. Citons entre autres le compilateur qui, dans certains cas, plutôt que de produire une sortie utile, commet une \emph{segmentation fault}, rendant la correction du code plus qu'ardue. Il a en effet fallu chercher quelles pouvaient être les causes d'un tel problème, puis rechercher pas à pas dans le code les parties fautives... Ces problèmes de compilation surmontés, au prix d'une réécriture de certaines parties du code, les problèmes ne s'arrêtaient pas pour autant. Ainsi, au cours du débuggage, nous avons pu remarquer qu'il vaut mieux ne pas passer de pointeurs au kernel, ceux-ci étant mis à \keyword{NULL}.
 
-Ainsi, après bien des problèmes, nous n'avons pas réussi à obtenir un portage fonctionnel sous \cuda. Nous en retirons une certaine frustration, car nous avons le sentiment que nous n'étions vraiment pas loins du but.
+Après bien des problèmes, nous avons obtenu une version \cuda fonctionnelle. Elle n'est pas encore complètement testée et souffre peut-être encore de quelques imperfections ou \emph{bugs}, mais paraît très rapide, ainsi que la puissance brute d'une carte graphique laisse espérer. 
 %}}}
 
 
@@ -173,6 +175,8 @@ Ainsi, après bien des problèmes, nous n'avons pas réussi à obtenir un portag
     L'implémentation non récursive, ainsi que le choix de structures de données de taille extrêmement faible -- pour tenir dans la mémoire de la carte graphique -- permet au programme et à ses données de tenir intégralement dans le cache L1 d'un processeur moderne. Ainsi, les accès mémoire -- très nombreux -- sont très rapides par rapport à une implémentation plus \og naïve \fg.
 
     On constate, lors des tests, que la version \emph{pthread} est au moins aussi rapide que la version non-concurrente sur la plupart des cas. En effet, sur une instance satisfiable, la version threadée fait moins de retours en arrière, et chaque thread a moins de travail à effectuer. Sur une machine possédant plusieurs cœurs ou processeurs, le temps est clairement inférieur, car la branche dans laquelle se trouve la réponse positive est nécessairement explorée plus rapidement qu'avec un seul thread. Sur des instances non satisfiables, le temps total est divisé par le nombre de cœurs avec une assez bonne précision, comme le montre la figure~\ref{benchmark}.
+
+    Concernant l'implémentation \cuda, nous n'avons pas encore eu le temps de le tester exhaustivement, mais il semble qu'elle soit très rapide sur les quelques exemples contre laquelle nous l'avons lancée -- y compris une formule de grande taille.
 %}}}
 
 % problèmes divers
@@ -199,7 +203,7 @@ Ainsi, après bien des problèmes, nous n'avons pas réussi à obtenir un portag
 
 \section{Conclusion}
 %{{{
-Malgré l'échec de l'implémentation en \cuda, les \emph{segfaults} (du programme ou du compilateur) et les comportements étranges s'étant succédé, le cœur de l'algorithme reste pensé pour la parallélisation sur une telle architecture, dans le respect des contraintes de mémoire et de fonctionnalités -- absence de pile notamment -- limitées. Le problème de la satisfiabilité booléenne gagne clairement a être parallélisé, comme le montre la littérature récente sur le sujet\footnote{on constate néanmoins que les tentatives dans ce sens cherchent plutôt à garder des solveurs complexes et astucieux, mais à les exécuter sur un petit nombre de threads, ce qui ne correspond pas à la démarche, envisagée ici, de parallélisation massive.}.
+Malgré les difficultés de l'implémentation en \cuda, les \emph{segfaults} (du programme ou du compilateur) et les comportements étranges s'étant succédé, le cœur de l'algorithme reste adapté pour la parallélisation sur une telle architecture, dans le respect des contraintes de mémoire et de fonctionnalités -- absence de pile notamment -- limitées. Le problème de la satisfiabilité booléenne gagne clairement a être parallélisé, comme le montre la littérature récente sur le sujet\footnote{on constate néanmoins que les tentatives dans ce sens cherchent plutôt à garder des solveurs complexes et astucieux, mais à les exécuter sur un petit nombre de threads, ce qui ne correspond pas à la démarche, envisagée ici, de parallélisation massive.}.
 %}}}
 
 \section{Annexes}
