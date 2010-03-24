@@ -122,8 +122,8 @@ frame=single
 \medskip
 
 \begin{algorithm}[h!]
+\medskip
 \begin{algorithmic}
-\textbf{function} DPLL( $F$ )
   \IF{$F = \emptyset $} 
     \RETURN "Satisfiable"
   \ENDIF
@@ -133,7 +133,8 @@ frame=single
   \ENDIF
   \STATE $l \gets$ heuristic( $F$ ) \\
   \RETURN DPLL( $F \cup\{l\}$ ) $\vee$ DPLL( $F \cup \{\lnot l\}$ ) \\
-
+\medskip
+\medskip
 \textbf{function} unitPropagation( $F$ )\\
 \WHILE{$\square \not\in F \land \exists $ unit clause $ l \in F$}
   Satisfy $l$ and Simplify $F$ \\
@@ -228,10 +229,10 @@ frame=single
 
 \begin{block}{remarques générales}
 \begin{itemize}
-    \item Très faible taille du code $\rightarrow$ tout dans le cache
+    \item Très faible taille des données $\rightarrow$ tout dans le cache
     \item 0\% de \emph{cache miss} sur les exemples
     \item Grande efficacité de l'implémentation sans récursivité
-    \item Mais pas très complexes
+    \item Mais pas très complexe (peine sur de grosses instances) $\rightarrow$ compromis parallélisation / "intelligence" du code
 \end{itemize}
 \end{block}
 \pause
@@ -274,6 +275,13 @@ frame=single
 
 \begin{frame}
 \frametitle{questions}
+
+\vspace{\stretch{1}}
+\begin{center}
+Des Questions ?
+\end{center}
+\vspace{\stretch{1}}
+\null
 \end{frame}
 
 Juste pour le plaisir\ldots{}  \\
@@ -288,11 +296,7 @@ success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars,
 
 \begin{lstlisting}
 static inline void 
-launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, 
-    int clause_n, int var_n, pthread_t *thread,
-    pthread_mutex_t *mutex_answer, pthread_cond_t *cond_answer, 
-    int *thread_terminated, success_t *success_answer, 
-    value_t **vars_answer);
+launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n, pthread_t *thread, pthread_mutex_t *mutex_answer, pthread_cond_t *cond_answer, int *thread_terminated, success_t *success_answer, value_t **vars_answer);
 \end{lstlisting}
 
 %}}}
