@@ -14,6 +14,7 @@
 \usepackage{lmodern}
 \usepackage{hyperref}   % pour les urls
 
+\usepackage{graphicx} % images
 
 \lstset{
 language=C,
@@ -113,7 +114,7 @@ Nous nous sommes basés sur l'algorithme nommé \textsc{DPLL}, du nom de ses cr�
     \item[\code{vars} :] Un tableau d'affectations de valeurs, pour chaque variable. Cette structure est également propre à chaque thread. Elle permet de réaliser facilement les affectations de variables, et également de revenir en arrière très rapidement.
 \end{description}
 
-L'absence de récursivité se fait à l'aide des bits non utilisés dans les deux dernières structures de données : pour indiquer qu'une clause est satisfaite, ou une variable affectée, on a besoin au pire de 3 bits\footnote{les variables peuvent être \emph{immutable}, \emph{affected} ou \emph{non affected}, ce qui demande 2 bits, en plus de la valeur de vérité}. Les tableaux étant des tableaux de \keyword{short int}, il reste 12 bits de libre pour indiquer à quelle étage de la pile une opération a été effectuée.
+L'absence de récursivité se fait à l'aide des bits non utilisés dans les deux dernières structures de données : pour indiquer qu'une clause est satisfaite, ou une variable affectée, on a besoin au pire de 3 bits\footnote{les variables peuvent être \emph{immutable}, \emph{affected} ou \emph{non affected}, ce qui demande 2 bits, en plus de la valeur de vérité.}. Les tableaux étant des tableaux de \keyword{short int}, il reste 12 bits de libre pour indiquer à quelle étage de la pile une opération a été effectuée.
 
 Un autre aspect intéressant de ce choix de structures de données et de la très faible empreinte mémoire qui en découle, est la performance supplémentaire acquise par rapport à d'autres programmes grâce au fait que tout tient normalement dans un cache de CPU. Pour le GPU, c'est moins réaliste, mais un implémentation mono-thread ou sur des threads système bénéficie du fait qu'aucune \emph{cache miss} ou presque n'a lieu\footnote{sur des instances allant de 50 à 100 variables, on observe (avec \emph{cachegrind}) 0.01\% de \emph{cache miss}, voire 0\% (avec 2 décimales de précision).}.
 
@@ -135,12 +136,14 @@ Les tests montrent que sur un \textsc{CPU}, l'algorithme tient dans un espace m�
 % les différents parallélismes explorés et leur implémentation
 \section{Implémentations parallèles}
 %{{{
+    L'architecture du programme permet une certaine modularité dans le choix de la parallélisation. En effet, il existe une interface \code{solve\_thread()} destinée à être exécutée sur un seul thread (avec un nombre positif ou nul de variables déjà affectées arbitrairements, et non mutables); cette interface est utilisée par le module implémentant \code{solve()} -- défini dans \texttt{interfaces/dispatch.h}. Les différentes implémentations sont compilées comme des librairies dynamiques exportant le symbole \code{"solve"}. L'exécutable principal se contente donc de parser le fichier d'entrée, d'importer la fonction \code{solve} depuis une librairie dynamique, et d'appeler cette fonction sur les structures de données lues depuis le fichier.
+
 \subsection{Implémentation non concurrente}
     Nous avons commencé par implémenter l'algorithme sur un seul thread, car cela facilitait les tests et la programmation (notamment au niveau du \emph{debug}) de l'algorithme ainsi que de toute l'infrastructure nécessaire (lecture du fichier et construction des structures de données notamment). 
 
 \subsection{Implémentation avec des threads \textsc{POSIX}}
 %{{{
-Rencontrant des difficultés avec la compilation en \cuda, et désireux de développer le code permettant de choisir et d'affecter les variables \og cruciales \fg pour chaque thread, nous avons implémenté une version de l'algorithme basée sur les \emph{pthread}. On peut donc lancer $2^{n}$ threads avec les affectations décrites plus haut\footnote{un nombre de threads qui n'est pas une puissance de 2 n'est pas genant, car les threads "en surplus" se voient donner des affectations plus complètes (par exemple, pour 6 threads, les 4 premiers ont 2 variables affectées, et les 2 derniers en ont 3)}. Si un thread renvoie une réponse positive, le thread principal va alors stopper les autres threads avant de retourner.
+Rencontrant des difficultés avec la compilation en \cuda, et désireux de développer le code permettant de choisir et d'affecter les variables \og cruciales \fg pour chaque thread, nous avons implémenté une version de l'algorithme basée sur les \emph{pthread}. On peut donc lancer $2^{n}$ threads avec les affectations décrites plus haut\footnote{un nombre de threads qui n'est pas une puissance de 2 n'est pas genant, car les threads "en surplus" se voient donner des affectations plus complètes (par exemple, pour 6 threads, les 4 premiers ont 2 variables affectées, et les 2 derniers en ont 3).}. Si un thread renvoie une réponse positive, le thread principal va alors stopper les autres threads avant de retourner.
 
 La synchronisation entre les threads utilisés pour la résolution du problème et le thread principal se fait \emph{via} un \keyword{mutex} et une \keyword{condition}. Ces deux objets, standards de \emph{pthread}, servent respectivement de verrou binaire et de notification (à l'image des primitives \code{wait} et \code{notifiy} de Java). Le thread principal attend donc qu'on le notifie via la \emph{condition}, et récupère la réponse associée dans une variable commune protégée par le \emph{mutex}. 
 
@@ -155,7 +158,7 @@ Ceci garantit la pérénnité des variables partagées face aux accès concurren
 
 \subsection{Implémentation en \cuda}
 %{{{
-    %TODO
+    Nous avons tenté d'implémenter la parallélisation de l'algorithme en \cuda. Malheureusement, le compilateur s'est révélé rétif face à tous nos efforts, produisant des erreurs apparemment aléatoires, plantant, acceptant une version seulement parmi deux sémantiquement équivalentes, etc.
 %}}}
 
 
@@ -165,9 +168,9 @@ Ceci garantit la pérénnité des variables partagées face aux accès concurren
 \section{Performances comparées}
 %{{{
     % TODO : faire un beau tableau de temps comparés.
+    L'implémentation non récursive, ainsi que le choix de structures de données de taille extrêmement faible -- pour tenir dans la mémoire de la carte graphique -- permet au programme et à ses données de tenir intégralement dans le cache L1 d'un processeur moderne. Ainsi, les accès mémoire -- très nombreux -- sont très rapides par rapport à une implémentation plus \og naïve \fg.
 
-
-    On constate, lors des tests, que la version \emph{pthread} est au moins aussi rapide que la version non-concurrente sur la plupart des cas. En effet, sur une instance satisfiable, la version threadée fait moins de retours en arrière, et chaque thread a moins de travail à effectuer. Sur une machine possédant plusieurs cœurs ou processeurs, le temps est clairement inférieur, car la branche dans laquelle se trouve la réponse positive est nécessairement explorée plus rapidement qu'avec un seul thread. Sur des instances non satisfiables, le temps total est divisé par le nombre de cœurs avec une assez bonne précision.
+    On constate, lors des tests, que la version \emph{pthread} est au moins aussi rapide que la version non-concurrente sur la plupart des cas. En effet, sur une instance satisfiable, la version threadée fait moins de retours en arrière, et chaque thread a moins de travail à effectuer. Sur une machine possédant plusieurs cœurs ou processeurs, le temps est clairement inférieur, car la branche dans laquelle se trouve la réponse positive est nécessairement explorée plus rapidement qu'avec un seul thread. Sur des instances non satisfiables, le temps total est divisé par le nombre de cœurs avec une assez bonne précision, comme le montre la figure~\ref{benchmark}.
 %}}}
 
 % problèmes divers
@@ -192,8 +195,33 @@ Ceci garantit la pérénnité des variables partagées face aux accès concurren
 \end{description}
 %}}}
 
-
 \section{Conclusion}
+%{{{
+Malgré l'échec de l'implémentation en \cuda, les \emph{segfaults} (du programme ou du compilateur) et les comportements étranges s'étant succédé, le cœur de l'algorithme reste pensé pour la parallélisation sur une telle architecture, dans le respect des contraintes de mémoire et de fonctionnalités -- absence de pile notamment -- limitées. Le problème de la satisfiabilité booléenne gagne clairement a être parallélisé, comme le montre la littérature récente sur le sujet\footnote{on constate néanmoins que les tentatives dans ce sens cherchent plutôt à garder des solveurs complexes et astucieux, mais à les exécuter sur un petit nombre de threads, ce qui ne correspond pas à la démarche, envisagée ici, de parallélisation massive.}.
+%}}}
+
+\section{Annexes}
+%{{{
+
+\begin{figure}[hp]
+\includegraphics[width = 1.0\textwidth]{./benchmark.jpg}
+  \caption[mono-threadé]{Performances comparées des versions à un ou plusieurs threads sur une instance non satisfiable}
+  \label{benchmark}
+\end{figure}
+
+\begin{figure}[hp]
+\includegraphics[width = 1.0\textwidth]{./all.jpg}
+  \caption[mono-threadé]{Test mono-threadé sur une instance satisfiable}
+\end{figure}
+
+On remarque, sur la figure~\ref{multiThread}, que le programme choisit de ne lancer que 4 threads au lieu de 7 comme demandé. Chaque thread a un travail négligeable à fournir puisqu'aucune exploration n'est nécessaire. 
+
+\begin{figure}[hp]
+\includegraphics[width = 1.0\textwidth]{./pthread.jpg}
+  \caption[multi-threadé]{Test multi-threadé sur une instance non satisfiable}
+  \label{multiThread}
+\end{figure}
+%}}}
 
 \end{document}
 
