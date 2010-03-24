@@ -158,7 +158,9 @@ Ceci garantit la pérénnité des variables partagées face aux accès concurren
 
 \subsection{Implémentation en \cuda}
 %{{{
-    Nous avons tenté d'implémenter la parallélisation de l'algorithme en \cuda. Malheureusement, le compilateur s'est révélé rétif face à tous nos efforts, produisant des erreurs apparemment aléatoires, plantant, acceptant une version seulement parmi deux sémantiquement équivalentes, etc.
+    Nous avons tenté d'implémenter la parallélisation de l'algorithme en \cuda. Malheureusement, le compilateur nvcc et certaines limitations de CUDA se sont révélées plutôt contraignants. Citons entre autres le compilateur qui, dans certains cas, plutôt que de produire une sortie utile, commet une \emph{segmentation fault}, rendant la correction du code plus qu'ardue. Il a en effet fallu chercher quelles pouvaient être les causes d'un tel problème, puis rechercher pas à pas dans le code les parties fautives... Ces problèmes de compilation surmontés, au prix d'une réécriture de certaines parties du code, les problèmes ne s'arrétaient pas pour autant. Ainsi, au cours du débuggage, nous avons pu remarquer qu'il vaut mieux ne pas passer de pointeurs au kernel, ceux-ci étant mis à NULL.
+
+Ainsi, après bien des problèmes, nous n'avons pas réussi à obtenir un portage fonctionnel sous \cuda. Nous en retirons une certaine frustration, car nous avons le sentiment que nous n'étions vraiment pas loins du but.
 %}}}
 
 
