@@ -21,16 +21,17 @@
 /*
 * global variables for device memory, as it seems to be required for compilation
 */
-__device__ atom_t * formula_d;
-__device__ atom_t * clauses_index_d;
-__device__ value_t * vars_affectations_d;
-__device__ truth_t * answer_d;
-__device__ satisfied_t * satisfied_clauses_d;
+//__device__ atom_t * formula_d;
+//__device__ atom_t * clauses_index_d;
+//__device__ value_t * vars_affectations_d;
+//__device__ truth_t * answer_d;
+//__device__ satisfied_t * satisfied_clauses_d;
 
 /*
 * chooses immutable vars and sets them differently for each thread
 */
 __host__ void
+static inline
 prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var_n, int thread_n, value_t * all_vars)
 {
 
@@ -48,35 +49,6 @@ prepare_presets( atom_t * formula, atom_t * clauses_index, int clause_n, int var
   set_immutable_vars( all_vars, sorted_vars, var_n, thread_n);
 }
 
-/*
-* this function transfers the structures to the gpu global memory
-*/
-__host__ void
-prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_index,  atom_t * clauses_index_d, value_t * vars_affectations,  value_t * vars_affectations_d, int clause_n, int var_n, truth_t * answer,  truth_t * answer_d, int thread_n, satisfied_t * satisfied_clauses, satisfied_t * satisfied_clauses_d)
-{
-    // first, we allocate the meomry on the device
-    size_t formula_size = (clauses_index[clause_n] - clauses_index[0]+ 1) * sizeof(atom_t);
-    size_t clauses_index_size = clause_n * sizeof(atom_t);
-    size_t vars_size = thread_n * (var_n + 1) * sizeof( value_t);
-    size_t ans_size = sizeof( truth_t);
-    size_t satis_size = thread_n * clause_n * sizeof( satisfied_t);
-    cudaMalloc( (void **) &formula_d, formula_size);
-    cudaMalloc( (void **) &clauses_index_d, clauses_index_size);
-    cudaMalloc( (void **) &vars_affectations_d, vars_size);
-    cudaMalloc( (void **) &answer_d, ans_size);
-    cudaMalloc( (void **) &satisfied_clauses_d, satis_size);
-    if ( formula_d == NULL)
-    {
-      printf("dtc\n");
-      exit(-1);
-    }
-    // now we transfer data to the device
-    cudaMemcpy( formula_d, formula, formula_size, cudaMemcpyHostToDevice);
-    cudaMemcpy( clauses_index_d, clauses_index, clauses_index_size, cudaMemcpyHostToDevice);
-    cudaMemcpy( vars_affectations_d, vars_affectations, vars_size, cudaMemcpyHostToDevice);
-    cudaMemcpy( answer_d, answer, ans_size, cudaMemcpyHostToDevice);
-    cudaMemcpy( satisfied_clauses_d, satisfied_clauses, satis_size, cudaMemcpyHostToDevice);
-}
 
 
 /*
@@ -84,12 +56,12 @@ prepare_gpu_memory( atom_t * formula,  atom_t * formula_d, atom_t * clauses_inde
 * it uses its thread id to recover which variables were chosen, and their affectations
 */
 __global__ void
-cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectations, int clause_n, int var_n, truth_t * answer, int thread_n, satisfied_t * satisfied_clauses)
+cuda_solve ( int clause_n, int var_n,  int thread_n, atom_t * formula_d, atom_t * clauses_index_d, value_t * vars_affectations_d, truth_t * answer_d, satisfied_t * satisfied_clauses_d)
 {
     int block_id = blockIdx.x * blockDim.x;
     int id_in_block = threadIdx.x;
     int id = block_id + id_in_block;
-    printf("%d\n", threadIdx.x);
+    //printf("%d\n", threadIdx.x);
     //extern __shared__ value_t vars_in_global[];
     // we now longer use this
     // TODO : verify this affectation is correct
@@ -103,12 +75,13 @@ cuda_solve ( atom_t * formula, atom_t * clause_index, value_t * vars_affectation
     __syncthreads();
     // TODO : verify this affectation is correct
     value_t * vars = vars_affectations_d + (id * (var_n + 1));
+    //printf(" vars[var_n] : %d\n",vars_affectations_d[0]);
     // now call the solver
-    success_t result = solve_thread( formula_d, clauses_index_d, vars_affectations_d, clause_n, var_n, threads_satisfied_clauses);
+    success_t result = solve_thread( formula_d, clauses_index_d, vars, clause_n, var_n, threads_satisfied_clauses);
     // store our result
     // TODO : notify other threads if we found the formula to be satisfiable
-    if (result == SUCCESS && *answer != TRUE) // no thread found the formula satisfiable before
-      *answer = TRUE;
+    if (result == SUCCESS ) // no thread found the formula satisfiable before
+      *answer_d = TRUE;
     return;
 }
 
@@ -120,6 +93,11 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   printf("uses %d threads on cuda\n", thread_n);
 #endif
 
+  atom_t * formula_d;
+  atom_t * clauses_index_d;
+  value_t * vars_affectations_d;
+  truth_t * answer_d;
+  satisfied_t * satisfied_clauses_d;
   value_t * vars_affectations;
   satisfied_t * satisfied_clauses;
   // we select and preset k variablees, where 2^k = thread_n
@@ -147,12 +125,33 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   // so no more than 128 variables...
 
   // transfering all data to the gpu global memory
-  prepare_gpu_memory( formula, formula_d, clauses_index, clauses_index_d, vars_affectations, vars_affectations_d, clause_n, var_n, answer, answer_d, thread_n, satisfied_clauses, satisfied_clauses_d);
+    size_t formula_size = (clauses_index[clause_n] - clauses_index[0]+ 1) * sizeof(atom_t);
+    size_t clauses_index_size = clause_n * sizeof(atom_t);
+    size_t vars_size = thread_n * (var_n + 1) * sizeof( value_t);
+    size_t ans_size = sizeof( truth_t);
+    size_t satis_size = thread_n * clause_n * sizeof( satisfied_t);
+    cudaMalloc( (void **) &formula_d, formula_size);
+    cudaMalloc( (void **) &clauses_index_d, clauses_index_size);
+    cudaMalloc( (void **) &vars_affectations_d, vars_size);
+    cudaMalloc( (void **) &answer_d, ans_size);
+    cudaMalloc( (void **) &satisfied_clauses_d, satis_size);
+    if ( vars_affectations_d == NULL)
+    {
+      printf("dtc\n");
+      exit(-1);
+    }
+    // now we transfer data to the device
+    cudaMemcpy( formula_d, formula, formula_size, cudaMemcpyHostToDevice);
+    cudaMemcpy( clauses_index_d, clauses_index, clauses_index_size, cudaMemcpyHostToDevice);
+    cudaMemcpy( vars_affectations_d, vars_affectations, vars_size, cudaMemcpyHostToDevice);
+    cudaMemcpy( answer_d, answer, ans_size, cudaMemcpyHostToDevice);
+    cudaMemcpy( satisfied_clauses_d, satisfied_clauses, satis_size, cudaMemcpyHostToDevice);
+  //prepare_gpu_memory( formula, clauses_index, vars_affectations, clause_n, var_n, answer, thread_n, satisfied_clauses);
 
   // now we call the cuda kernel to solve each instance
   dim3 dimGrid(thread_n/8);
   dim3 dimBlock(8);
-  cuda_solve<<<dimGrid, dimBlock>>> ( formula, clauses_index, vars_affectations, clause_n, var_n, answer, thread_n, satisfied_clauses);
+  cuda_solve<<<dimGrid, dimBlock>>> ( clause_n, var_n, thread_n, formula_d, clauses_index_d, vars_affectations_d, answer_d, satisfied_clauses_d);
 
   cudaThreadSynchronize();
 
@@ -170,3 +169,35 @@ solve ( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thr
   else
     return FAILURE;
 }
+
+
+/*
+* this function transfers the structures to the gpu global memory
+*/
+//__host__ void
+//static inline
+//prepare_gpu_memory( atom_t * formula, atom_t * clauses_index, value_t * vars_affectations, int clause_n, int var_n, truth_t * answer, int thread_n, satisfied_t * satisfied_clauses)
+//{
+//    // first, we allocate the meomry on the device
+//    size_t formula_size = (clauses_index[clause_n] - clauses_index[0]+ 1) * sizeof(atom_t);
+//    size_t clauses_index_size = clause_n * sizeof(atom_t);
+//    size_t vars_size = thread_n * (var_n + 1) * sizeof( value_t);
+//    size_t ans_size = sizeof( truth_t);
+//    size_t satis_size = thread_n * clause_n * sizeof( satisfied_t);
+//    cudaMalloc( (void **) &formula_d, formula_size);
+//    cudaMalloc( (void **) &clauses_index_d, clauses_index_size);
+//    cudaMalloc( (void **) &vars_affectations_d, vars_size);
+//    cudaMalloc( (void **) &answer_d, ans_size);
+//    cudaMalloc( (void **) &satisfied_clauses_d, satis_size);
+//    if ( vars_affectations_d == NULL)
+//    {
+//      printf("dtc\n");
+//      exit(-1);
+//    }
+//    // now we transfer data to the device
+//    cudaMemcpy( formula_d, formula, formula_size, cudaMemcpyHostToDevice);
+//    cudaMemcpy( clauses_index_d, clauses_index, clauses_index_size, cudaMemcpyHostToDevice);
+//    cudaMemcpy( vars_affectations_d, vars_affectations, vars_size, cudaMemcpyHostToDevice);
+//    cudaMemcpy( answer_d, answer, ans_size, cudaMemcpyHostToDevice);
+//    cudaMemcpy( satisfied_clauses_d, satisfied_clauses, satis_size, cudaMemcpyHostToDevice);
+//}

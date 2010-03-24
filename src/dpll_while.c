@@ -788,7 +788,7 @@ solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_
     initialize_values( vars, var_n );
 
     // current default implementation 
-    truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n, satisfied_clauses);
+    success_t answer = dpll( formula, clauses_index, vars, clause_n, var_n, satisfied_clauses);
 
 
 #ifndef CUDA
