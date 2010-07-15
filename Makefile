@@ -5,56 +5,55 @@ include config
 #--------------------------------------------------------------
 
 #path to the cuda compiler
-# TODO : complete this accroding to the computer's configuration
-CUDAPATH=/usr/local
-CUDA_INCLUDES=-I/usr/local/cuda-2.3/include/
+# TODO : complete this accroding to the computer's configuration (autoconf)
+CUDAPATH = /usr/local
+CUDA_INCLUDES = -I/usr/local/cuda-2.3/include/
 
 
 # current compiler
-CC=gcc
-NVCC=${CUDAPATH}/bin/nvcc
+CC = gcc
+NVCC = ${CUDAPATH}/bin/nvcc
 
 # some vars
-SRC=src
-BUILD=build
-DIST=dist
-LIB=lib
+SRC = src
+DIST = dist
+LIB = lib
 
 # for cuda flags
-NVFLAGS=-O2
+NVFLAGS = -O2
 ifeq ($(EMUU),yes)
-NVFLAGS += -deviceemu
+	NVFLAGS += -deviceemu
 endif
 
-CFLAGS=-Wall -pedantic -Os -std=gnu99 -DPARALLEL=$(PARALLEL) -fPIC #-m32 -Werror
+CFLAGS = -Wall -pedantic -Os -std=gnu99 -DPARALLEL=$(PARALLEL) -fPIC #-m32 -Werror
 #Variable contenant les options passées au compilateur
-DBG=-g
+DBG = -g
 ifeq ($(DEBUG),yes)
-	DBG=-g -DDEBUG=1 
+	DBG = -g -DDEBUG=1
 endif
 # NDEBUG disables all assert() statements, so it accelerates the program
 ifeq ($(DEBUG),prod)
-	DBG=-DNDEBUG=1 
+	DBG = -DNDEBUG=1
 	NVFLAGS += --compiler-options -fno-strict-aliasing
 endif
 ifeq ($(DEBUG),all)
-	DBG=-g -DDEBUG=2
+	DBG = -g -DDEBUG=2
 endif
 
 
 #for cuda compilation
 CUDA=
 ifeq ($(PARALLEL),cuda)
-	CUDA=-DCUDA=1 -DNDEBUG=1 -DDEBUG=0
+	CUDA = -DCUDA=1 -DNDEBUG=1 -DDEBUG=0
 endif
 
 PROF=
 ifeq ($(PROFILE),yes)
-	PROF=-pg
+	PROF = -pg
 endif
 #L'option -Wall affiche tous les messages d'alertes (warnings)
 #L'option -Werror traite une simple alerte comme une erreur (stoppant ainsi lq compilation)
-#L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme. 
+#L'option -std= permet de fixer la norme ISO du C que le compilateur va utiliser pour vérifier la validité du programme.
 #L'option -pedantic empeche l'utilisation des extensions et impose de se conformer à la version stricte de la norme ISO
 #L'option -O permet de définir le degré d'optimisation appliqué par le compilateur (0 est la valeur par défaut, aucune optimisation)
 #L'option -g compile le programme en laissant les informations nécessaires pour l'utilisation d'un debugger lors de l'exécution.
@@ -66,26 +65,29 @@ endif
 
 
 # lists of targets, headers, objets files...
-TARGETS=${LIB}/abrasatcuda_dpll_single.so ${LIB}/abrasatcuda_dpll_pthread.so ${DIST}/abrasatcuda ${LIB}/abrasatcuda_cuda.so  $(DIST)/abrasatcuda_cuda
-OBJECTS=${BUILD}/clause.o ${BUILD}/parser.o ${BUILD}/heuristic.o
-MODULES=${BUILD}/dpll.o ${BUILD}/brute_force.o ${BUILD}/single_thread.o #${BUILD}/cuda.o
-HEADERS=${SRC}/list.h ${SRC}/clause.h ${SRC}/parser.h ${SRC}/abrasatcuda.h ${SRC}/interfaces/solve.h ${SRC}/dpll.h ${SRC}/vars.h ${SRC}/consts.h ${SRC}/brute_force.h ${SRC}/interfaces/dispatch.h ${SRC}/heuristic.h
-
-# default dispatching method
-DISPATCH_HEADER=${SRC}/single_thread.h
-DISPATCH_OBJECT=${BUILD}/single_thread.o
-
-# var containing parameters to be passed to the linker, for creating the final executable
-# default : linked against math and ld
-LDFLAGS=-lm -ldl
-ifeq ($(PARALLEL),pthread)
-	LDFLAGS=-lpthread -lm -ldl
-	DISPATCH_HEADER=${SRC}/multi_thread.h
-	DISPATCH_OBJECT=${BUILD}/multi_thread.o
+PLUGINS = single pthread
+BINARIES = abrasatcuda
+ifeq ($(COMPILE_CUDA),yes)
+	BINARIES += abrasatcuda_cuda
+	PLUGINS += cuda
 endif
 
+TARGETS = $(addsuffix .so, $(addprefix $(LIB)/,$(PLUGINS))) $(addprefix $(DIST)/,$(BINARIES))
+
+BASE_OBJECTS = clause parser heuristic
+OBJECTS = $(addsuffix .o, $(addprefix $(SRC)/,$(BASE_OBJECTS)))
+
+BASE_MODULES = dpll brute_force single_thread
+MODULES = $(addsuffix .o, $(addprefix $(SRC)/, $(BASE_MODULES)))
+
+BASE_HEADERS = list clause parser abrasatcuda interfaces dpll vars consts brute_force interfaces/dispatch heuristic
+HEADERS = $(addsuffix .h, $(addprefix $(SRC)/, $(BASE_HEADERS)))
+
+BASE_COMMON_OBJECTS = dpll
+COMMON_OBJECTS = $(addsuffix .o, $(addprefix $(SRC)/,$(BASE_COMMON_OBJECTS)))
+
 # flags for dynamic libs
-DYNFLAGS=-shared
+DYNFLAGS = -shared
 
 #--------------------------------------------------------------
 # targets
@@ -99,7 +101,7 @@ all: $(TARGETS) $(MODULES)
 test: ${DIST}/test_all
 	./${DIST}/test_all
 
-main: ${TARGETS}
+main: $(TARGETS)
 	@echo -e "\n\e[45;4mexample.cnf :\e[m"
 	@./abrasatcuda tests/example.cnf
 	@echo -e "\n\e[45;4mtrivial.cnf :\e[m"
@@ -120,63 +122,49 @@ check: ${SRC}/check.hs
 	ghc -O2 --make ${SRC}/check.hs -o ${DIST}/check
 
 count:
-	@echo "number of code/comment lines : "; grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l	
+	@echo "number of code/comment lines : "; grep -v '^[ ]*$$' ./${SRC}/{*.h,*.c} | wc -l
 
 
 # This targets compiles the main binary
-${DIST}/abrasatcuda: ${SRC}/abrasatcuda.c ${BUILD}/parser.o ${BUILD}/clause.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF)-DTHREAD_NUM=${THREAD_NUM} ${BUILD}/parser.o ${BUILD}/clause.o ${SRC}/abrasatcuda.c -o ${DIST}/abrasatcuda 
+${DIST}/abrasatcuda: ${SRC}/abrasatcuda.c $(OBJECTS)
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) -DTHREAD_NUM=${THREAD_NUM} $(OBJECTS) ${SRC}/abrasatcuda.c -ldl -lm -pthread -o ${DIST}/abrasatcuda
 
-${LIB}/abrasatcuda_dpll_single.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/single_thread.o
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=single ${BUILD}/dpll.o ${BUILD}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_single.so
+%.so: $(COMMON_OBJECTS) $(OBJECTS)
 
-${LIB}/abrasatcuda_dpll_pthread.so: $(OBJECTS) $(HEADERS) ${BUILD}/dpll.o ${BUILD}/multi_thread.o  
-	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) -DPARALLEL=pthread ${BUILD}/dpll.o ${BUILD}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/abrasatcuda_dpll_pthread.so
+${LIB}/single.so: $(COMMON_OBJECTS) $(OBJECTS) ${SRC}/single_thread.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) $(COMMON_OBJECTS) -DPARALLEL=single ${SRC}/single_thread.o ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/single.so
 
-${LIB}/abrasatcuda_cuda.so: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o
-	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c -o $(LIB)/abrasatcuda_cuda.so -lcudart
+${LIB}/pthread.so: $(COMMON_OBJECTS) $(OBJECTS) ${SRC}/multi_thread.o
+	$(CC) $(LDFLAGS) $(CFLAGS) $(DBG) $(PROF) $(OBJECTS) $(COMMON_OBJECTS) -DPARALLEL=pthread ${SRC}/multi_thread.o  ${SRC}/abrasatcuda.c $(DYNFLAGS) -o ${LIB}/pthread.so
 
-${DIST}/abrasatcuda_cuda: $(OBJECTS) $(HEADERS) $(DISPATCH_OBJECT) $(BUILD)/cuda.o $(SRC)/abrasatcuda.c
-	$(CC)  $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L/usr/local/cuda-2.3/lib/ $(PROF) $(CUDA) $(OBJECTS) ${BUILD}/cuda.o ${SRC}/abrasatcuda.c  -lcudart -o $(DIST)/abrasatcuda_cuda
+${LIB}/cuda.so: $(COMMON_OBJECTS) $(OBJECTS) $(DISPATCH_OBJECT) $(SRC)/cuda.o
+	$(CC) $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L$(CUDA_INCLUDES) $(PROF) $(CUDA) $(OBJECTS)  $(DYNFLAGS) ${SRC}/cuda.o ${SRC}/abrasatcuda.c -lcudart -o $(LIB)/cuda.so
 
-# binary for testing
-# @deprecated@
-${DIST}/test_all: ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o
-	$(CC) $(CFLAGS) ${SRC}/test.c ${BUILD}/parser.o ${BUILD}/clause.o ${BUILD}/solve.o ${BUILD}/dpll.o -o ${DIST}/test_all
+${DIST}/abrasatcuda_cuda: $(OBJECTS) $(DISPATCH_OBJECT) $(SRC)/cuda.o $(SRC)/abrasatcuda.c
+	$(CC) $(LDFLAGS) $(CUDA_INCLUDES) $(NVFLAGS) -L$(CUDA_INCLUDES) $(PROF) $(CUDA) $(OBJECTS) ${SRC}/cuda.o ${SRC}/abrasatcuda.c  -lcudart -o $(DIST)/abrasatcuda_cuda
 
-
+#
 # object files
-${BUILD}/parser.o: ${SRC}/parser.c ${SRC}/parser.h
-	$(CC) $(CFLAGS) $(DBG) -c ${SRC}/parser.c -o ${BUILD}/parser.o
+%.o: %.c %.h
+	$(CC) $(CFLAGS) $(DBG) $(PROF) -c $< -o $@
 
-${BUILD}/clause.o: ${SRC}/clause.c ${SRC}/clause.h
-	$(CC) $(CFLAGS) $(DBG) $(PROF) ${SRC}/clause.c -c -o ${BUILD}/clause.o
+${SRC}/dpll.o: ${SRC}/interfaces/solve.h
 
-${BUILD}/dpll.o: ${SRC}/dpll.c ${SRC}/dpll.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) $(DBG) $(PROF) ${SRC}/dpll.c -c -o ${BUILD}/dpll.o
+${SRC}/brute_force.o: ${SRC}/interfaces/solve.h
 
-${BUILD}/brute_force.o: ${SRC}/brute_force.c ${SRC}/brute_force.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) ${SRC}/brute_force.c -c -o ${BUILD}/brute_force.o
+${SRC}/single_thread.o: ${SRC}/interfaces/solve.h
 
-${BUILD}/single_thread.o: ${SRC}/single_thread.c ${SRC}/single_thread.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS) ${SRC}/single_thread.c $(DBG) $(PROF) -c -o ${BUILD}/single_thread.o
+${SRC}/multi_thread.o: ${SRC}/interfaces/solve.h
 
-${BUILD}/multi_thread.o: ${SRC}/multi_thread.c ${SRC}/multi_thread.h ${SRC}/interfaces/solve.h
-	$(CC) $(CFLAGS)  ${SRC}/multi_thread.c $(DBG) $(PROF) -c -o ${BUILD}/multi_thread.o
-
-${BUILD}/heuristic.o: ${SRC}/heuristic.c ${SRC}/heuristic.h
-	$(CC) $(CFLAGS) ${SRC}/heuristic.c $(DBG) $(PROF) -c -o ${BUILD}/heuristic.o
-
-${BUILD}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll_while.c $(SRC)/heuristic.c $(SRC)/solve.h
-	$(NVCC)  $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${BUILD}/cuda.o 
+${SRC}/cuda.o: ${SRC}/solve.cu ${SRC}/dpll_while.c $(SRC)/heuristic.c $(SRC)/solve.h
+	$(NVCC)  $(CUDA_INCLUDES) $(NVFLAGS) ${SRC}/solve.cu  $(PROF) $(CUDA) -c -o ${SRC}/cuda.o
 
 
 
 #Cette cible effectue un simple nettoyage des fichiers temporaires qui ont pu être générés
 clean:
-	@rm -f ${BUILD}/*~ ${BUILD}/a.out ${BUILD}/core
-	@rm -f ${BUILD}/*.o
-	@rm -f test_all 
+	@rm -f ${SRC}/*.o ${LIB}/* ${DIST}/*
+	@rm -f test_all
 
 #Cette cible effectue un nettoyage complet de tout fichier généré. Elle efface notamment les exécutables.
 distclean: clean
