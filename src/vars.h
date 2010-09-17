@@ -21,7 +21,7 @@ typedef short value_t;
  * operations on truth values.
  * MSB bit (15th) defines mutability of var.
  * 14th bit (next one) defines if the var is affected
- * bits 13 to 1 define stack depth 
+ * bits 13 to 1 define stack depth
  * the 0th bit (LSB) defines the truth value of the var
  */
 
@@ -42,7 +42,7 @@ typedef short value_t;
 
 
 /*
- * type representing whether a clause is satisfied or not. 
+ * type representing whether a clause is satisfied or not.
  * LSB bit (0) defines whether the clause is satisfied or not
  * As for truth value, bits 1 to 13 are dedicated to stack information
  */
@@ -56,10 +56,10 @@ typedef short satisfied_t;
 
 
 
-/* 
+/*
  * operations on stack depth information
  * bits 13 to 1 define stack depth of either a truth value, either a clause satisfied info
- * 
+ *
  * max depth = 2^13 = 8192
  */
 

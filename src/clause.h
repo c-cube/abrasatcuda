@@ -24,19 +24,19 @@ typedef short atom_t;
 
 
 /*
- * creates an atom from the relative number 
+ * creates an atom from the relative number
  * (as read in file)
  */
 static inline atom_t make_atom( int n )
 {
     return ( 0x8000                               // used ?
              | (n<0 ? 0x4000 : 0x0)               // negated ?
-             | (0x3FFF & (n<0 ? (0xFFFF ^ n)+1 : n) ) 
+             | (0x3FFF & (n<0 ? (0xFFFF ^ n)+1 : n) )
              // small part for the name, with binary complement if < 0
            );
 }
 
-/* 
+/*
 *  a is of type long
 *  IS_USED extracts its first bit,
 *  which is to be 1 if a is set
@@ -61,7 +61,7 @@ int is_negated( atom_t atom );
 
 int variable_name( atom_t atom );
 
-/* 
+/*
 *  NEGATE(a) returns not(a), it is to be used as such :
 *  NEGATE(a)
 */
@@ -91,7 +91,7 @@ static inline atom_t* clause_item( atom_t* clause, int n )
 /*
 * iteration over atoms of a clause. [clause] is the [n]_th clause in the [clauses_index] array.
 * *[iterator] is affected to the address of the next atom of [clause].
-* usage is : 
+* usage is :
 *
 * atom_t *iterator = NULL;
 * while ( -1 != atom_iterate(clause, clause_end, n, &iterator){ process_atom(*iterator);} )
@@ -109,8 +109,8 @@ static inline int atom_iterate ( atom_t *clause, atom_t *clause_end, atom_t **it
     if ( *iterator == NULL ){
         *iterator = clause;
         return SUCCESS;
-    } 
-    
+    }
+
     if ( ++(*iterator) == clause_end )
         return FAILURE;
 
@@ -144,11 +144,11 @@ static inline atom_t *formula_item( atom_t *formula, atom_t *clauses_index, int 
 * preferred usage is : while ( -1 != clause_iterate(...)  )
 */
 
-static inline int clause_iterate( 
+static inline int clause_iterate(
     atom_t *formula,
     atom_t *clauses_index_array,
     int length,
-    int *cur_index, 
+    int *cur_index,
     atom_t **iterator)
 {
     if ( iterator == NULL )
@@ -168,7 +168,7 @@ static inline int clause_iterate(
     return SUCCESS;
 }
 
-   
+
 
 
 
@@ -179,15 +179,15 @@ static inline void formula_print(
 {
     int i;
     for (i = 0; i<n; ++ i){
-        clause_print( 
-            formula_item( formula, clauses_index, i ), 
+        clause_print(
+            formula_item( formula, clauses_index, i ),
             formula_item( formula, clauses_index, i+1 ) );
         if (i<n-1)
             print("\033[36m /\\ \033[m\n");
         else
             print("\n");
     }
-} 
+}
 
 
 #endif

@@ -1,10 +1,10 @@
 /*
- * This header defines an interface that the main() can use to solve 
+ * This header defines an interface that the main() can use to solve
  * a problem. It provides only a function, solve(), which purpose
  * is to dispatch solving work on one or many threads (or even on
- * network...) and then gather the results to give them back to 
+ * network...) and then gather the results to give them back to
  * the caller.
- * It uses a solve_thread (module implementing solve.h) as a basic 
+ * It uses a solve_thread (module implementing solve.h) as a basic
  * computing unit.
  */
 

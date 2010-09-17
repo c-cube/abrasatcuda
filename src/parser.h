@@ -36,7 +36,7 @@ int parse_lines( list_t* lines, atom_t ** formula, atom_t **clauses_index, int *
 
 
 /*
- * parses the file into the formula 
+ * parses the file into the formula
  * returns 0 on failure, 1 on success
  */
 

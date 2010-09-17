@@ -23,6 +23,6 @@ void clause_print( atom_t *clause, atom_t* clause_end )
         if (IS_NEGATED( *iterator ))
             print("-");
         print("%d", VARIABLE_NAME( *iterator ));
-    } 
+    }
     print("\033[32m)\033[m");
 }

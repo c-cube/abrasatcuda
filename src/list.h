@@ -10,10 +10,10 @@
 
 
 
-typedef struct list_node_t      
-{                                       
-   struct list_node_t* next;                   
-   struct list_node_t* previous;               
+typedef struct list_node_t
+{
+   struct list_node_t* next;
+   struct list_node_t* previous;
 } LIST_NODE_T ;
 
 
@@ -51,7 +51,7 @@ typedef struct coincoin {
     my_obj->next = my_node->next;           \
     my_node->next = my_obj;                 \
     my_obj->previous = my_node;             \
-    } while (0)     
+    } while (0)
 
 
 /*
@@ -70,11 +70,11 @@ typedef struct coincoin {
 
 /*
  * sets iterator to the address of the next element of list.
- * usage : 
+ * usage :
  *
  * LIST_NODE_T* iterator = NULL;
  * list_t start;
- * while ( list_iterate( start, &iterator )) { process_item( iterator ); } 
+ * while ( list_iterate( start, &iterator )) { process_item( iterator ); }
  */
 static inline short int list_iterate( list_t *list, LIST_NODE_T** iterator )
 {
@@ -89,7 +89,7 @@ static inline short int list_iterate( list_t *list, LIST_NODE_T** iterator )
     // step
     if ( (*iterator)->next == list->node )
         return -1;
-    *iterator = (*iterator)->next; 
+    *iterator = (*iterator)->next;
     return 0;
 }
 
@@ -107,7 +107,7 @@ static inline unsigned short int list_member( list_t *list, LIST_NODE_T* obj )
     while ( list_iterate( list, &iterator ) != -1 ) {
         if ( iterator == obj )
             return 1;
-    } 
+    }
 
     return 0;
 }
@@ -125,7 +125,7 @@ static inline int list_length( list_t* list )
     int answer = 0;
     while ( list_iterate( list, &iterator ) != -1 ) {
         answer++;
-    } 
+    }
     return answer;
 }
 
@@ -182,5 +182,5 @@ static inline LIST_NODE_T *list_pop( list_t* list )
     return answer;
 }
 
-   
+
 #endif

@@ -23,12 +23,12 @@ struct solve_args
 };
 
 
-/* 
+/*
  * This function is the one executed on a fresh thread. It mainly
  * calls solve_thread() with the right arguments.
  *
  * It must :
- *      de-encapsulate args, 
+ *      de-encapsulate args,
  *      run solve() with them,
  *      give the results back to caller
  */
@@ -59,7 +59,7 @@ thread_func( void *void_args )
 #endif
         // give the good combination back, if it is a success
         if ( result == SUCCESS ){
-            *(args->success_answer) = result;  
+            *(args->success_answer) = result;
             *(args->vars_answer) = vars;
         }
         // on failure, we do not have to do anything but telling the main thread to check for terminaison
@@ -77,9 +77,9 @@ thread_func( void *void_args )
 /*
  * just encapsulates its args and launches thread
  */
-static inline void 
+static inline void
 launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause_n, int var_n, pthread_t *thread,
-    pthread_mutex_t *mutex_answer, pthread_cond_t *cond_answer, 
+    pthread_mutex_t *mutex_answer, pthread_cond_t *cond_answer,
     int *thread_terminated, success_t *success_answer, value_t **vars_answer)
 {
     // create a struct to encapsulate args
@@ -105,15 +105,15 @@ launch_thread( atom_t* formula, atom_t *clauses_index, value_t *vars, int clause
 /*
  * this solves the problem on several thread
  */
-success_t 
+success_t
 solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thread_n )
 {
 
     print("uses %d threads\n", thread_n);
-    
+
     // create structure to hold pthread_t
     pthread_t threads[thread_n];
-    
+
     // create a mutex and a cond to synchronize threads with main thread
     pthread_mutex_t mutex_answer = PTHREAD_MUTEX_INITIALIZER;
     pthread_cond_t cond_answer = PTHREAD_COND_INITIALIZER;
@@ -140,21 +140,21 @@ solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n, int thre
     // set_immutable_vars returns the max number of threads we can effectively run
     thread_n = set_immutable_vars( all_vars, sorted_vars, var_n, thread_n );
 
-    
+
 #ifdef DEBUG
     for (int i = 0; i < thread_n; ++i ){
         value_t *cur_vars = all_vars + (i * (var_n+1));
-        print("launches thread %d with vars ", i); value_print( cur_vars, var_n); 
+        print("launches thread %d with vars ", i); value_print( cur_vars, var_n);
     }
 #endif
-    
+
     // starts thread_n threads
     for (int i = 0; i < thread_n; ++i ){
         value_t *cur_vars = all_vars + (i * (var_n+1));
         // really launches this thread
-        launch_thread( formula, clauses_index, cur_vars, clause_n, var_n, 
-            threads + ((pthread_t) i), &mutex_answer, &cond_answer, 
-            &thread_terminated, &success_answer, &vars_answer ); 
+        launch_thread( formula, clauses_index, cur_vars, clause_n, var_n,
+            threads + ((pthread_t) i), &mutex_answer, &cond_answer,
+            &thread_terminated, &success_answer, &vars_answer );
     }
 
     success_t answer;

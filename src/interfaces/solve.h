@@ -27,7 +27,7 @@ static inline void value_print( value_t* values, int var_n )
                 escape_sequence = 32; // green
             else
                 escape_sequence = 34; // blue
-        } 
+        }
         printf("%d=\033[%dm%d\033[m", i, escape_sequence, TRUTH_VALUE(values[i]));
 
         //if (IS_AFFECTED(values[i]) || IS_IMMUTABLE(values[i]))
@@ -88,7 +88,7 @@ static inline void satisfied_print( satisfied_t *satisfied_clauses, int clause_n
 __device__ static inline
 // not a good idea..
 #endif
-success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, 
+success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars,
     int clause_n, int var_n );
 
 

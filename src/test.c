@@ -8,7 +8,7 @@
 
 #include <unistd.h>
 //#define PAUSE sleep(1);
-#define PAUSE 
+#define PAUSE
 
 #define HLINE printf("-------------------------------------------------------\n");
 
@@ -58,7 +58,7 @@ void test_list()
     assert( list_member( &l, &a ) );
     assert( list_member( &l, &a ) );
     assert( ! list_member( &l, &b ) );
-    
+
 
     list_append( &l, &b );
 
@@ -122,7 +122,7 @@ void test_parser()
     list_t *lines = read_lines( input );
 
     fclose( input );
-    
+
     assert( lines != NULL );
     assert( ! lines->is_empty );
     printf( "nbr de lignes : %d\n", list_length( lines ));
@@ -132,16 +132,16 @@ void test_parser()
     LIST_NODE_T *iterator = NULL;
     while ( list_iterate( lines, &iterator ) != -1 ) {
         printf( "line : "); printf( "%s", line_of_list_node(iterator)->content );
-    } 
+    }
 
 
     atom_t *formula = NULL;
     atom_t *clauses_index = NULL;
     int num_clause, num_var;
 
-     
+
     printf("begins parsing clauses\n");
-    parse_lines( lines, &formula, &clauses_index, &num_var, &num_clause ); 
+    parse_lines( lines, &formula, &clauses_index, &num_var, &num_clause );
 
     printf("clauses parsed, now checking content\n");
 
@@ -154,13 +154,13 @@ void test_parser()
 
     int n=0;
     for (int i=0; i<n; ++i){
-        clause_print( 
-            formula_item( formula, clauses_index, i), 
+        clause_print(
+            formula_item( formula, clauses_index, i),
             formula_item( formula, clauses_index, i+1) );
         printf("\n");
     }
-        
-    formula_print( formula, clauses_index, num_clause ); 
+
+    formula_print( formula, clauses_index, num_clause );
 
     printf( "\033[44mOK\033[m !\n" );
     HLINE
@@ -185,7 +185,7 @@ void test_clause()
     /*
     atom_t *iterator = NULL;
     while ( atom_iterate( a, &iterator ) != -1 ){
-        printf( "atom with identity %u. is it negative : %u\n", 
+        printf( "atom with identity %u. is it negative : %u\n",
             VARIABLE_NAME( *iterator ), IS_NEGATED_BINARY( *iterator ) );
 
         assert( IS_USED( *iterator ) );
@@ -193,12 +193,12 @@ void test_clause()
     */
 
 
-    NEGATE( *clause_item(a, 0)); 
+    NEGATE( *clause_item(a, 0));
     assert( IS_NEGATED_BINARY( *clause_item(a, 0)) );
-    NEGATE( *clause_item(a, 0)); 
-    NEGATE( *clause_item(a, 1)); 
+    NEGATE( *clause_item(a, 0));
+    NEGATE( *clause_item(a, 1));
     assert( ! IS_NEGATED_BINARY( *clause_item(a, 1)) );
-    NEGATE( *clause_item(a, 1)); 
+    NEGATE( *clause_item(a, 1));
 
     UNUSE( *clause_item(a, 2));
     assert( ! IS_USED( *clause_item(a, 2) ));
@@ -206,23 +206,23 @@ void test_clause()
 
 
     // printf("clause a = "); clause_print( a ); printf( "\n" );
-    
+
 
     atom_t *b = malloc(3*sizeof(atom_t));
     atom_t *c = malloc(3*sizeof(atom_t));
 
-    *clause_item(b, 0) = make_atom(3); 
+    *clause_item(b, 0) = make_atom(3);
     *clause_item(b, 1) = make_atom(4);
-    *clause_item(c, 0) = make_atom(1); 
+    *clause_item(c, 0) = make_atom(1);
     *clause_item(c, 1) = make_atom(2);
 
     printf("builds clause\n");
 
     // atom_t* formula = malloc( (3+1+2+1+2+1)*sizeof(atom_t));
     // atom_t *clauses_index = NULL;
-    
+
     // proceed !
-    //atom_t offset = formula_build( &formula, &clauses_index, truc, 3 ); 
+    //atom_t offset = formula_build( &formula, &clauses_index, truc, 3 );
     //printf("clause built : %d atom_t items long\n", offset);
     //assert( offset == 8 );
 
@@ -270,7 +270,7 @@ void test_solve()
     printf("builds a 5 var-length truth value table\n");
 
     value_t tab[6];
-    
+
     SET_IMMUTABLE(tab[1]);
     SET_IMMUTABLE(tab[4]);
     SET_TRUE(tab[1]);
@@ -303,7 +303,7 @@ int main(int argc, char** argv){
 
     HLINE
 
-    test_list(); 
+    test_list();
     test_clause();
     test_parser();
     test_solve();

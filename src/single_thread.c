@@ -17,11 +17,11 @@ success_t solve( atom_t *formula, atom_t* clauses_index, int clause_n, int var_n
         vars[i] = 0;
 
     success_t answer = solve_thread( formula, clauses_index, vars, clause_n, var_n );
-    
+
     if ( answer == SUCCESS )
         value_print( vars, var_n );
 
-    
+
     return answer;
 }
 

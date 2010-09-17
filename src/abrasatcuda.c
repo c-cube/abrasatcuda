@@ -10,7 +10,7 @@
 #include "solve.h"
 #endif
 
-#include "interfaces/dispatch.h" 
+#include "interfaces/dispatch.h"
 #ifdef CUDA
 #include "solve.h"
 #endif
@@ -28,7 +28,7 @@
 
 int main( int argc, char ** argv )
 {
-    
+
     // if no arg is supplied, error
     if (argc < 3){
         print("usage : abrasatcuda lib file [thread number]\n");
@@ -57,7 +57,7 @@ int main( int argc, char ** argv )
      * Now we try to open the dynamic lib containing
      * the functions to solve the problem.
      */
-    success_t (*solve)( atom_t *formula, atom_t* clauses_index, 
+    success_t (*solve)( atom_t *formula, atom_t* clauses_index,
         int clause_n, int var_n, int thread_n );
     void *lib_handle = dlopen( lib_path, RTLD_LAZY );
     if ( lib_handle == NULL ){

@@ -4,7 +4,7 @@
 
 
 /*
- * finds the offset of [MEMBER] in [TYPE] (which is a struct), by 
+ * finds the offset of [MEMBER] in [TYPE] (which is a struct), by
  * casting 0 in (TYPE*) and taking the address of the member.
  */
 
@@ -12,8 +12,8 @@
 
 
 /*
- * finds a pointer to the struct of type [type], which member [member] has address 
- * [ptr]. Its basically allows to find a structure from one of its member, 
+ * finds a pointer to the struct of type [type], which member [member] has address
+ * [ptr]. Its basically allows to find a structure from one of its member,
  * assuming you know its type.
  */
 #define container_of(ptr, type, member) ({                                  \

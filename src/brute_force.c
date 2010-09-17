@@ -6,20 +6,20 @@
 
 
 /*
- * this function verifies if a formula has still a chance to be satisfiable 
+ * this function verifies if a formula has still a chance to be satisfiable
  * with the current (partial) variable affectations. It also updates which clauses
  * are satisfied or not.
- * Arguments : 
+ * Arguments :
  * [formula] : whole formula (raw array of atom_t)
- * [clauses_index] : array of size [clause_n]+1, with the offset of 
+ * [clauses_index] : array of size [clause_n]+1, with the offset of
  *      each clause inside [formula]
  * [vars] : array of truth values
  * [clause_n] : number of clauses
  * [var_n] : number of var
  */
-static inline truth_t is_satisfiable(  
-    atom_t* formula, 
-    atom_t* clauses_index,  
+static inline truth_t is_satisfiable(
+    atom_t* formula,
+    atom_t* clauses_index,
     value_t* vars,
     int clause_n,
     int var_n )
@@ -29,7 +29,7 @@ static inline truth_t is_satisfiable(
 
         atom_t *clause = formula + clauses_index[i];
         atom_t *clause_end = formula + clauses_index[i+1];
-        
+
         atom_t *iterator;
 
         // for this clause, check if it is satisfied, or still has a chance
@@ -44,7 +44,7 @@ static inline truth_t is_satisfiable(
 
             if ( is_negative ){
                 // clause satisfied
-                if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
+                if ( TRUTH_VALUE(vars[name]) == FALSE ){
 #ifdef DEBUG
                     print("clause %d satisfied by atom %d\n", i, name);
 #endif
@@ -53,7 +53,7 @@ static inline truth_t is_satisfiable(
                 }
             } else {
                 // clause satisfied
-                if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
+                if ( TRUTH_VALUE(vars[name]) == TRUE ){
 #ifdef DEBUG
                     print("clause %d satisfied by atom %d\n", i, name);
 #endif
@@ -72,7 +72,7 @@ static inline truth_t is_satisfiable(
         }
 
     }
-    
+
     return TRUE;
 }
 
@@ -91,7 +91,7 @@ static inline success_t next_combination( value_t*vars, int *cur, int var_n )
 
     assert( *cur >= 1);
     assert( *cur <= var_n);
-    
+
     truth_t advanced = FALSE;
     while (1){
 
@@ -99,15 +99,15 @@ static inline success_t next_combination( value_t*vars, int *cur, int var_n )
         if (*cur == var_n && (TRUTH_VALUE(vars[*cur]) || IS_IMMUTABLE(vars[*cur]))){
             return FAILURE;
 #ifdef DEBUG
-            print("next_combination failed on cur = %d with ", *cur); value_print( vars, var_n); 
+            print("next_combination failed on cur = %d with ", *cur); value_print( vars, var_n);
 #endif
         }
 
 
         // do not consider immutable values
-        if (IS_IMMUTABLE(vars[*cur])){ 
+        if (IS_IMMUTABLE(vars[*cur])){
             ++(*cur);
-            continue; 
+            continue;
         }
 
         // omg this var is not affected yet !
@@ -154,7 +154,7 @@ static inline void initialize_truth_values( value_t* vars, int var_n )
  * a brute force solver, iterating over all possibilities until it exhausts them
  * or finds a satisfying affectation of vars
  */
-success_t brute_force(atom_t* formula, atom_t* clauses_index, 
+success_t brute_force(atom_t* formula, atom_t* clauses_index,
     value_t* vars, int clause_n, int var_n)
 {
     // initialize all free vars
@@ -166,7 +166,7 @@ success_t brute_force(atom_t* formula, atom_t* clauses_index,
     value_print(vars,var_n);
     print("tries every possibility !\n");
 #endif
-    
+
     /*
      * try every possibilities until exhaustion or until we find that all clauses are satisfied
      */
@@ -176,7 +176,7 @@ success_t brute_force(atom_t* formula, atom_t* clauses_index,
 #endif
 
         // compute satisfiability at this point
-        truth_t all_ok = is_satisfiable( formula, clauses_index, 
+        truth_t all_ok = is_satisfiable( formula, clauses_index,
                 vars, clause_n, var_n );
 
         if ( all_ok == FALSE ){
@@ -207,7 +207,7 @@ success_t solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, i
 {
 
 
-    // current implementation 
+    // current implementation
     truth_t answer = brute_force( formula, clauses_index, vars, clause_n, var_n );
 
 

@@ -13,12 +13,12 @@
 
 
 /*
- * this function verifies if a formula has still a chance to be satisfiable 
+ * this function verifies if a formula has still a chance to be satisfiable
  * with the current (partial) variable affectations. It also updates which clauses
  * are satisfied or not.
- * Arguments : 
+ * Arguments :
  * [formula] : whole formula (raw array of atom_t)
- * [clauses_index] : array of size [clause_n]+1, with the offset of 
+ * [clauses_index] : array of size [clause_n]+1, with the offset of
  *      each clause inside [formula]
  * [vars] : array of truth values
  * [satisfied_clauses] : array of boolean, to know which clauses are satisfied
@@ -29,10 +29,10 @@
 #ifdef CUDA
 __device__
 #endif
-static inline truth_t 
-formula_is_satisfiable(  
-    atom_t* formula, 
-    atom_t* clauses_index,  
+static inline truth_t
+formula_is_satisfiable(
+    atom_t* formula,
+    atom_t* clauses_index,
     value_t* vars,
     satisfied_t* satisfied_clauses,
     unsigned int stack_depth,
@@ -50,7 +50,7 @@ formula_is_satisfiable(
 
         atom_t *clause = formula + clauses_index[i];
         atom_t *clause_end = formula + clauses_index[i+1];
-        
+
         atom_t *iterator;
 
         truth_t clause_satisfiable = FALSE;
@@ -68,7 +68,7 @@ formula_is_satisfiable(
             }
 
             /*
-             * if we find a var which has a value, we can check if it makes the clause 
+             * if we find a var which has a value, we can check if it makes the clause
              * satisfied. In this case, we can memoize it and go to the next clause.
              */
             if ( IS_IMMUTABLE(vars[name]) || IS_AFFECTED(vars[name]) ){
@@ -76,7 +76,7 @@ formula_is_satisfiable(
 
                 if ( is_negative ){
                     // clause satisfied
-                    if ( TRUTH_VALUE(vars[name]) == FALSE ){ 
+                    if ( TRUTH_VALUE(vars[name]) == FALSE ){
 #if DEBUG > 1
                         print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
@@ -87,7 +87,7 @@ formula_is_satisfiable(
                     }
                 } else {
                     // clause satisfied
-                    if ( TRUTH_VALUE(vars[name]) == TRUE ){ 
+                    if ( TRUTH_VALUE(vars[name]) == TRUE ){
 #if DEBUG > 1
                         print("clause %d satisfied at depth %d by atom %d\n",i,stack_depth,name);
 #endif
@@ -104,13 +104,13 @@ formula_is_satisfiable(
         if ( clause_satisfiable == FALSE ){
 #if DEBUG > 1
             value_print( vars, var_n );
-            print("clause %d not satisfiable ",i); clause_print( clause, clause_end ); print("\n"); 
+            print("clause %d not satisfiable ",i); clause_print( clause, clause_end ); print("\n");
 #endif
             return FALSE;
         }
 
     }
-    
+
     return TRUE;
 }
 
@@ -121,8 +121,8 @@ formula_is_satisfiable(
 #ifdef CUDA
 __device__
 #endif
-static inline truth_t 
-all_clauses_are_satisfied( 
+static inline truth_t
+all_clauses_are_satisfied(
     satisfied_t *satisfied_clauses,
     int clause_n)
 {
@@ -147,7 +147,7 @@ all_clauses_are_satisfied(
 #ifdef CUDA
 __device__
 #endif
-static inline truth_t 
+static inline truth_t
 unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfied_t* satisfied_clauses, unsigned int stack_depth, int clause_n, int var_n )
 {
 
@@ -161,7 +161,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
             index++;
             continue;
         }
-        
+
         // now searching if this clause is a unit clause
 
         atom_t *clause = formula + (clauses_index[index]);
@@ -171,7 +171,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
         atom_t *unit_atom = NULL; // the unit atom (if existing)
         for ( atom_t *atom = clause; atom < clause_end; ++atom ){
             // we have an unaffected atom here
-            if ( ! (  IS_AFFECTED(vars[VARIABLE_NAME(*atom)]) 
+            if ( ! (  IS_AFFECTED(vars[VARIABLE_NAME(*atom)])
                    || IS_IMMUTABLE(vars[VARIABLE_NAME(*atom)]))){
                 num_atom++;
                 unit_atom = atom;
@@ -180,13 +180,13 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
 
         /*
          * This is a unit clause. We therefore choose the truth value of the unit var,
-         * update information about which clauses are satisfied, and 
+         * update information about which clauses are satisfied, and
          * __START FROM THE BEGINNING__ (some clauses may have become unit ones)
          */
         if ( num_atom == 1 ){
 #if DEBUG > 1
             print("unit clause %d, unit var %d", index, VARIABLE_NAME(*unit_atom));
-            clause_print( clause, clause_end ); print("\n"); 
+            clause_print( clause, clause_end ); print("\n");
 #endif
 
             int name = VARIABLE_NAME(*unit_atom);
@@ -196,7 +196,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
             //print("set clause %d to satisfied\n", index);
             //if ( SATISFIED(satisfied_clauses[index] ))
             //  print("indeed satisfied\n");
-#endif        
+#endif
             SET_STACK_DEPTH(satisfied_clauses[index], stack_depth); // remember where we did that
 
             if ( IS_NEGATED(*unit_atom) )
@@ -206,11 +206,11 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
             // remember at what depth we change this var, and that it is affected
             SET_AFFECTED(vars[name]);
             SET_STACK_DEPTH(vars[name], stack_depth);
-        
+
 
             // verify if the formula is still satisfiable (if not, we are in a bad branch)
             // also update which clauses are satisfied.
-            truth_t is_still_satisfiable = formula_is_satisfiable( 
+            truth_t is_still_satisfiable = formula_is_satisfiable(
                 formula, clauses_index, vars, satisfied_clauses, stack_depth, clause_n, var_n );
 
             // the propagation has shown that we are in a non-satisfiable branch
@@ -235,7 +235,7 @@ unit_propagation( atom_t* formula, atom_t *clauses_index, value_t *vars, satisfi
 #ifdef CUDA
 __device__
 #endif
-static inline void 
+static inline void
 initialize_values( truth_t* vars, int var_n )
 {
     for (int i=1; i <= var_n; ++ i){
@@ -251,25 +251,25 @@ initialize_values( truth_t* vars, int var_n )
 #ifdef CUDA
 __device__
 #endif
-static inline void 
+static inline void
 initialize_satisfied ( satisfied_t * satisfied_clauses, int var_n)
 {
-    for (int i = 1; i <= var_n; ++i){ 
+    for (int i = 1; i <= var_n; ++i){
         satisfied_clauses[i] = 0;
-    }       
+    }
 }
 
 /*
- * This function unrolls every change that happened after the 
+ * This function unrolls every change that happened after the
  * false function call at depth [stack_depth].
- * It will search for every var affected and clause satisfied at a 
+ * It will search for every var affected and clause satisfied at a
  * __higher or equal__ depth then the one given.
  */
 #ifdef CUDA
 __device__
 #endif
-static inline void 
-unroll( value_t *vars, satisfied_t *satisfied_clauses, 
+static inline void
+unroll( value_t *vars, satisfied_t *satisfied_clauses,
     unsigned int stack_depth, int clause_n, int var_n )
 {
     for ( int i = 1; i <= var_n; ++i ){
@@ -301,7 +301,7 @@ unroll( value_t *vars, satisfied_t *satisfied_clauses,
 #ifdef CUDA
 __device__
 #endif
-static inline int 
+static inline int
 heuristic( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clauses, value_t *vars, int clause_n, int var_n)
 {
     // iterate on vars
@@ -314,7 +314,7 @@ heuristic( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clause
     }
 
     // no free var found !
-    return -1; 
+    return -1;
 }
 
 
@@ -327,10 +327,10 @@ heuristic( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clause
 #ifdef CUDA
 __device__
 #endif
-static inline int 
+static inline int
 heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_clauses, value_t *vars, int clause_n, int var_n)
 {
-    // since we cannot afford an arbitrary amount of memory on the stack, 
+    // since we cannot afford an arbitrary amount of memory on the stack,
     // the choice will be done only between the three first free vars.
     int var1, var2, var3; // var names
     int var1_n, var2_n, var3_n; // var marks
@@ -338,10 +338,10 @@ heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_c
     var1 = var2 = var3 = 0;
     var1_n = var2_n = var3_n = 0;
 
-    
+
     // iterate over clauses
     for ( int i = 0; i < clause_n; ++i ){
-        
+
         // satisfied clauses do not interest us
         if ( SATISFIED(satisfied_clauses[i]) == TRUE )
             continue;
@@ -358,7 +358,7 @@ heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_c
             if ( IS_IMMUTABLE(vars[name]) || IS_AFFECTED(vars[name]) )
                 continue;
 
-            // if a var is empty, fill it with this var name 
+            // if a var is empty, fill it with this var name
             if ( var1 == 0 ){
                 var1 = name;
                 goto give_mark;
@@ -380,7 +380,7 @@ heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_c
                 var2_n ++;
             if ( name == var3 )
                 var3_n ++;
-                
+
         }
     }
 
@@ -403,7 +403,7 @@ heuristic_good( atom_t* formula, atom_t *clauses_index, satisfied_t *satisfied_c
 #ifdef CUDA
 __device__
 #endif
-static inline atom_t 
+static inline atom_t
 find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
 {
     atom_t answer = -1;
@@ -439,10 +439,10 @@ find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
  * Begin                                                        <=== label start
  * If F = ∅ then return ”satisﬁable”;
  * Else F ← UnitPropagation(F);
- * If nil ∈F then return ”unsatisﬁable”;                        <=== label check 
+ * If nil ∈F then return ”unsatisﬁable”;                        <=== label check
  * Else ( Branching Rule )                                      <=== label branch
  * Choose l a literal according to some heuristic H;
- * If DPLL(F ∪ {l})= satisﬁable then return ”satisﬁable” ;  
+ * If DPLL(F ∪ {l})= satisﬁable then return ”satisﬁable” ;
  * Else DPLL(F ∪ {¬ l})                                         <=== label failure_positive
  * End
  *
@@ -450,7 +450,7 @@ find_pushed_var( value_t *vars, unsigned int stack_depth, int var_n )
 #ifdef CUDA
 __device__ static inline
 #endif
-success_t 
+success_t
 dpll(
     atom_t* formula,
     atom_t *clauses_index,
@@ -458,12 +458,12 @@ dpll(
     int clause_n,
     int var_n)
 {
-    
+
 #if DEBUG > 1
     print("launches dpll with %d clauses and %d vars\n", clause_n, var_n );
 #endif
 
-    /* 
+    /*
      * manage false stack. We start from 1, because it allows us to detect exhaution easily on stack_depth == 0.
      * We add 2 to stack_depth at each branch. stack_depth holds the current *true* stack level (with only
      * one var affected at each branch), and stack_depth_plus holds the stack level in which unit clauses propagating
@@ -480,16 +480,16 @@ dpll(
     for (int i = 0; i < clause_n; ++i )
         satisfied_clauses[i] = 0;
 
-    int next_var = -1; 
+    int next_var = -1;
     int last_pushed_var = -1;
 
     /*
-     * Start. At this point, we have to update satisfied_clauses info, and see if 
+     * Start. At this point, we have to update satisfied_clauses info, and see if
      * the formula is still potentially satisfiable.
      * If it is, we jump on branch for further exploration.
      * If not, we have to change of branch; if we are on a positive choice branch,
      *      we just have to go on the negative one;
-     *      if we are on a negative branch, we must backtrack because we exhausted 
+     *      if we are on a negative branch, we must backtrack because we exhausted
      *      the branch.
      */
 start:
@@ -526,7 +526,7 @@ start:
         }
 
         // try to propagate unit clauses.
-        is_still_satisfiable = unit_propagation( formula, clauses_index, 
+        is_still_satisfiable = unit_propagation( formula, clauses_index,
             vars, satisfied_clauses, stack_depth_plus, clause_n, var_n );
 
 
@@ -534,14 +534,14 @@ start:
         if ( is_still_satisfiable == FALSE ){
             assert( stack_depth > 0 );
             goto epic_fail;
-        }             
-        
+        }
+
         // this is not yet a failure nor a success, we have to dig deeper to find out.
         goto branch;
 
-        
+
     /*
-     * formula has still a chance to be satisfiable, so we 
+     * formula has still a chance to be satisfiable, so we
      * choose a var, and test it with positive value.
      */
 branch:
@@ -572,9 +572,9 @@ branch:
 #if DEBUG > 1
         print("chooses var %d at stack depth %d\n", next_var, stack_depth );
 #endif
-        
+
         /*
-         * first try. failure of the first branch will lead to 
+         * first try. failure of the first branch will lead to
          * the label "failure_positive".
          */
 
@@ -593,7 +593,7 @@ epic_fail:
 #if DEBUG > 1
         print("\033[31m->\033[m @epic_fail [stack depth %d]\n", stack_depth);
 #endif
-        
+
         // exhausted all possibilities at root, loser !
         if ( stack_depth <= 0 )
             return FAILURE;
@@ -625,7 +625,7 @@ epic_fail:
 
             goto failure_negative;
         }
-        
+
     /*
      * the try with positive value has failed.
      * We remain at the same stack depth, but try with a negative value.
@@ -634,7 +634,7 @@ failure_positive:
 #if DEBUG > 1
         print("\033[31m->\033[m @failure positive\n");
         print("switching var %d to false\n", last_pushed_var);
-#endif 
+#endif
 
         INVARIANT_STACK
 
@@ -644,8 +644,8 @@ failure_positive:
         SET_FALSE(vars[last_pushed_var]);
 
         goto start;
-        
-    /* 
+
+    /*
      * Uh-oh, the negative try is also a failure. So, we have to backtrack because
      * the previous choice was not the good one.
      */
@@ -681,12 +681,12 @@ failure_negative:
 #ifdef CUDA
 __device__ static inline
 #endif
-success_t 
+success_t
 solve_thread( atom_t* formula, atom_t* clauses_index, value_t* vars, int clause_n, int var_n )
 {
     initialize_values( vars, var_n );
 
-    // current default implementation 
+    // current default implementation
     truth_t answer = dpll( formula, clauses_index, vars, clause_n, var_n );
 
 

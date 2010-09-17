@@ -17,7 +17,7 @@ static double *interest_ptr = NULL;
 static inline void
 compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *interest, int clause_n, int var_n )
 {
-    
+
     // number of times vars appear positively or negatively in the formula
     int positive_occur_num[var_n+1];
     int negative_occur_num[var_n+1];
@@ -30,7 +30,7 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
 
     // loop over all atoms of formula, and for each, update appropriate occurrence number
     for ( int i = 0; i < clause_n; ++i ){
-        
+
         atom_t *clause = formula + (clauses_index[i]);
         atom_t *clause_end = formula + (clauses_index[i+1]);
 
@@ -47,10 +47,10 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
     /*
      * The heuristic is based on two things :
      *      the number of times a var appears, which increases its importance;
-     *      the "equilibrium" of those occurrences, ie a var which appears 
+     *      the "equilibrium" of those occurrences, ie a var which appears
      *          as many times positively and negatively is more likely to
      *          be of interest in both positive and negative value (remember
-     *          that we try to know which vars are good to be switched on 
+     *          that we try to know which vars are good to be switched on
      *          from the beginning)
      * This is motivated by the assumption that the more a var appears, the earlier
      * it reveals whether this choice was good or not.
@@ -61,7 +61,7 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
         // total number of occurrences
         int total_occur_num = positive_occur_num[i] + negative_occur_num[i];
 
-        double value = exp(5 *  ((double) (total_occur_num)) / 
+        double value = exp(5 *  ((double) (total_occur_num)) /
             ((double) abs(negative_occur_num - positive_occur_num)+1) );
 
 #if DEBUG > 1
@@ -74,7 +74,7 @@ compute_values( atom_t *formula, atom_t *clauses_index, value_t *vars, double *i
 
 
 // this compares two vars by comparing their "interest value"
-static int 
+static int
 compare( const void *a, const void *b )
 {
     int my_a = *((value_t*) a);
@@ -88,7 +88,7 @@ compare( const void *a, const void *b )
         return +1;
     if ( interest_ptr[my_a] > interest_ptr[my_b] )
         return -1;
-    else 
+    else
         return 0;
 }
 
@@ -144,20 +144,20 @@ sort_vars_by_value( atom_t *formula, atom_t *clauses_index, value_t *vars, int *
  *
  * parameters :
  * [all_vars] : array containing [thread_n] arrays of vars (each of size [var_n]+1)
- * [sorted_vars] : array of size [var_n]+1 containing the names of vars 
+ * [sorted_vars] : array of size [var_n]+1 containing the names of vars
  *      in decreasing order of interest.
  */
 int
 set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_n)
 {
   // the function is expected to return how many threads should be *really* run
-  int new_thread_n = thread_n; 
+  int new_thread_n = thread_n;
 
   // if there is only one thread, exit
   assert( thread_n > 0);
   if ( thread_n == 1)
       return new_thread_n;
-  
+
   // we cannot have more threads than 2^{num of vars}
   new_thread_n = MIN(new_thread_n, 1 << var_n );
 #ifdef DEBUG
@@ -172,11 +172,11 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
   int thread_num = new_thread_n >> 1;
   // based on a rounded base 2 logarithm : round(log_2(new_thread_n)) == immutable_per_thread
   while ( thread_num > 0){
-    immutable_per_thread++; 
+    immutable_per_thread++;
     thread_num = thread_num >> 1;
   }
   // this shows what is the max index until which we can do a perfect allocation
-  // of [immutable_per_thread] variables. 
+  // of [immutable_per_thread] variables.
   // if we are further, we can choose [immutable_per_thread]+1 vars instead.
   int thread_correct_index = 1 << immutable_per_thread;
 
@@ -194,7 +194,7 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
     var_affected = 1; // index of first var name to choose in [sorted_vars]
     while (1)
     {
-      // check if we have affected enough values for this vars instance. 
+      // check if we have affected enough values for this vars instance.
       if ( var_affected > immutable_per_thread +1
           || ( i < thread_correct_index && var_affected > immutable_per_thread ) ){
         break;
@@ -203,12 +203,12 @@ set_immutable_vars( value_t * all_vars, int *sorted_vars, int var_n, int thread_
       assert( var_affected < 32); // 2 ^ 32 threads is *huge* !
 
       // the var we choose now is the [var_affected]-th in decreasing order
-      int var_name = sorted_vars[var_affected]; 
+      int var_name = sorted_vars[var_affected];
       if ( base_two_decomp[var_affected] == 1 )
         SET_TRUE( vars[var_name]);
       else
         SET_FALSE( vars[var_name]);
-      SET_IMMUTABLE( vars[var_name]); 
+      SET_IMMUTABLE( vars[var_name]);
       ++var_affected;
     }
   }
@@ -224,5 +224,5 @@ to_base_two( int * base_2_array, int input)
   {
     base_2_array[i] = input % 2;
     input /= 2; // compiler does optimize this I guess :)
-  } 
+  }
 }
